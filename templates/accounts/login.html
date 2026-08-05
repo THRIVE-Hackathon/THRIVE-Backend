@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}로그인 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel narrow">
+  <h1>로그인</h1>
+  <p class="muted">장거리 비행 후 회복을 이어서 관리합니다.</p>
+
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <label>
+        <span>{{ field.label }}</span>
+        {{ field }}
+        {{ field.errors }}
+      </label>
+    {% endfor %}
+    <button type="submit">로그인</button>
+  </form>
+
+  <p class="switch-link">
+    계정이 없나요? <a href="{% url 'accounts:signup' %}">회원가입</a>
+  </p>
+</section>
+{% endblock %}

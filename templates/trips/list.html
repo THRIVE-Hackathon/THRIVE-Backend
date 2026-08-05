@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}여정 목록 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="section-header">
+    <h1>기록</h1>
+    <span class="muted">최근 20건</span>
+  </div>
+
+  {% if active_trip %}
+    <h2>진행 중</h2>
+    <article class="trip-card">
+      <div>
+        <strong>{{ active_trip.route_name }}</strong>
+        <p>
+          {{ active_trip.get_status_display }}
+          {% if active_trip.current_score is not None %}
+            · 현재 {{ active_trip.current_score }}점
+          {% elif active_trip.expected_score is not None %}
+            · 예상 {{ active_trip.expected_score }}점
+          {% endif %}
+        </p>
+        <div class="mini-metrics">
+          <span>예상 {% if active_trip.expected_score is not None %}{{ active_trip.expected_score }}{% else %}-{% endif %}</span>
+          <span>실측 {% if active_trip.actual_score is not None %}{{ active_trip.actual_score }}{% else %}-{% endif %}</span>
+          <span>목표 {% if active_trip.target_score is not None %}{{ active_trip.target_score }}{% else %}-{% endif %}</span>
+          <span>회복 {{ active_trip.completed_recovery_count }}/{{ active_trip.recovery_count }}</span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <a href="{% url 'reports:detail' active_trip.id %}">리포트</a>
+        <a href="{% url 'trips:calendar' active_trip.id %}">캘린더</a>
+      </div>
+    </article>
+  {% endif %}
+
+  <h2>지난 여정</h2>
+  {% if past_trips %}
+    <div class="trip-list">
+      {% for trip in past_trips %}
+        <article class="trip-card">
+          <div>
+            <strong>{{ trip.route_name }}</strong>
+            <p>
+              {{ trip.created_at|date:"m.d" }} ·
+              {% if trip.result %}
+                차질도 {{ trip.result.disruption_score }}점
+              {% elif trip.is_report_required %}
+                리포트 작성 필요
+              {% else %}
+                {{ trip.get_status_display }}
+              {% endif %}
+            </p>
+            <div class="mini-metrics">
+              <span>예상 {% if trip.expected_score is not None %}{{ trip.expected_score }}{% else %}-{% endif %}</span>
+              <span>실측 {% if trip.actual_score is not None %}{{ trip.actual_score }}{% else %}-{% endif %}</span>
+              <span>현재 {% if trip.current_score is not None %}{{ trip.current_score }}{% else %}-{% endif %}</span>
+              <span>회복 {{ trip.completed_recovery_count }}/{{ trip.recovery_count }}</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="{% url 'reports:detail' trip.id %}">보기</a>
+            <a href="{% url 'trips:calendar' trip.id %}">캘린더</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">아직 기록이 없습니다. 첫 여정을 등록하면 이곳에 표시됩니다.</p>
+  {% endif %}
+</section>
+{% endblock %}

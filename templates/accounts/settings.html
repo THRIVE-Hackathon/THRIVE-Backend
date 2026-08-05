@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}설정 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h1>설정</h1>
+
+  <div class="stack">
+    <section>
+      <h2>개인정보처리방침</h2>
+      <p>THRIVE는 장거리 비행 후 회복 점수와 회복 계획을 제공하기 위해 필요한 정보만 저장합니다.</p>
+      <dl class="policy-list">
+        <div>
+          <dt>수집 항목</dt>
+          <dd>이메일, 비밀번호 해시, 닉네임, 성별, 연령대, 여정 정보, 회복 항목 체크 기록, 하루 컨디션, 일정 차질도</dd>
+        </div>
+        <div>
+          <dt>수집 목적</dt>
+          <dd>계정 관리, 여정별 회복 점수 계산, 회복 계획 제공, 회복 리포트 생성, 누적 통계 표시</dd>
+        </div>
+        <div>
+          <dt>보유 기간</dt>
+          <dd>회원 탈퇴 전까지 보관하며, 탈퇴 시 계정과 관련 데이터를 삭제합니다.</dd>
+        </div>
+        <div>
+          <dt>수집하지 않는 정보</dt>
+          <dd>기저질환, 진단명, 처방 정보, 항공권 예약 정보, 웨어러블 건강 데이터는 MVP에서 수집하지 않습니다.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section>
+      <h2>서비스 소개</h2>
+      <p>THRIVE는 편도 총 6시간 이상 비행 후 회복이 끝나기 전에 다음 일정이 시작되는 문제를 다룹니다.</p>
+      <p>비행 조건과 회복 기록을 바탕으로 수면, 순환, 수분, 피부 요소를 참고 점수로 보여주고 다음 일정 전 수행할 회복 행동을 제안합니다.</p>
+      <p class="notice">회복 점수는 의학적 진단이나 처방이 아닌 참고 지표입니다.</p>
+    </section>
+
+    <section>
+      <h2>참고 자료</h2>
+      <ul>
+        <li>CDC Yellow Book 2026, Air Travel: 기내 습도, 여압, 장거리 비행 환경 참고</li>
+        <li>CDC Yellow Book 2026, Jet Lag Disorder: 시차 장애 정의와 증상 참고</li>
+        <li>WHO WRIGHT Project: 4시간 초과 비행과 부동 관련 위험 참고</li>
+        <li>미국 국립과학원 · FAA 보고서: 항공기 객실 습도 실측 참고</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="actions">
+    <a class="button secondary" href="{% url 'accounts:logout' %}">로그아웃</a>
+    <form method="post" action="{% url 'accounts:delete' %}">
+      {% csrf_token %}
+      <button class="danger" type="submit">회원 탈퇴</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

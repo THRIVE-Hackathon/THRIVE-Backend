@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}프로필 수정 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel narrow">
+  <h1>프로필 수정</h1>
+  <p class="muted">닉네임, 성별, 연령대는 리포트와 비교 통계에 사용됩니다.</p>
+
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <fieldset>
+        <legend>{{ field.label }}</legend>
+        {{ field }}
+        {{ field.errors }}
+      </fieldset>
+    {% endfor %}
+    <div class="actions">
+      <button type="submit">저장</button>
+      <a class="button secondary" href="{% url 'accounts:profile' %}">취소</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

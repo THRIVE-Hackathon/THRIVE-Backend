@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}회복 리포트 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="section-header">
+    <div>
+      <h1>회복 리포트</h1>
+      <p class="muted">{{ trip.route_name }}</p>
+    </div>
+    <a class="button secondary" href="{% url 'trips:calendar' trip.id %}">캘린더에 담기</a>
+  </div>
+
+  <div class="score-row">
+    {% for label, value in score_points %}
+      <div>
+        <span>{{ label }}</span>
+        <strong>{% if value is not None %}{{ value }}{% else %}-{% endif %}</strong>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if target_progress is not None %}
+    <section>
+      <h2>목표 달성률</h2>
+      <div class="progress">
+        <div style="width: {{ target_progress }}%"></div>
+      </div>
+      <p class="muted">목표 {{ trip.target_score }}점 중 현재 {{ trip.current_score }}점</p>
+    </section>
+  {% endif %}
+
+  <section>
+    <h2>점수 근거</h2>
+    {% if score_breakdown_items %}
+      <ul class="item-list">
+        {% for item in score_breakdown_items %}
+          <li>
+            <span>{{ item.label }}</span>
+            <span>
+              {% if item.score is not None %}{{ item.score }} · {% endif %}
+              {{ item.detail }}
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">점수 근거는 예상/실측 점수 계산이 완료되면 표시됩니다.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>회복 항목 수행</h2>
+    <p>{{ completed_count }} / {{ total_recovery_count }}개 완료</p>
+    {% if recovery_items %}
+      <ul class="item-list">
+        {% for item in recovery_items %}
+          <li>
+            <span>{{ item.scheduled_at|date:"m.d H:i" }} · {{ item.title }}</span>
+            <span>{{ item.get_component_display }} +{{ item.score_delta }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">아직 생성된 회복 항목이 없습니다.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>요소별 회복 계획</h2>
+    {% if component_summary %}
+      <div class="component-grid">
+        {% for component in component_summary %}
+          <div>
+            <span>{{ component.label }}</span>
+            <strong>{{ component.completed }}/{{ component.planned }}</strong>
+            <p>계획 +{{ component.planned_delta }} · 반영 +{{ component.applied_delta }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">회복 계획이 생성되면 수면, 순환, 수분, 피부별 수행 현황이 표시됩니다.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>일정 차질도</h2>
+    {% if result %}
+      <p class="result-score">{{ result.disruption_score }}점 · {{ result.selected_answer }}</p>
+    {% else %}
+      <form method="post" class="form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.disruption_score.errors }}
+        {{ form.disruption_score }}
+        <button type="submit">저장</button>
+      </form>
+    {% endif %}
+  </section>
+
+  <p class="notice">의학적 진단이 아닌 참고 지표입니다.</p>
+</section>
+{% endblock %}
