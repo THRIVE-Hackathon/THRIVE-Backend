@@ -7,6 +7,9 @@
   <div class="section-header">
     <h1>기록</h1>
     <span class="muted">최근 20건</span>
+    {% if not active_trip %}
+      <a href="{% url 'trips:create' %}" class="button-primary">새 여정 등록</a>
+    {% endif %}
   </div>
 
   {% if active_trip %}

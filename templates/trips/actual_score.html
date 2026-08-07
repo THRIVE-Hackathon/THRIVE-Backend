@@ -1,10 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}실측 회복 점수 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h1>실측 회복 점수 확인</h1>
+  <p class="muted">착륙 시각 기준으로 점수가 확정되었습니다.</p>
+
+  <p class="score-headline"><strong>{{ trip.actual_score }}</strong></p>
+
+  {% with diff=trip.actual_score|add:"-0" %}
+  <p class="muted">
+    {% if trip.actual_score > trip.expected_score %}
+      기내 관리 덕분에 예상보다 높게 나왔어요.
+    {% elif trip.actual_score < trip.expected_score %}
+      예상보다 다소 낮게 나왔어요.
+    {% else %}
+      예상 점수와 동일하게 나왔어요.
+    {% endif %}
+  </p>
+  {% endwith %}
+
+  <div class="score-compare">
+    <div><span>예상 점수</span><strong>{{ trip.expected_score }}</strong></div>
+    <div><span>실측 점수</span><strong>{{ trip.actual_score }}</strong></div>
+  </div>
+
+  <h3>기내 기록 반영 내역</h3>
+  <ul class="score-reasoning">
+    {% for check in trip.inflight_checks.all %}
+      {% if check.count > 0 %}
+        <li>{{ check.get_check_type_display }} {{ check.count }}회 반영</li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+
+  <h3>목표 점수</h3>
+  <p class="score-headline"><strong>{{ trip.target_score }}</strong></p>
+  <p class="muted">다음 일정까지 남은 시간 내에서 100점을 초과하지 않는 범위 내에서 산정됩니다.</p>
+
+  <p class="disclaimer">이 점수는 의학적 진단이 아닌 참고 지표입니다</p>
+
+  <a href="{% url 'recovery:plan' trip.id %}" class="button-primary">회복 계획 시작하기</a>
+</section>
+{% endblock %}

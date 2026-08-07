@@ -1,10 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}여정 등록 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="section-header">
+    <h1>여정 등록</h1>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">다음</button>
+  </form>
+</section>
+{% endblock %}
