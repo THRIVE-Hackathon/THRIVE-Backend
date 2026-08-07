@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}데일리 컨디션 입력 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h1>오늘의 컨디션을 알려주세요</h1>
+  <p class="muted">회복 진행 상황을 더 정확히 파악하기 위해 기록됩니다</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="condition-choices">
+      {% for value, label in choices %}
+        <button
+          type="submit"
+          name="score"
+          value="{{ value }}"
+          class="condition-btn {% if existing.score == value %}is-selected{% endif %}"
+        >
+          {{ label }}
+        </button>
+      {% endfor %}
+    </div>
+  </form>
+</section>
+{% endblock %}

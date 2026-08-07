@@ -1,10 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}회복 계획 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h1>회복 계획</h1>
+  <p class="muted">지금 해야 할 항목을 확인하고 체크하세요</p>
+
+  <p class="label">실측 회복 점수</p>
+  <p class="score-headline"><strong>{{ trip.current_score }}</strong></p>
+  <p class="muted">목표 점수 {{ trip.target_score }}점 · 지금부터 꾸준히 체크하면 도달할 수 있어요</p>
+
+  <div class="recovery-list">
+    {% for item in items %}
+      <form method="post" action="{% url 'recovery:item_toggle' trip.id item.id %}" class="recovery-item {% if item.status == 'completed' %}is-checked{% endif %}">
+        {% csrf_token %}
+        <button type="submit" class="recovery-check">
+          {% if item.status == "completed" %}✓{% else %}○{% endif %}
+        </button>
+        <span class="recovery-title">{{ item.title }}</span>
+        <span class="recovery-delta">+{{ item.score_delta }}점</span>
+      </form>
+    {% empty %}
+      <p class="empty">아직 생성된 회복 항목이 없어요.</p>
+    {% endfor %}
+  </div>
+
+  <p class="label">오늘의 컨디션</p>
+  <p class="muted">컨디션을 기록하면 리포트 해석이 더 정확해져요</p>
+  <a href="{% url 'recovery:daily_condition' trip.id %}">기록하기</a>
+
+  <a href="{% url 'trips:calendar' trip.id %}" class="button-primary">캘린더에 내보내기 (.ics)</a>
+  <p class="hint">내보내기에 실패했다면 잠시 후 다시 시도해 주세요.</p>
+  <p class="disclaimer">이 점수는 의학적 진단이 아닌 참고 지표입니다</p>
+</section>
+{% endblock %}

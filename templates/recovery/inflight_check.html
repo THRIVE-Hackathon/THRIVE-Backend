@@ -1,10 +1,136 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}기내 체크리스트 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h1>기내 체크리스트</h1>
+  <p class="muted" id="sync-status">탭하면 즉시 기록되고 다시 탭하면 취소돼요.</p>
+
+  <div class="checklist" id="checklist" data-trip-id="{{ trip.id }}">
+    {% for check_type, label in checks.items %}
+    <article class="check-item" data-check-type="{{ check_type }}">
+      <div>
+        <strong>
+          {% if check_type == "water" %}물 마셨어요
+          {% elif check_type == "walk" %}걸었어요
+          {% elif check_type == "stretch" %}스트레칭했어요
+          {% elif check_type == "moisturize" %}보습했어요
+          {% endif %}
+        </strong>
+      </div>
+      <div class="stepper">
+        <button type="button" class="check-btn" data-action="decrement">-</button>
+        <span class="check-count">{{ check.count }}</span>
+        <button type="button" class="check-btn" data-action="increment">+</button>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+
+  <p class="hint">기록은 착륙 후 실측 점수 보정에 반영돼요.</p>
+</section>
+
+<script>
+(function () {
+  const container = document.getElementById("checklist");
+  const tripId = container.dataset.tripId;
+  const statusEl = document.getElementById("sync-status");
+  const storageKey = `thrive_pending_checks_${tripId}`;
+
+  function getCsrfToken() {
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? match[1] : "";
+  }
+
+  function loadPending() {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey)) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function savePending(pending) {
+    localStorage.setItem(storageKey, JSON.stringify(pending));
+  }
+
+  function updateStatusUI() {
+    if (!navigator.onLine) {
+      statusEl.textContent = "로컬 저장 중 (오프라인)";
+    } else {
+      const pending = loadPending();
+      const hasPending = Object.values(pending).some((v) => v !== 0);
+      statusEl.textContent = hasPending
+        ? "동기화 중..."
+        : "탭하면 즉시 기록되고 다시 탭하면 취소돼요.";
+    }
+  }
+
+  function applyDelta(checkType, delta) {
+    const item = container.querySelector(`[data-check-type="${checkType}"]`);
+    const countEl = item.querySelector(".check-count");
+    const newCount = Math.max(0, parseInt(countEl.textContent, 10) + delta);
+    countEl.textContent = newCount;
+
+    const pending = loadPending();
+    pending[checkType] = (pending[checkType] || 0) + delta;
+    savePending(pending);
+    updateStatusUI();
+
+    if (navigator.onLine) {
+      flushPending();
+    }
+  }
+
+  function flushPending() {
+    const pending = loadPending();
+    const hasPending = Object.values(pending).some((v) => v !== 0);
+    if (!hasPending) return;
+
+    const batchId = `${tripId}-${Date.now()}`;
+
+    fetch(`/recovery/${tripId}/checks/sync/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: JSON.stringify({ deltas: pending, client_event_id: batchId }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("sync failed");
+        return res.json();
+      })
+      .then((data) => {
+        // 서버 반영 성공 -> pending 비우고 서버 count로 화면 재동기화
+        savePending({});
+        Object.entries(data.counts).forEach(([checkType, count]) => {
+          const item = container.querySelector(`[data-check-type="${checkType}"]`);
+          if (item) item.querySelector(".check-count").textContent = count;
+        });
+        updateStatusUI();
+      })
+      .catch(() => {
+        // 실패하면 pending 그대로 두고 다음 기회에 재시도
+        updateStatusUI();
+      });
+  }
+
+  container.addEventListener("click", (e) => {
+    const btn = e.target.closest(".check-btn");
+    if (!btn) return;
+    const item = btn.closest(".check-item");
+    const checkType = item.dataset.checkType;
+    const delta = btn.dataset.action === "increment" ? 1 : -1;
+    applyDelta(checkType, delta);
+  });
+
+  window.addEventListener("online", flushPending);
+  setInterval(flushPending, 15000); // 15초마다 재시도
+
+  updateStatusUI();
+  flushPending(); // 페이지 로드 시 이전에 못 보낸 게 있으면 바로 시도
+})();
+</script>
+{% endblock %}
