@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from trips.models import City, Trip
+from trips.models import Airport, Trip
 
 from .models import TripResult
 
@@ -13,20 +13,24 @@ class ReportTests(TestCase):
             email="user@example.com",
             password="StrongPass123!",
         )
-        origin = City.objects.create(
-            name_ko="인천",
+        origin = Airport.objects.create(
+            iata_code="ICN",
+            name_ko="인천국제공항",
+            city_name="인천",
             country_code="KR",
             timezone="Asia/Seoul",
         )
-        destination = City.objects.create(
-            name_ko="파리",
+        destination = Airport.objects.create(
+            iata_code="CDG",
+            name_ko="샤를 드골 공항",
+            city_name="파리",
             country_code="FR",
             timezone="Europe/Paris",
         )
         self.trip = Trip.objects.create(
             user=self.user,
-            origin_city=origin,
-            destination_city=destination,
+            origin_airport=origin,
+            destination_airport=destination,
             total_flight_minutes=780,
             next_schedule_after_minutes=1440,
             status=Trip.Status.RECOVERING,

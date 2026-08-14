@@ -48,7 +48,7 @@ def _component_summary(recovery_items):
 @login_required
 def report_detail_view(request, trip_id):
     trip = get_object_or_404(
-        Trip.objects.select_related("origin_city", "destination_city"),
+        Trip.objects.select_related("origin_airport", "destination_airport"),
         pk=trip_id,
         user=request.user,
     )
