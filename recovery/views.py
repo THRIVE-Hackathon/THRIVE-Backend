@@ -9,9 +9,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.contrib import messages
-from common.services.recovery import generate_recovery_items, get_layover_guide
+from common.services.recovery import generate_recovery_items, CHECK_TYPE_INPUT_MODE, get_inflight_tips, get_layover_tips, RECOVERY_ITEM_CATALOG
 from common.services.score import clamp_score
 from common.services.timezone import to_timezone
+from trips.services import refresh_trip_status
 
 @login_required
 def inflight_check_view(request, trip_id):
@@ -24,7 +25,7 @@ def inflight_check_view(request, trip_id):
         )
         checks[check_type] = obj
 
-    context = {"trip": trip, "checks": checks}
+    context = {"trip": trip, "checks": checks, "input_modes": CHECK_TYPE_INPUT_MODE}
     return render(request, "recovery/inflight_check.html", context)
 
 
@@ -34,10 +35,17 @@ def inflight_check_adjust(request, trip_id, check_type, action):
     check, _ = InflightCheck.objects.get_or_create(
         trip=trip, check_type=check_type, defaults={"count": 0}
     )
-    if action == "increment":
-        check.count += 1
-    elif action == "decrement":
-        check.count = max(0, check.count - 1)
+
+    input_mode = CHECK_TYPE_INPUT_MODE.get(check_type, "counter")
+
+    if input_mode == "toggle":
+        check.count = 0 if check.count > 0 else 1
+    else:
+        if action == "increment":
+            check.count += 1
+        elif action == "decrement":
+            check.count = max(0, check.count - 1)
+
     check.save()
     return redirect("recovery:inflight_check", trip_id=trip.pk)
 
@@ -61,17 +69,17 @@ def inflight_check_sync(request, trip_id):
         check, _ = InflightCheck.objects.get_or_create(
             trip=trip, check_type=check_type, defaults={"count": 0}
         )
-        # F()로 반영해서 동시 요청 시 race condition 방지
         InflightCheck.objects.filter(pk=check.pk).update(
-            count=F("count") + delta,
-            client_event_id=batch_id,
-            synced_at=timezone.now(),
+            count=F("count") + delta, client_event_id=batch_id, synced_at=timezone.now()
         )
         check.refresh_from_db()
-        # 음수 방지 (혹시 delta가 과도하게 마이너스로 쌓였을 경우)
+
         if check.count < 0:
             check.count = 0
-            check.save(update_fields=["count"])
+        if CHECK_TYPE_INPUT_MODE.get(check_type) == "toggle" and check.count > 1:
+            check.count = 1  # 토글은 0 또는 1만 허용
+
+        check.save(update_fields=["count"])
         updated_counts[check_type] = check.count
 
     return JsonResponse({"counts": updated_counts})
@@ -81,6 +89,7 @@ DAILY_RECOVERY_LIMIT = 15
 @login_required
 def recovery_plan_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
+    refresh_trip_status(trip)
     items = generate_recovery_items(trip)
 
     now = timezone.now()
@@ -138,7 +147,7 @@ CONDITION_CHOICES = [
 @login_required
 def daily_condition_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
-    today_local = to_timezone(timezone.now(), trip.destination_city.timezone).date()
+    today_local = to_timezone(timezone.now(), trip.destination_airport.timezone).date()
 
     if request.method == "POST":
         score = request.POST.get("score")
@@ -161,8 +170,113 @@ def daily_condition_view(request, trip_id):
     return render(request, "recovery/daily_condition.html", context)
 
 @login_required
-def layover_guide_view(request, trip_id):
+def before_guide_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
-    guide = get_layover_guide(trip.max_layover_minutes)
-    context = {"trip": trip, "guide": guide}
-    return render(request, "recovery/layover_guide.html", context)
+    context = {
+        "trip": trip,
+        "inflight_tips": get_inflight_tips(),
+        "layover_tips": get_layover_tips(),
+    }
+    return render(request, "recovery/before_guide.html", context)
+
+@login_required
+def recovery_item_adjust(request, trip_id, item_id, action):
+    trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
+    item = get_object_or_404(RecoveryItem, pk=item_id, trip=trip)
+    mode = RECOVERY_ITEM_CATALOG.get(item.key, {}).get("mode", "toggle")
+
+    applied_today = (
+        RecoveryItem.objects.filter(trip=trip, local_date=item.local_date, score_applied=True)
+        .aggregate(total=Sum("score_delta"))["total"]
+        or 0
+    )
+
+    if mode == "toggle":
+        if item.status == RecoveryItem.Status.PENDING:
+            item.status = RecoveryItem.Status.COMPLETED
+            item.completed_at = timezone.now()
+            if applied_today + item.score_delta <= DAILY_RECOVERY_LIMIT:
+                item.score_applied = True
+                trip.current_score = clamp_score((trip.current_score or 0) + item.score_delta)
+                trip.save(update_fields=["current_score"])
+            else:
+                messages.info(request, "오늘은 충분히 하셨어요")
+        else:
+            item.status = RecoveryItem.Status.PENDING
+            item.completed_at = None
+            if item.score_applied:
+                trip.current_score = clamp_score((trip.current_score or 0) - item.score_delta)
+                trip.save(update_fields=["current_score"])
+            item.score_applied = False
+        item.save()
+
+    else:  # counter
+        if action == "increment":
+            if applied_today + item.score_delta <= DAILY_RECOVERY_LIMIT:
+                item.count += 1
+                trip.current_score = clamp_score((trip.current_score or 0) + item.score_delta)
+                trip.save(update_fields=["current_score"])
+                item.score_applied = True
+            else:
+                messages.info(request, "오늘은 충분히 하셨어요")
+        elif action == "decrement" and item.count > 0:
+            item.count -= 1
+            trip.current_score = clamp_score((trip.current_score or 0) - item.score_delta)
+            trip.save(update_fields=["current_score"])
+            if item.count == 0:
+                item.score_applied = False
+        item.save()
+
+    return redirect("trips:home")
+
+@login_required
+@require_POST
+def recovery_item_sync(request, trip_id):
+    trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
+    try:
+        payload = json.loads(request.body)
+        deltas = payload.get("deltas", {})  # {item_id: delta}
+    except (json.JSONDecodeError, AttributeError):
+        return JsonResponse({"error": "invalid payload"}, status=400)
+
+    applied_today = (
+        RecoveryItem.objects.filter(trip=trip, local_date=timezone.localdate(), score_applied=True)
+        .aggregate(total=Sum("score_delta"))["total"]
+        or 0
+    )
+
+    results = {}
+    for item_id_str, delta in deltas.items():
+        if not isinstance(delta, int) or delta == 0:
+            continue
+        try:
+            item = RecoveryItem.objects.get(pk=int(item_id_str), trip=trip)
+        except (RecoveryItem.DoesNotExist, ValueError):
+            continue
+
+        mode = RECOVERY_ITEM_CATALOG.get(item.key, {}).get("mode", "toggle")
+
+        if mode == "toggle":
+            is_checked = delta > 0
+            item.status = RecoveryItem.Status.COMPLETED if is_checked else RecoveryItem.Status.PENDING
+            item.completed_at = timezone.now() if is_checked else None
+        else:
+            item.count = max(0, item.count + delta)
+
+        if applied_today + item.score_delta <= DAILY_RECOVERY_LIMIT:
+            was_applied = item.score_applied
+            item.score_applied = (mode == "toggle" and item.status == RecoveryItem.Status.COMPLETED) or (
+                mode == "counter" and item.count > 0
+            )
+            if item.score_applied and not was_applied:
+                trip.current_score = clamp_score((trip.current_score or 0) + item.score_delta)
+                applied_today += item.score_delta
+            elif not item.score_applied and was_applied:
+                trip.current_score = clamp_score((trip.current_score or 0) - item.score_delta)
+                applied_today -= item.score_delta
+
+        item.save()
+        results[str(item.id)] = {"status": item.status, "count": item.count}
+
+    trip.save(update_fields=["current_score"])
+    return JsonResponse({"items": results, "current_score": trip.current_score})
