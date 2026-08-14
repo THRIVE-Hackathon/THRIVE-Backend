@@ -10,10 +10,6 @@ class InflightCheck(models.Model):
         MOISTURIZE = "moisturize", "보습"
         SLEEP = "sleep", "6시간 취침하기"
 
-    class InputMode(models.TextChoices):
-        COUNTER = "counter", "카운터"
-        TOGGLE = "toggle", "토글"
-
     trip = models.ForeignKey(
         Trip,
         on_delete=models.CASCADE,
