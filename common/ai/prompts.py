@@ -33,14 +33,6 @@ def score_diff_explanation_prompt(trip):
     )
 
 
-def recovery_item_reason_prompt(item):
-    return (
-        f"'{item.title}' 항목은 {item.get_component_display()} 회복에 "
-        f"+{item.score_delta}점 도움이 됩니다. "
-        "이 항목이 왜 도움이 되는지 한 문장으로 설명해주세요."
-    )
-
-
 def report_strength_weakness_prompt(trip, result):
     return (
         f"여정 회복 결과: 착륙 시점 {trip.actual_score}점 → 최종 {trip.current_score}점. "

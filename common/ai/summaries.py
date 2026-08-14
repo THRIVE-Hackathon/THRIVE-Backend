@@ -13,11 +13,6 @@ def get_score_diff_explanation(trip):
     return result["text"] if result["success"] else FALLBACK_MESSAGES["score_diff_explanation"]
 
 
-def get_recovery_item_reason(item):
-    result = generate_text(prompts.SYSTEM_PROMPT, prompts.recovery_item_reason_prompt(item))
-    return result["text"] if result["success"] else FALLBACK_MESSAGES["recovery_item_reason"]
-
-
 def get_report_strength_weakness(trip, result_obj):
     result = generate_text(
         prompts.SYSTEM_PROMPT, prompts.report_strength_weakness_prompt(trip, result_obj)
