@@ -12,8 +12,6 @@ urlpatterns = [
         name="inflight_check_adjust",
     ),
     path("<int:trip_id>/checks/sync/", views.inflight_check_sync, name="inflight_check_sync"),
-    path("<int:trip_id>/plan/", views.recovery_plan_view, name="plan"),
-    path("<int:trip_id>/items/<int:item_id>/toggle/", views.recovery_check_toggle, name="item_toggle"),
     path("<int:trip_id>/condition/", views.daily_condition_view, name="daily_condition"),
     path("<int:trip_id>/guide/", views.before_guide_view, name="before_guide"),
     path("<int:trip_id>/items/<int:item_id>/<str:action>/", views.recovery_item_adjust, name="item_adjust"),

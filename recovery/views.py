@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.contrib import messages
-from common.services.recovery import generate_recovery_items, CHECK_TYPE_INPUT_MODE, get_inflight_tips, get_layover_tips, RECOVERY_ITEM_CATALOG
+from common.services.recovery import CHECK_TYPE_INPUT_MODE, get_inflight_tips, get_layover_tips, RECOVERY_ITEM_CATALOG
 from common.services.score import clamp_score
 from common.services.timezone import to_timezone
 from trips.services import refresh_trip_status
@@ -85,55 +85,6 @@ def inflight_check_sync(request, trip_id):
     return JsonResponse({"counts": updated_counts})
 
 DAILY_RECOVERY_LIMIT = 15
-
-@login_required
-def recovery_plan_view(request, trip_id):
-    trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
-    refresh_trip_status(trip)
-    items = generate_recovery_items(trip)
-
-    now = timezone.now()
-    upcoming = [item for item in items if item.status == RecoveryItem.Status.PENDING]
-    current_item = upcoming[0] if upcoming else None
-
-    context = {"trip": trip, "items": items, "current_item": current_item}
-    return render(request, "recovery/plan.html", context)
-
-
-@login_required
-def recovery_check_toggle(request, trip_id, item_id):
-    trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
-    item = get_object_or_404(RecoveryItem, pk=item_id, trip=trip)
-
-    if item.status == RecoveryItem.Status.PENDING:
-        applied_today = (
-            RecoveryItem.objects.filter(
-                trip=trip, local_date=item.local_date, score_applied=True
-            ).aggregate(total=Sum("score_delta"))["total"]
-            or 0
-        )
-
-        item.status = RecoveryItem.Status.COMPLETED
-        item.completed_at = timezone.now()
-
-        if applied_today + item.score_delta <= DAILY_RECOVERY_LIMIT:
-            item.score_applied = True
-            trip.current_score = clamp_score((trip.current_score or 0) + item.score_delta)
-            trip.save(update_fields=["current_score"])
-        else:
-            item.score_applied = False
-            messages.info(request, "오늘은 충분히 하셨어요")
-        item.save()
-    else:
-        item.status = RecoveryItem.Status.PENDING
-        item.completed_at = None
-        if item.score_applied:
-            trip.current_score = clamp_score((trip.current_score or 0) - item.score_delta)
-            trip.save(update_fields=["current_score"])
-        item.score_applied = False
-        item.save()
-
-    return redirect("recovery:plan", trip_id=trip.pk)
 
 CONDITION_CHOICES = [
     (5, "아주 좋아요"),
