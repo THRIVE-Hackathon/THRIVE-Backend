@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from recovery.models import RecoveryItem
 
-from .models import City, Trip
+from trips.models import Trip, Airport
 
 
 class TripListAndCalendarTests(TestCase):
@@ -14,20 +14,24 @@ class TripListAndCalendarTests(TestCase):
             email="user@example.com",
             password="StrongPass123!",
         )
-        self.origin = City.objects.create(
-            name_ko="인천",
+        self.origin = Airport.objects.create(
+            iata_code="ICN",
+            name_ko="인천국제공항",
+            city_name="인천",
             country_code="KR",
             timezone="Asia/Seoul",
         )
-        self.destination = City.objects.create(
-            name_ko="파리",
+        self.destination = Airport.objects.create(
+            iata_code="CDG",
+            name_ko="샤를 드골 공항",
+            city_name="파리",
             country_code="FR",
             timezone="Europe/Paris",
         )
         self.trip = Trip.objects.create(
             user=self.user,
-            origin_city=self.origin,
-            destination_city=self.destination,
+            origin_airport=self.origin,
+            destination_airport=self.destination,
             total_flight_minutes=780,
             next_schedule_after_minutes=1440,
             landing_at=timezone.now(),
@@ -44,7 +48,7 @@ class TripListAndCalendarTests(TestCase):
         response = self.client.get(reverse("trips:list"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "인천 -&gt; 파리")
+        self.assertContains(response, "ICN → CDG")
         self.assertContains(response, "회복 중")
         self.assertContains(response, "예상 44")
         self.assertContains(response, "목표 75")

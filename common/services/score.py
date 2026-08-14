@@ -5,7 +5,8 @@ def clamp_score(value):
 def calculate_target_score(actual_score, remaining_minutes):
     if actual_score is None:
         return None
-    recoverable = max(0, remaining_minutes // 240) * 6
+    capped_minutes = min(remaining_minutes, 3 * 24 * 60)
+    recoverable = max(0, capped_minutes // 240) * 6
     return clamp_score(actual_score + recoverable)
 
 SLEEP_PENALTY_PER_TZ_HOUR = 2
@@ -49,9 +50,9 @@ def calculate_expected_score(total_flight_minutes, timezone_diff_minutes, layove
 
 CHECK_TYPE_TO_COMPONENT = {
     "water": "hydration",
-    "walk": "circulation",
     "stretch": "circulation",
     "moisturize": "skin",
+    "sleep": "sleep",
 }
 OFFSET_PER_CHECK_COUNT = 1
 

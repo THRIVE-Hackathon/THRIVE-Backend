@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-from .models import City, Trip
+from .models import Airport, Trip
 
 
-@admin.register(City)
+@admin.register(Airport)
 class CityAdmin(admin.ModelAdmin):
     list_display = ["name_ko", "country_code", "timezone", "active"]
     list_filter = ["active", "country_code"]
@@ -14,8 +14,8 @@ class CityAdmin(admin.ModelAdmin):
 class TripAdmin(admin.ModelAdmin):
     list_display = [
         "user",
-        "origin_city",
-        "destination_city",
+        "origin_airport",
+        "destination_airport",
         "status",
         "expected_score",
         "actual_score",
@@ -23,6 +23,6 @@ class TripAdmin(admin.ModelAdmin):
         "created_at",
     ]
     list_filter = ["status", "layover_count", "travel_direction"]
-    search_fields = ["user__email", "origin_city__name_ko", "destination_city__name_ko"]
+    search_fields = ["user__email", "origin_airport__name_ko", "destination_airport__name_ko"]
 
 # Register your models here.
