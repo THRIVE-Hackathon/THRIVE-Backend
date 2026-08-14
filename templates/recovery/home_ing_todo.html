@@ -1,10 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% load dict_extras %}
+{% block content %}
+<section class="panel">
+  <span class="badge">✈️ 비행 중</span>
+  <h1>유저님, 비행 중 컨디션 관리 함께해요.</h1>
+   <div class="checklist" id="checklist" data-trip-id="{{ trip.id }}">
+    {% for check_type, check in checks.items %}
+    <article class="check-item" data-check-type="{{ check_type }}" data-input-mode="{{ input_modes|dict_get:check_type }}">
+      <div>
+        <strong>
+          {% if check_type == "water" %}물 100ml 마시기
+          {% elif check_type == "stretch" %}팔·다리 스트레칭하기
+          {% elif check_type == "moisturize" %}피부 보습하기
+          {% elif check_type == "sleep" %}6시간 취침하기
+          {% endif %}
+        </strong>
+      </div>
+
+      {% if input_modes|dict_get:check_type == "toggle" %}
+        <button type="button" class="check-toggle-btn {% if check.count > 0 %}is-checked{% endif %}">
+          {% if check.count > 0 %}완료됨{% else %}체크{% endif %}
+        </button>
+      {% else %}
+        <div class="stepper">
+          <button type="button" class="check-btn" data-action="decrement">-</button>
+          <span class="check-count">{{ check.count }}</span>
+          <button type="button" class="check-btn" data-action="increment">+</button>
+        </div>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+
+  <p class="hint">💡 팁: 각 항목을 탭할 때마다 횟수가 기록됩니다. 네트워크가 없어도 자동 저장됩니다.</p>
+</section>
+{% endblock %}

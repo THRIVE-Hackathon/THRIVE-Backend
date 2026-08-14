@@ -1,10 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <div class="modal-header">
+    <h1>착륙 점수 확인</h1>
+    <a href="{% url 'trips:home' %}">✕</a>
+  </div>
+
+  <h2>컨디션 확인</h2>
+  {% if trip.summary_text %}<p class="ai-summary">{{ trip.summary_text }}</p>{% endif %}
+
+  <div class="score-compare">
+    <div><span>예상</span><strong>{{ trip.expected_score }}</strong></div>
+    <span>✈️</span>
+    <div><span>현재</span><strong>{{ trip.current_score }}</strong></div>
+  </div>
+
+  <div class="score-breakdown">
+    <div class="score-bar"><span>수면·리듬</span><span>+{{ trip.score_breakdown.sleep }}점</span></div>
+    <div class="score-bar"><span>순환</span><span>+{{ trip.score_breakdown.circulation }}점</span></div>
+    <div class="score-bar"><span>수면·리듬</span><span>{{ trip.score_breakdown.hydration }}점</span></div>
+    <div class="score-bar"><span>피부</span><span>+{{ trip.score_breakdown.skin }}점</span></div>
+  </div>
+
+  <p>목표 점수</p>
+  <p class="score-headline"><strong>{{ trip.target_score }}</strong> / 현재 {{ trip.current_score }}점</p>
+  <p class="muted">앞으로 {{ trip.next_schedule_after_minutes|div_minutes_to_days }}일 간 함께 회복 점수를 올려봐요.</p>
+
+  <form method="post" action="{% url 'trips:start_recovery' trip.id %}">
+  {% csrf_token %}
+  <button type="submit" class="button-primary">회복 루틴 실행</button>
+  </form>
+</section>
+{% endblock %}

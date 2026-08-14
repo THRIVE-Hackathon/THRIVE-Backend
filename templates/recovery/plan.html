@@ -4,34 +4,127 @@
 
 {% block content %}
 <section class="panel">
-  <h1>회복 계획</h1>
-  <p class="muted">지금 해야 할 항목을 확인하고 체크하세요</p>
+  <span class="badge">✈️ 비행 후</span>
+    <h1>유저님, 회복 루틴 종료까지 {{ remaining_hours }}시간 남았어요.</h1>
 
-  <p class="label">실측 회복 점수</p>
-  <p class="score-headline"><strong>{{ trip.current_score }}</strong></p>
-  <p class="muted">목표 점수 {{ trip.target_score }}점 · 지금부터 꾸준히 체크하면 도달할 수 있어요</p>
+    <p class="label">회복 루틴</p>
+    <p class="score-headline"><strong>{{ trip.current_score }}</strong> / 목표 {{ trip.target_score }}점</p>
+    <p class="muted">비행 중 관리를 통해 100점을 달성할 수 있어요.</p>
 
-  <div class="recovery-list">
-    {% for item in items %}
-      <form method="post" action="{% url 'recovery:item_toggle' trip.id item.id %}" class="recovery-item {% if item.status == 'completed' %}is-checked{% endif %}">
-        {% csrf_token %}
-        <button type="submit" class="recovery-check">
+  <div class="recovery-list" id="recovery-list" data-trip-id="{{ trip.id }}">
+  {% for item in items %}
+    <article class="recovery-item" data-item-id="{{ item.id }}" data-mode="{{ item.mode }}">
+      <span class="recovery-title">{{ item.title }}</span>
+      {% if item.mode == "counter" %}
+        <div class="stepper">
+          <button type="button" class="recovery-btn" data-action="decrement">-</button>
+          <span class="recovery-count">{{ item.count }}</span>
+          <button type="button" class="recovery-btn" data-action="increment">+</button>
+        </div>
+      {% else %}
+        <button type="button" class="recovery-toggle-btn {% if item.status == 'completed' %}is-checked{% endif %}">
           {% if item.status == "completed" %}✓{% else %}○{% endif %}
         </button>
-        <span class="recovery-title">{{ item.title }}</span>
-        <span class="recovery-delta">+{{ item.score_delta }}점</span>
-      </form>
-    {% empty %}
-      <p class="empty">아직 생성된 회복 항목이 없어요.</p>
-    {% endfor %}
+      {% endif %}
+    </article>
+  {% endfor %}
+</div>
+
+<script>
+(function () {
+  const container = document.getElementById("recovery-list");
+  const tripId = container.dataset.tripId;
+  const storageKey = `thrive_pending_recovery_${tripId}`;
+
+  function getCsrfToken() {
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? match[1] : "";
+  }
+  function loadPending() {
+    try { return JSON.parse(localStorage.getItem(storageKey)) || {}; }
+    catch (e) { return {}; }
+  }
+  function savePending(p) { localStorage.setItem(storageKey, JSON.stringify(p)); }
+
+  function flushPending() {
+    const pending = loadPending();
+    if (!Object.values(pending).some(v => v !== 0)) return;
+    fetch(`/recovery/${tripId}/items/sync/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken() },
+      body: JSON.stringify({ deltas: pending }),
+    })
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(data => {
+        savePending({});
+        Object.entries(data.items).forEach(([itemId, info]) => {
+          const item = container.querySelector(`[data-item-id="${itemId}"]`);
+          if (!item) return;
+          if (item.dataset.mode === "counter") {
+            item.querySelector(".recovery-count").textContent = info.count;
+          } else {
+            const btn = item.querySelector(".recovery-toggle-btn");
+            const checked = info.status === "completed";
+            btn.classList.toggle("is-checked", checked);
+            btn.textContent = checked ? "✓" : "○";
+          }
+        });
+      })
+      .catch(() => {});
+  }
+
+  container.querySelectorAll(".recovery-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const item = btn.closest(".recovery-item");
+      const itemId = item.dataset.itemId;
+      const delta = btn.dataset.action === "increment" ? 1 : -1;
+      const countEl = item.querySelector(".recovery-count");
+      countEl.textContent = Math.max(0, parseInt(countEl.textContent, 10) + delta);
+      const pending = loadPending();
+      pending[itemId] = (pending[itemId] || 0) + delta;
+      savePending(pending);
+      if (navigator.onLine) flushPending();
+    });
+  });
+
+  container.querySelectorAll(".recovery-toggle-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const item = btn.closest(".recovery-item");
+      const itemId = item.dataset.itemId;
+      const isChecked = btn.classList.contains("is-checked");
+      const delta = isChecked ? -1 : 1;
+      btn.classList.toggle("is-checked");
+      btn.textContent = isChecked ? "○" : "✓";
+      const pending = loadPending();
+      pending[itemId] = (pending[itemId] || 0) + delta;
+      savePending(pending);
+      if (navigator.onLine) flushPending();
+    });
+  });
+
+  window.addEventListener("online", flushPending);
+  setInterval(flushPending, 15000);
+  flushPending();
+})();
+</script>
+
+  <a href="{% url 'recovery:daily_condition' trip.id %}" class="button-primary">오늘 컨디션 기록</a>
+  <a href="{% url 'trips:calendar' trip.id %}">회복 가이드 캘린더로 내보내기</a>
+  <p class="hint">내보내기에 실패했다면 잠시 후 다시 시도해 주세요.</p>
+
+  <p class="label">컨디션 점수</p>
+  <div class="score-compare">
+    <div><span>현재</span><strong>{{ trip.current_score }}</strong></div>
+    <span>✈️</span>
+    <div><span>목표</span><strong>{{ trip.target_score }}</strong></div>
+  </div>
+  <div class="score-breakdown">
+    <div class="score-bar"><span>수면·리듬</span><span>{{ trip.score_breakdown.sleep }}점</span></div>
+    <div class="score-bar"><span>순환</span><span>{{ trip.score_breakdown.circulation }}점</span></div>
+    <div class="score-bar"><span>수분</span><span>{{ trip.score_breakdown.hydration }}점</span></div>
+    <div class="score-bar"><span>피부</span><span>{{ trip.score_breakdown.skin }}점</span></div>
   </div>
 
-  <p class="label">오늘의 컨디션</p>
-  <p class="muted">컨디션을 기록하면 리포트 해석이 더 정확해져요</p>
-  <a href="{% url 'recovery:daily_condition' trip.id %}">기록하기</a>
-
-  <a href="{% url 'trips:calendar' trip.id %}" class="button-primary">캘린더에 내보내기 (.ics)</a>
-  <p class="hint">내보내기에 실패했다면 잠시 후 다시 시도해 주세요.</p>
   <p class="disclaimer">이 점수는 의학적 진단이 아닌 참고 지표입니다</p>
 </section>
 {% endblock %}

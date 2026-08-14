@@ -6,12 +6,34 @@
 <section class="panel">
   <div class="section-header">
     <h1>여정 등록</h1>
+    <span class="muted">1 / 2단계</span>
   </div>
 
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">다음</button>
+
+    <p>출발 공항</p>
+    {{ form.origin_airport }}
+
+    <p>도착 공항</p>
+    {{ form.destination_airport }}
+
+    <p>경유 여부</p>
+    {{ form.layover_count }}
+
+    <p>대기 시간 입력</p>
+    {{ form.max_layover_minutes }}
+
+    {% if form.non_field_errors %}
+      <p class="error">{{ form.non_field_errors }}</p>
+    {% endif %}
+
+    <p class="hint">
+      총 비행시간이 6시간 미만인 여정은 등록 불가.<br>
+      경유 없음을 선택한 경우, 대기 시간 인풋 필드 활성화 안 됨.
+    </p>
+
+    <button type="submit" class="button-primary">다음</button>
   </form>
 </section>
 {% endblock %}

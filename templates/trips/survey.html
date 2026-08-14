@@ -1,10 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}장거리 비행 여부 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="section-header">
+    <h1>장거리 비행 여부</h1>
+  </div>
+  <p class="muted">최근 1년 사이, 6시간 이상의 비행 경험이 있으신가요?</p>
+
+  <form method="post" id="survey-form">
+    {% csrf_token %}
+
+    <div class="choice-group">
+      <label><input type="radio" name="has_recent_flight_experience" value="false"> 없음</label>
+      <label><input type="radio" name="has_recent_flight_experience" value="true" checked> 있음</label>
+    </div>
+
+    <div id="experience-fields">
+      <p>마지막 비행 일자</p>
+      <input type="date" name="last_flight_date">
+
+      <p>총 비행 시간 (시간 단위)</p>
+      <input type="number" name="last_flight_hours" min="0">
+
+      <p>평소 컨디션</p>
+      <p class="muted">평소 이동 거리 및 시간이 어느 정도의 영향력을 끼치나요?</p>
+      {% for value, label in impact_choices %}
+        <label class="radio-option">
+          <input type="radio" name="typical_impact" value="{{ value }}">
+          {{ label }}
+        </label>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="button-primary">확인</button>
+  </form>
+</section>
+
+<script>
+  const radios = document.querySelectorAll('input[name="has_recent_flight_experience"]');
+  const fields = document.getElementById('experience-fields');
+  function toggleFields() {
+    const selected = document.querySelector('input[name="has_recent_flight_experience"]:checked');
+    fields.style.display = selected && selected.value === 'true' ? 'block' : 'none';
+  }
+  radios.forEach(r => r.addEventListener('change', toggleFields));
+  toggleFields();
+</script>
+{% endblock %}

@@ -13,6 +13,7 @@
     {% if request.user.is_authenticated %}
       <nav class="nav">
         <a href="{% url 'trips:list' %}">기록</a>
+        <a href="{% url 'trips:home' %}">홈</a>
         <a href="{% url 'accounts:profile' %}">프로필</a>
         <a href="{% url 'accounts:settings' %}">설정</a>
         <a href="{% url 'accounts:logout' %}">로그아웃</a>

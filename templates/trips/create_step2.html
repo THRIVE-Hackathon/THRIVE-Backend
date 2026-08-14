@@ -1,10 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}비행 시간 정보 - THRIVE{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="section-header">
+    <h1>비행 시간 정보</h1>
+    <span class="muted">2 / 2단계</span>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <p>출발 시간</p>
+    {{ form.departure_at }}
+
+    <p>도착 시간</p>
+    {{ form.arrival_at }}
+
+    <p>여행 기간</p>
+    {{ form.trip_duration_days }}
+
+    {% if form.non_field_errors %}
+      <p class="error">{{ form.non_field_errors }}</p>
+    {% endif %}
+
+    <p class="hint">
+      총 비행시간이 6시간 미만인 여정은 등록 불가.<br>
+      최대 3일 간 도움(여행 기간이 일주일이어도 3일 활성화)
+    </p>
+
+    <button type="submit" class="button-primary">다음</button>
+  </form>
+</section>
+{% endblock %}

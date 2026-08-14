@@ -1,10 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}THRIVE{% endblock %}
+{% block content %}
+<section class="panel">
+  <p class="disclaimer">의학적 진단이 아닌 참고 지표입니다</p>
+  <h1>착륙 시점 예상 점수</h1>
+  <p class="score-headline"><strong>{{ trip.expected_score }}</strong></p>
+  <p class="muted">기내 관리에 따라 실측 점수는 달라질 수 있어요</p>
+  {% if trip.summary_text %}<p class="ai-summary">{{ trip.summary_text }}</p>{% endif %}
 
-</body>
-</html>
+  <h2>요소별 예상 감점</h2>
+  <div class="score-breakdown">
+    <div class="score-bar"><span>수면·리듬</span><span>{{ trip.score_breakdown.sleep }}점</span></div>
+    <div class="score-bar"><span>순환</span><span>{{ trip.score_breakdown.circulation }}점</span></div>
+    <div class="score-bar"><span>수분</span><span>{{ trip.score_breakdown.hydration }}점</span></div>
+    <div class="score-bar"><span>피부</span><span>{{ trip.score_breakdown.skin }}점</span></div>
+  </div>
+
+  <h2>비행 일정</h2>
+  <div class="route-card">
+    <span>{{ trip.origin_airport.iata_code }}</span>
+    <span class="muted">{{ trip.origin_airport.name_ko }}</span>
+    <span>✈</span>
+    <span>{{ trip.destination_airport.iata_code }}</span>
+    <span class="muted">{{ trip.destination_airport.name_ko }}</span>
+  </div>
+  <ul class="flight-timeline">
+    <li>출발 {{ departure_local|date:"n월 j일(D) H:i" }}</li>
+    {% if trip.layover_count != "none" %}
+      <li class="muted">
+        경유 {{ trip.get_layover_count_display }}
+        {% if trip.max_layover_minutes %}({{ trip.max_layover_minutes|div_minutes_to_hours }}시간 대기){% endif %}
+      </li>
+    {% endif %}
+    <li class="score-headline">총 {{ flight_hours }}시간 00분 비행</li>
+    <li>도착 {{ arrival_local|date:"n월 j일(D) H:i" }}</li>
+  </ul>
+  <a href="{% url 'trips:edit_start' trip.id %}">비행 일정 수정하기</a>
+
+  <a href="{% url 'trips:calendar' trip.id %}">회복 가이드 캘린더로 내보내기</a>
+  <a href="{% url 'recovery:before_guide' trip.id %}">회복 가이드 확인</a>
+</section>
+{% endblock %}
