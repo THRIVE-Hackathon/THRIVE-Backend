@@ -42,6 +42,8 @@ def get_or_create_recovery_items(trip):
     if trip.recovery_items.exists():
         return list(trip.recovery_items.all())
 
+    now = timezone.now()
+
     items = [
         RecoveryItem(
             trip=trip,
@@ -50,6 +52,7 @@ def get_or_create_recovery_items(trip):
             component=entry["component"],
             score_delta=entry["score_delta"],
             local_date=timezone.localdate(),
+            scheduled_at=now,
         )
         for key, entry in RECOVERY_ITEM_CATALOG.items()
     ]

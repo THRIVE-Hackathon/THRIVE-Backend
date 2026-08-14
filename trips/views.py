@@ -330,7 +330,7 @@ def trip_home_view(request):
             active_trip.save()
             return render(request, "recovery/ing_score.html", {"trip": active_trip})
 
-        return render(request, "recovery/inflight_check.html", _build_inflight_context(active_trip))
+        return render(request, "recovery/ing_score.html", {"trip": active_trip})
 
     items = get_or_create_recovery_items(active_trip)
     for item in items:
