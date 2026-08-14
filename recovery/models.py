@@ -6,9 +6,13 @@ from trips.models import Trip
 class InflightCheck(models.Model):
     class CheckType(models.TextChoices):
         WATER = "water", "물 마심"
-        WALK = "walk", "걷기"
         STRETCH = "stretch", "스트레칭"
         MOISTURIZE = "moisturize", "보습"
+        SLEEP = "sleep", "6시간 취침하기"
+
+    class InputMode(models.TextChoices):
+        COUNTER = "counter", "카운터"
+        TOGGLE = "toggle", "토글"
 
     trip = models.ForeignKey(
         Trip,
@@ -50,10 +54,12 @@ class RecoveryItem(models.Model):
         verbose_name="여정",
     )
     title = models.CharField("항목명", max_length=100)
+    key = models.CharField("항목 키", max_length=30, blank=True)  
+    count = models.PositiveSmallIntegerField("카운트", default=0)
     component = models.CharField("요소", max_length=20, choices=Component.choices)
     scheduled_at = models.DateTimeField("예정 시각")
     local_date = models.DateField("현지 날짜")
-    score_delta = models.PositiveSmallIntegerField("상승 점수")
+    score_delta = models.DecimalField("상승 점수", max_digits=4, decimal_places=2)
     reason_text = models.CharField("이유 문구", max_length=255, blank=True)
     status = models.CharField(
         "상태",
