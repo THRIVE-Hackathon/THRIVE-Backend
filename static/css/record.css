@@ -1,0 +1,226 @@
+/* ===== record.css : 기록 탭 전용 스타일 =====
+ * 공통 토큰은 variables.css, 공통 컴포넌트(.btn/.card/.app-header/.app-tabbar)는
+ * common.css 를 그대로 재사용한다. 지난 회복 리포트 화면의 점수 요약·추이·요소분석·
+ * 설문 문구 등은 home.css 를 함께 로드해 재사용한다(회복 리포트와 동일 컴포넌트).
+ */
+
+/* ============================================================
+ * 0) 섹션 제목 (기록 리스트)
+ *    "진행 중 여정" / "지난 여정" 사이 간격은 .app__body > * + * (40px)로 유지.
+ * ============================================================ */
+.record-section__title {
+  margin-bottom: var(--space-5);
+}
+
+.trip-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-bottom: 48px;
+}
+
+/* ============================================================
+ * 1) 진행 중 여정 카드 (.flight-card)
+ *    상단: 출발/도착 공항(코드 + 한글명) + 가운데 이륙 아이콘
+ *    하단: 연보라 밴드에 출발일시 · 총 비행시간 · 경유 요약
+ * ============================================================ */
+.flight-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.flight-card__route {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4) var(--space-4);
+}
+.flight-card__point {
+  text-align: center;
+  min-width: 0;
+}
+.flight-card__code {
+  font-size: var(--fs-heading-2);
+  line-height: var(--lh-heading-1);
+  letter-spacing: var(--ls-heading-1);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.flight-card__airport {
+  margin-top: var(--space-1);
+  font-size: var(--fs-body-3);
+  color: var(--color-text);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 가운데 이륙 아이콘: 청록 */
+.flight-card__plane {
+  color: var(--color-cyan-500);
+  display: inline-flex;
+}
+.flight-card__plane svg {
+  width: 32px;
+  height: 32px;
+}
+/* 하단 요약 밴드 */
+.flight-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  /* 카드 안쪽에 좌·우·아래 여백을 둬서 '띠'처럼 띄운다 */
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-violet-100);
+  color: var(--color-violet-700);
+  /* 요약 문구: 한 줄 유지되게 살짝 축소 / SemiBold */
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: -0.4px;
+  font-weight: 600;
+  text-align: center;
+}
+.flight-card__sep {
+  color: var(--color-violet-300);
+  font-weight: 400;
+}
+
+/* ============================================================
+ * 2) 여정 카드 (.trip-card) — 리스트 항목 & 리포트 상단 요약 공용
+ *    왼쪽(main): 노선(코드+도시) + 메타(일자·비행시간·경유)
+ *    오른쪽(score): 옅은 회색 면 + "점수" 라벨 + 큰 보라 점수
+ *    리스트에서는 <a class="trip-card"> 로 써서 상세로 이동한다.
+ * ============================================================ */
+.trip-card {
+  display: flex;
+  align-items: stretch;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+/* 링크형(리스트)일 때만 눌림 힌트 */
+a.trip-card:hover {
+  border-color: var(--color-accent-subtle);
+}
+a.trip-card:active {
+  background: var(--color-surface-subtle);
+}
+
+.trip-card__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+.trip-card__route {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.trip-card__point {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.trip-card__code {
+  font-size: var(--fs-heading-2);
+  line-height: var(--lh-heading-2);
+  letter-spacing: var(--ls-heading-2);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.trip-card__city {
+  font-size: var(--fs-caption-1);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+/* 노선 방향 삼각형: 보라 */
+.trip-card__arrow {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: var(--color-primary);
+  align-self: center;
+}
+.trip-card__meta {
+  font-size: var(--fs-caption-1);
+  color: var(--color-gray-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trip-card__meta-sep {
+  margin: 0 6px;
+  color: var(--color-gray-300);
+}
+
+/* 오른쪽 점수 블록 */
+.trip-card__score {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 78px;
+  padding: var(--space-3);
+  background: var(--color-surface-subtle); /* 옅은 회색 면 */
+  border-left: 1px solid var(--color-border);
+}
+.trip-card__score-label {
+  font-size: var(--fs-caption-1);
+  line-height: var(--lh-caption-1);
+  letter-spacing: var(--ls-caption-1);
+  color: var(--color-text-muted);
+}
+.trip-card__score-value {
+  font-size: var(--fs-heading-1);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--color-accent); /* violet-600 */
+}
+
+/* ============================================================
+ * 3) 지난 회복 리포트 — 상단 날짜 타이틀
+ * ============================================================ */
+.record-report__date {
+  margin-bottom: var(--space-5);
+}
+
+/* ============================================================
+ * 4) 설문 결과 (읽기전용) — 저장된 응답을 그대로 노출
+ *    회복 리포트의 설문 선택(.survey-option 선택 상태)과 같은 톤이지만,
+ *    입력이 아니라 결과 표시이므로 전체 폭 단일 박스로 둔다.
+ * ============================================================ */
+.survey-result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-violet-200);
+  color: var(--color-violet-900);
+  /* 응답 문구: body-2 / 700 */
+  font-size: var(--fs-body-2);
+  line-height: var(--lh-body-2);
+  letter-spacing: var(--ls-body-2);
+  font-weight: 700;
+  text-align: center;
+}

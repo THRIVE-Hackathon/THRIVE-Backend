@@ -1,0 +1,58 @@
+/* ===== fonts.css =====
+ *
+ * [폰트 파일 준비]
+ *   아래 파일을 내려받아 이 CSS 기준 상대경로 `../fonts/` 폴더에 넣음
+ *
+ *   1) 가변 폰트 1개만 쓰는 경우(권장, 용량↓):
+ *        fonts/SUIT-Variable.woff2
+ *   2) 정적 폰트로 쓰는 경우(가변 폰트 미지원 구형 브라우저 대비):
+ *        fonts/SUIT-Regular.woff2   (400)
+ *        fonts/SUIT-Medium.woff2    (500)
+ *        fonts/SUIT-SemiBold.woff2  (600)
+ *        fonts/SUIT-Bold.woff2      (700)
+ *        fonts/SUIT-ExtraBold.woff2 (800)
+ */
+
+/* ---------- (1) 가변 폰트: 400~800을 한 파일로 커버 ---------- */
+@font-face {
+  font-family: "SUIT Variable";
+  src:
+    local("SUIT Variable"),
+    url("../fonts/SUIT-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;   /* 가변 축 전체 */
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- (2) 정적 폰트 폴백 ----------
+ * 가변 폰트를 쓰지 않거나, 지원 안 되는 환경을 위한 개별 두께
+ * (1)만 써도 되면 아래 블록은 지워도 ok
+ */
+@font-face {
+  font-family: "SUIT";
+  src: local("SUIT Regular"), url("../fonts/SUIT-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "SUIT";
+  src: local("SUIT SemiBold"), url("../fonts/SUIT-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "SUIT";
+  src: local("SUIT Bold"), url("../fonts/SUIT-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "SUIT";
+  src: local("SUIT ExtraBold"), url("../fonts/SUIT-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
