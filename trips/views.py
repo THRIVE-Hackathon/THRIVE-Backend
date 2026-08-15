@@ -232,14 +232,6 @@ def trip_registration_cancel_view(request):
     request.session.pop("trip_draft", None)
     return redirect("trips:home")
 
-DISRUPTION_CHOICES = [
-    (0, "0점 — 평소처럼 다 했어요"),
-    (1, "1점 — 거의 다 했지만 조금 피로했어요"),
-    (2, "2점 — 절반 정도만 했어요"),
-    (3, "3점 — 중요한 일만 겨우 했어요"),
-    (4, "4점 — 거의 아무것도 못 했어요"),
-    (5, "5점 — 이틀 이상 영향을 받았어요"),
-]
 
 @login_required
 def trip_survey_view(request, trip_id):
