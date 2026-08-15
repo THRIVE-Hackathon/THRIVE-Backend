@@ -1,0 +1,362 @@
+/* ===== common.css : 화면 뼈대 + 공통 컴포넌트 =====
+ * 컬러/타이포 확정 반영 버전. 토큰 이름은 variables.css 참고.
+ */
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-3);
+  line-height: var(--lh-body-3);
+  letter-spacing: var(--ls-body-3);
+  font-weight: var(--fw-body-3);
+  color: var(--color-text);
+  background: var(--color-bg);
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------- 앱 프레임 (402px 세로 스택) ---------- */
+.app {
+  width: 100%;
+  max-width: var(--app-width);
+  min-height: 100vh;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: var(--shadow-frame);
+}
+
+/* 헤더/탭바 사이 스크롤되는 본문 영역 */
+.app__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--page-padding-y) var(--page-padding-x);
+}
+.app__body > * + * {
+  margin-top: var(--space-7);
+}
+
+/* ---------- 상단 헤더 ---------- */
+.app-header {
+  flex: 0 0 var(--header-height);
+  height: var(--header-height);
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  padding: 0 var(--space-2);
+  background: var(--color-surface);
+}
+.app-header--bordered {
+  border-bottom: 1px solid var(--color-border);
+}
+.app-header__title {
+  grid-column: 2;
+  text-align: center;
+  font-size: var(--fs-heading-3);
+  line-height: var(--lh-heading-2);
+  letter-spacing: var(--ls-heading-2);
+  font-weight: var(--fw-body-1);
+  color: var(--color-text);
+  /* 길면 말줄임 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 좌/우 아이콘 버튼(44x44 탭 타깃) */
+.app-header__btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+}
+.app-header__btn:hover {
+  background: var(--color-gray-050);
+}
+.app-header__btn--back  { grid-column: 1; justify-self: start; }
+.app-header__btn--close { grid-column: 3; justify-self: end; }
+.app-header__btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ---------- 하단 탭바 ---------- */
+.app-tabbar {
+  flex: 0 0 var(--tabbar-height);
+  height: var(--tabbar-height);
+  padding: 16px 24px 40px 24px;
+  display: flex;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-sizing: border-box;
+}
+
+.app-tabbar__item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* 위 padding(16px) 기준으로 정렬, 컨테이너가 이미 세로 위치를 잡아줌 */
+  gap: 6px;
+  color: var(--color-text-subtle);  /* 비활성: gray-400 (#989da3) */
+  font-size: var(--fs-caption-1);
+  line-height: var(--lh-caption-1);
+  letter-spacing: var(--ls-caption-1);
+}
+.app-tabbar__item .app-tabbar__icon {
+  width: 24px;   /* 아이콘 SVG의 실제 viewBox(24x24)와 동일하게 맞춤 */
+  height: 24px;
+  flex: 0 0 24px; /* flex 자식으로 눌려서 찌그러지지 않도록 고정 */
+  color: currentColor;             /* 아이콘은 fill=currentColor 로 색 상속 */
+}
+.app-tabbar__label {
+  line-height: 1;
+}
+.app-tabbar__item.is-active {
+  color: var(--color-accent);       /* 활성: violet-600 (#693fcf) */
+  font-weight: 600;
+}
+
+/* ---------- 홀더 / 선택 트리거 ----------
+ * 탭하면 선택 화면(공항/도시 등)을 여는 버튼형 필드.
+ * 두 가지 상태:
+ *   기본(빈 값)  : gray-100 테두리 + gray-400 플레이스홀더 텍스트
+ *   채워짐(선택됨): violet-200 테두리 + gray-900 텍스트(SemiBold) -> .is-filled
+ */
+.holder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);       /* gray-100 (#dbdfe5) */
+  border-radius: var(--radius-lg);             /* 12px */
+  font-size: var(--fs-body-2);                 /* 16px */
+  font-family: var(--font-sans);
+  color: var(--color-text-subtle);             /* 플레이스홀더: gray-400 */
+  text-align: left;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.holder__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 오른쪽 chevron (기본은 회색 gray-400) */
+.holder__chevron {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-subtle);
+}
+/* 채워짐(활성) 상태 */
+.holder.is-filled {
+  border-color: var(--color-accent-subtle);    /* violet-200 (#d9b9ff) */
+  color: var(--color-text);                     /* gray-900 검은 텍스트 */
+  font-weight: 600;
+}
+.holder:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- 입력 필드 ---------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.field__label {
+  font-size: var(--fs-body-3);
+  line-height: var(--lh-body-3);
+  letter-spacing: var(--ls-body-3);
+  font-weight: 400;
+  color: var(--color-text);
+}
+.field__input {
+  width: 100%;
+  height: 38px;
+  padding: 0 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-body-3);
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field__input::placeholder {
+  color: var(--color-text-subtle);
+}
+.field__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-opacity-black-100);
+}
+.field__msg {
+  min-height: 18px;
+  font-size: var(--fs-caption-1);
+  line-height: var(--lh-caption-1);
+  letter-spacing: var(--ls-caption-1);
+  color: var(--color-text-muted);
+}
+.field__msg--error {
+  color: var(--color-danger);
+}
+.field__msg.is-ok {
+  color: var(--color-success);
+}
+.field.has-error .field__input {
+  border-color: var(--color-danger);
+}
+.field.has-error .field__input:focus {
+  box-shadow: 0 0 0 3px rgba(218, 57, 68, 0.12);
+}
+
+/* ---------- 버튼 ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  padding: 0 20px;
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-heading-2);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.btn--primary:hover {
+  background: var(--color-primary-hover);
+}
+.btn--block {
+  width: 100%;
+}
+.btn:disabled {
+  color: color-mix(in srgb, var(--color-text-muted) 45%, transparent);
+  background-color: var(--color-disabled);
+  cursor: not-allowed;
+}
+.btn--link {
+  height: auto;
+  padding: 0;
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 500;
+}
+
+/* ---------- 카드 ---------- */
+.card {
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- 공통 포커스 링(키보드) ---------- */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- 유틸 ---------- */
+.text-muted { color: var(--color-text-muted); }
+.text-caption {
+  font-size: var(--fs-caption-1);
+  line-height: var(--lh-caption-1);
+  letter-spacing: var(--ls-caption-1);
+}
+
+/* ---------- 타이포 유틸 ---------- */
+.text-title-1 {
+  font-size: var(--fs-title-1);
+  line-height: var(--lh-title-1);
+  letter-spacing: var(--ls-title-1);
+  font-weight: var(--fw-title-1);
+}
+.text-heading-1 {
+  font-size: var(--fs-heading-1);
+  line-height: var(--lh-heading-1);
+  letter-spacing: var(--ls-heading-1);
+  font-weight: var(--fw-heading-1);
+}
+.text-heading-2 {
+  font-size: var(--fs-heading-2);
+  line-height: var(--lh-heading-2);
+  letter-spacing: var(--ls-heading-2);
+  font-weight: var(--fw-heading-2);
+}
+.text-heading-3 {
+  font-size: var(--fs-heading-3);
+  line-height: var(--lh-heading-3);
+  letter-spacing: var(--ls-heading-3);
+  font-weight: var(--fw-heading-3);
+}
+.text-body-1 {
+  font-size: var(--fs-body-1);
+  line-height: var(--lh-body-1);
+  letter-spacing: var(--ls-body-1);
+  font-weight: var(--fw-body-1);
+}
+.text-body-2 {
+  font-size: var(--fs-body-2);
+  line-height: var(--lh-body-2);
+  letter-spacing: var(--ls-body-2);
+  font-weight: var(--fw-body-2);
+}
+
+/* ------------- 셀렉트 -------------
+ * .field__input 과 동일한 형태. 화살표는 커스텀(SVG)으로 통일
+ */
+.field__select:valid {
+  border-color: var(--color-accent-subtle);
+  color: var(--color-text);
+  font-weight: 600;
+}
+.field__select {
+  width: 100%;
+  height: 38px;
+  padding: 0 36px 0 14px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-body-3);
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23686c72' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+}
+.field__select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-opacity-black-100);
+}
+.field__select:invalid {
+  color: var(--color-text-subtle);
+}
+.field.has-error .field__select {
+  border-color: var(--color-danger);
+}
+.field.has-error .field__select:focus {
+  box-shadow: 0 0 0 3px rgba(218, 57, 68, 0.12);
+}

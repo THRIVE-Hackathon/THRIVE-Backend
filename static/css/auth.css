@@ -1,0 +1,378 @@
+/* ===== auth.css : 인증 화면(로그인 · 회원가입 · 프로필 입력) 전용 스타일 =====
+ * common.css / variables.css 를 수정하지 않기 위한 별도 파일.
+ * 인증 화면은 하단 탭바가 없음(명세서: "A 인증 — 탭바 없음").
+ */
+
+/* ---------- 화면 제목 ---------- */
+.auth-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+.auth-subtitle {
+  color: var(--color-text-muted);
+  font-size: var(--fs-body);
+}
+
+/* 제목 + 수집 목적(부제)을 한 덩어리로 묶어 간격을 좁게 (프로필 A3) */
+.auth-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-head .auth-caption {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text);
+}
+
+/* ---------- 폼 ---------- */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* 서버 통합 오류(계정 없음 · 비밀번호 불일치 등, FA103 예외) */
+.auth-form__error {
+  margin-top: -8px;
+  font-size: var(--fs-caption);
+  color: var(--color-danger);
+}
+
+/* 데모 모드 안내(서버 미연동 시) */
+.auth-form__demo {
+  color: var(--color-text-muted);
+}
+
+/* ---------- 필드 메시지 노출 규칙 ----------
+ * 요청: 입력 전(중립)에는 렌더링하지 않고
+ *       틀림(빨강) / 맞음(초록)일 때만 드러남
+ * → 메시지 요소가 비어 있으면(:empty) 공간도 차지하지 않고 숨김
+ *   JS가 중립 상태에서 textContent 를 "" 로 비우면 자동으로 사라짐
+ * (common.css 의 min-height:18px 예약을 여기서 해제)
+ *
+ * 예외: 프로필 화면의 안내 힌트('2~10자' / '필수 항목입니다')는
+ *       빈 값이 아니라 항상 렌더링됨(중립=회색). :empty 규칙에 걸리지 않음
+ */
+.auth-form .field__msg,
+.auth-form__error {
+  min-height: 0;
+}
+.auth-form .field__msg:empty,
+.auth-form__error:empty {
+  display: none;
+}
+
+/* 충족(초록). 오류(빨강, .field__msg--error)는 common.css에 있음 */
+.field__msg.is-ok {
+  color: #16a34a;
+}
+
+.field__msg--error {
+  margin-top: -6px;
+}
+
+/* 중립(힌트)일 때만 진한 색. 오류(빨강)/충족(초록)은 각 규칙이 이김 */
+.field .field__msg:not(.field__msg--error):not(.is-ok) {
+    color: var(--color-primary);
+}
+
+/* ---------- 회원가입: 약관 동의 ---------- */
+.auth-agree {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.auth-agree__title {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  color: var(--color-text);
+}
+.auth-agree__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--fs-body);
+  color: var(--color-text);
+  cursor: pointer;
+}
+/*
+ * 약관 동의 체크박스: home.css .routine-check 패턴 재사용.
+ * 실제 input은 화면에서 숨기고(접근성/폼전송 유지), .auth-agree__box 로 시각 표현.
+ * 체크마크 아이콘 없이 면(배경) 채움으로만 상태 표시 + 라운드를 더 크게.
+ */
+.auth-agree__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.auth-agree__box {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 4px;
+  background: var(--color-surface);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.auth-agree__input:checked ~ .auth-agree__box {
+  background: var(--color-primary);               /* 체크됨: 면 전체 채움(체크마크 없음) */
+  border-color: var(--color-primary);
+}
+.auth-agree__input:focus-visible ~ .auth-agree__box {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- 하단 안내(계정 없으신가요? 등) ---------- */
+.auth-alt {
+  text-align: center;
+  font-size: var(--fs-caption);
+  color: var(--color-text-muted);
+}
+.auth-alt .btn--link {
+  margin-left: var(--space-1);
+  font-size: var(--fs-label);
+}
+
+/* ---------- 참고 카드 라벨 ---------- */
+.auth-note__label {
+  display: block;
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
+}
+.auth-note {
+  text-align: left;
+  font-size: var(--fs-caption);
+  color: var(--color-text-muted);
+}
+/* =========================================================
+ *  로그인 화면(A1) 전용 — logindefault 디자인 반영
+ *  · 브랜딩(이륙 아이콘 + LANDING + 부제)
+ *  · 플레이스홀더형 큰 라운드 입력(holder 높이 감성)
+ *  · 하단 통합 오류 줄(* …) / 중앙 회원가입 링크
+ *  JS(auth-form.js) 셀렉터(.field/.field__input/.field__msg/.auth-form__error)는
+ *  그대로 두고 시각만 재정의한다.
+ * ========================================================= */
+
+/* 접근성: 화면엔 감추되 스크린리더엔 읽히는 라벨 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 본문을 세로 플렉스로: 브랜딩(상단) → 폼 → 회원가입(하단으로 밀기) */
+.app__body--login {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--space-6);
+}
+/* common.css 의 일괄 40px 간격을 로그인에서는 직접 제어 */
+.app__body--login > * + * {
+  margin-top: 0;
+}
+
+/* ---------- 브랜딩 ---------- */
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-7);
+}
+.auth-brand__icon {
+  color: var(--color-cyan-400);
+  margin-bottom: 24px;
+  line-height: 0;
+}
+.auth-brand__title {
+  font-size: 40px;
+  line-height: var(--lh-title-1);
+  letter-spacing: 0.02em;
+  font-weight: 800;
+  color: var(--color-text);
+}
+.auth-brand__subtitle {
+  font-size: var(--fs-body-3);
+  line-height: var(--lh-body-3);
+  color: var(--color-text-muted);
+}
+
+/* ---------- 로그인 폼: 입력 사이 간격 ---------- */
+.auth-form--login {
+  gap: var(--space-3);
+}
+
+/* =========================================================
+ *  공용: 플레이스홀더형 큰 라운드 입력 (A1·A2·A3 공통)
+ *  holder 감성(52px / radius-lg / gray-100 테두리 / 16px)
+ * ========================================================= */
+.auth-form--tall .field__input {
+  height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border);        /* gray-100 */
+  border-radius: var(--radius-lg);              /* 12px */
+  font-size: var(--fs-body-2);                  /* 16px */
+}
+.auth-form--tall .field__input::placeholder {
+  color: var(--color-text-subtle);              /* gray-400 */
+}
+.auth-form--tall .field__input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-opacity-black-100);
+}
+/* tall 입력의 gray-100 테두리를 이기고 오류 시 빨강으로 */
+.auth-form--tall .field.has-error .field__input {
+  border-color: var(--color-danger);
+}
+
+/* 통합 오류 줄: 디자인의 "* " 접두를 장식으로 부여(문구는 서버/JS가 주입) */
+.auth-form--login .auth-form__error::before,
+.auth-form--profile .auth-form__error::before {
+  content: "* ";
+}
+
+/* 버튼 위 여백은 폼 gap보다 살짝 넓게 */
+.auth-form--login .btn--primary {
+  margin-top: var(--space-7);
+  font-size: var(--fs-heading-2);
+}
+
+/* ---------- 하단 회원가입 ---------- */
+.auth-alt--login {
+  margin-top: 40px;
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
+}
+.auth-alt--login .btn--link {
+  margin-left: 0;
+  color: var(--color-text-muted);   /* 회색 텍스트 */
+  text-decoration: none;            /* 디자인상 밑줄 없음 */
+  font-weight: 500;
+}
+
+/* =========================================================
+ *  회원가입(A2) · 프로필(A3) 공통 — loginjoin1 / loginjoin2 디자인
+ *  · 헤더(회원가입 + X)는 common.css .app-header 재사용
+ *  · 2단계 진행바 / 굵은 라벨 / 하단 고정 액션 버튼
+ * ========================================================= */
+
+/* 본문을 세로 플렉스로: 진행바 → 폼(신축) → 버튼은 폼 안에서 하단 고정 */
+.app__body--signup,
+.app__body--profile {
+  display: flex;
+  flex-direction: column;
+}
+.app__body--signup > * + *,
+.app__body--profile > * + * {
+  margin-top: 0;                       /* common.css 일괄 40px 해제, 직접 제어 */
+}
+
+/* FA304 수집 목적 캡션(A3): 진행바와 첫 항목 사이, 작고 옅게 */
+.app__body--profile > .auth-caption {
+  font-size: var(--fs-caption-1);
+  line-height: var(--lh-caption-1);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-5);
+}
+
+/* ---------- 2단계 진행바 ---------- */
+.auth-steps {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-7);
+}
+.auth-steps__dot {
+  width: 24px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-gray-200);
+}
+.auth-steps__dot.is-active {
+  background: var(--color-primary);    /* violet-500 */
+}
+
+/* ---------- 폼: 세로로 늘려 버튼을 바닥에 고정 ---------- */
+.auth-form--signup,
+.auth-form--profile {
+  flex: 1 1 auto;
+  gap: var(--space-6);                 /* 필드 그룹 사이 넉넉한 간격 */
+}
+.auth-form--signup .btn,
+.auth-form--profile .btn {
+  margin-top: auto;                    /* 체크박스/필드와 크게 벌려 하단으로 */
+}
+
+/* 굵은 라벨(디자인상 각 항목명은 Bold 16px) + 라벨-입력 간격 */
+.auth-form--tall .field {
+  gap: var(--space-3);
+}
+.auth-form--tall .field__label {
+  font-size: var(--fs-body-2);         /* 16px */
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* ---------- 성별: 세그먼트 토글(여성 / 남성) ---------- */
+.segmented {
+  display: flex;
+  gap: var(--space-3);
+}
+.segmented__btn {
+  flex: 1 1 0;
+  height: 52px;
+  border: 1px solid var(--color-border);       /* 미선택: gray-100 테두리 */
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-subtle);             /* 미선택: gray-400 텍스트 */
+  font-size: var(--fs-body-2);
+  font-weight: 600;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease;
+}
+.segmented__btn.is-active {
+  background: var(--color-primary);            /* 선택: violet 채움 */
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);              /* 흰 텍스트 */
+}
+.field.has-error .segmented__btn {
+  border-color: var(--color-danger);
+}
+
+/* ---------- 회원가입: 약관 동의(체크 1건 + 전문 보기) ---------- */
+.auth-form--signup .auth-agree {
+  margin-top: var(--space-7);
+  gap: var(--space-3);
+}
+.auth-agree__more {
+  align-self: flex-start;
+  color: var(--color-text-muted);
+  font-size: var(--fs-caption-1);
+}
+
+/* 숫자 입력의 스핀 버튼 제거(나이 입력을 깔끔하게) */
+.auth-form--profile input[type="number"]::-webkit-outer-spin-button,
+.auth-form--profile input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.auth-form--profile input[type="number"] {
+  -moz-appearance: textfield;
+}
