@@ -1,0 +1,177 @@
+/* ===== variables.css : 디자인 토큰 =====
+ * 구조:
+ *   1) Primitive  : 원본 팔레트/스케일 그대로
+ *   2) Semantic   : 화면에서 실제로 쓰는 의미 단위 토큰
+ *      (Primitive 값이 바뀌어도 Semantic 매핑만 여기서 수정하면 전체 반영됨)
+ *
+ * 폰트: 오프라인 대응을 위해 자체 호스팅으로 전환 -> fonts.css 참조.
+ */
+@import url("./fonts.css");
+
+:root {
+  /* ============================================================
+   * 1) Primitive — color
+   * ============================================================ */
+  --color-base-000: #ffffff;
+  --color-base-999: #000000;
+
+  --color-opacity-white-100: rgba(241, 244, 247, 0.1);
+  --color-opacity-white-200: rgba(241, 244, 247, 0.2);
+  --color-opacity-white-400: rgba(241, 244, 247, 0.4);
+
+  --color-opacity-black-100: rgba(29, 30, 32, 0.1);
+  --color-opacity-black-400: rgba(29, 30, 32, 0.4);
+  --color-opacity-black-800: rgba(29, 30, 32, 0.8);
+
+  --color-gray-050: #f1f4f7;
+  --color-gray-100: #dbdfe5;
+  --color-gray-200: #c8cbd2;
+  --color-gray-300: #b0b5be;
+  --color-gray-400: #989da3;
+  --color-gray-500: #686c72;
+  --color-gray-600: #575b62;
+  --color-gray-700: #424449;
+  --color-gray-800: #313234;
+  --color-gray-900: #1d1e20;
+
+  /* 브랜드 포인트 컬러(violet). 활성 탭·활성 홀더 테두리 등 강조에 사용 */
+  --color-violet-050: #f9f5ff;
+  --color-violet-100: #ebdbff;
+  --color-violet-200: #d9b9ff;
+  --color-violet-300: #b691fa;
+  --color-violet-400: #a480f7;
+  --color-violet-500: #805cec;
+  --color-violet-600: #693fcf;
+  --color-violet-700: #5929ba;
+  --color-violet-800: #4805a3;
+  --color-violet-900: #2e007a;
+
+  --color-cyan-100: #c2eef0;
+  --color-cyan-200: #84e0e2;
+  --color-cyan-400: #14bcb9;
+  --color-cyan-500: #04999c;
+  --color-cyan-600: #007780;
+
+  --color-red-500: #da3944;
+  --color-yellow-200: #fbbd05;
+  --color-green-500: #058765;
+  --color-blue-500: #2771e8;
+
+  /* ============================================================
+   * 2) Semantic — 컴포넌트에서 실제로 참조하는 값
+   * ============================================================ */
+
+  /* 배경 */
+  --color-bg: var(--color-gray-050);
+  --color-surface: var(--color-base-000);
+  --color-surface-subtle: var(--color-gray-050);
+
+  /* 텍스트 */
+  --color-text: var(--color-gray-900);
+  --color-text-muted: var(--color-gray-500);
+  --color-text-subtle: var(--color-gray-400);
+
+  /* 보더 */
+  --color-border: var(--color-gray-100);
+  --color-border-strong: var(--color-gray-200);
+
+  /* 버튼/활성 상태 (violet) */
+  --color-primary: var(--color-violet-500);
+  --color-primary-hover: var(--color-violet-600);
+  --color-on-primary: var(--color-base-000);
+  --color-disabled: var(--color-gray-100);
+
+  /* 강조(Accent) — violet 계열. "선택됨"을 나타낼 때 */
+  --color-accent: var(--color-violet-600);        
+  --color-accent-subtle: var(--color-violet-200);
+  --color-accent-target: var(--color-violet-700);
+
+  /* 링크·상태 컬러 */
+  --color-link: var(--color-gray-500);
+  --color-danger: var(--color-red-500);
+  --color-success: var(--color-green-500);
+  --color-focus: var(--color-blue-500);
+
+  /* --- 레이아웃 --- */
+  --app-width: 402px;
+  --header-height: 56px;
+  --tabbar-height: 102px;
+  --page-padding-x: 20px;
+  --page-padding-y: 20px;
+
+  /* --- 간격 스케일 --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+
+  /* --- 라운드 --- */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* --- 그림자 --- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-frame: 0 8px 40px rgba(0, 0, 0, 0.08);
+
+  /* ============================================================
+   * 3) Typography — typo.pdf 확정 스케일
+   * ============================================================ */
+  --font-sans: "SUIT Variable", "SUIT", -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", Roboto,
+    sans-serif;
+
+  /* Title */
+  --fs-title-1: 26px;
+  --lh-title-1: 36px;
+  --ls-title-1: -0.3px;
+  --fw-title-1: 800;
+
+  /* Heading */
+  --fs-heading-1: 22px;
+  --lh-heading-1: 32px;
+  --ls-heading-1: -0.3px;
+  --fw-heading-1: 700;
+
+  --fs-heading-2: 18px;
+  --lh-heading-2: 28px;
+  --ls-heading-2: -0.3px;
+  --fw-heading-2: 700;
+
+  --fs-heading-3: 16px;
+  --lh-heading-3: 24px;
+  --ls-heading-3: -0.3px;
+  --fw-heading-3: 600;
+
+  /* Body */
+  --fs-body-1: 18px;
+  --lh-body-1: 28px;
+  --ls-body-1: -0.6px;
+  --fw-body-1: 400;
+
+  --fs-body-2: 16px;
+  --lh-body-2: 24px;
+  --ls-body-2: -0.6px;
+  --fw-body-2: 400;
+
+  --fs-body-3: 14px;
+  --lh-body-3: 22px;
+  --ls-body-3: -0.6px;
+  --fw-body-3: 400;
+
+  /* Caption */
+  --fs-caption-1: 12px;
+  --lh-caption-1: 18px;
+  --ls-caption-1: -0.3px;
+  --fw-caption-1: 400;
+
+  /* --- 기존 변수명 별칭 (하위 호환) --- */
+  --fs-title: var(--fs-heading-2);
+  --fs-lg: var(--fs-heading-3);
+  --fs-body: var(--fs-body-3);
+  --fs-label: var(--fs-body-3);
+  --fs-caption: var(--fs-caption-1);
+}

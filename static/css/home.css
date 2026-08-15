@@ -1,0 +1,615 @@
+/* ===== home.css : 홈(비행 후) · 컨디션 기록 · 회복 리포트 전용 스타일 =====
+ * 공통 토큰은 variables.css, 공통 컴포넌트(.btn/.card/.app-header/.app-tabbar)는
+ * common.css 를 그대로 재사용한다. 이 파일은 "홈-여행후" 3개 화면에서만
+ * 쓰는 요소(여정 단계 탭 · 회복 루틴 체크리스트 · 점수 바 · 리포트 차트 등)를 담는다.
+ *
+ * [Django 연동 메모]
+ *   - 이 파일 안에는 로직이 없다. 값(점수/퍼센트/체크 상태)은 전부 템플릿에서
+ *     주입하고(CSS 변수·인라인 style·checked 속성), JS는 UX 향상만 담당한다.
+ */
+
+/* ============================================================
+ * 0) 섹션 공통
+ *    회복 리포트 기준: 회복 점수 요약 -40px- 요소별 분석 -40px- 설문조사.
+ *    일반 형제 선택자(~)를 사용해, 두 섹션 사이에 조건부 블록(예: FS705
+ *    "비교 데이터 10건 미만 시 영역 숨김", 다음 여정 개선안 등)이 들어오거나
+ *    빠지더라도 .home-section 간 간격이 항상 40px로 유지되게 한다.
+ * ============================================================ */
+.home-section ~ .home-section {
+  margin-top: var(--space-7); /* 40px */
+}
+.home-section__title {
+  margin-bottom: var(--space-5); /* 섹션 내부 요소 간 24px */
+}
+
+/* ============================================================
+ * 1) 상단 여정 단계 탭 (비행 전 / 비행 중 / 비행 후)
+ *    ─ [교체 예정] 다른 팀원의 상단 탭 컴포넌트로 통째 교체될 수 있는 영역.
+ *      · 마크업은 index.html 의 <!-- [교체 예정] --> 주석 블록 하나로 격리
+ *      · 스타일은 이 .stage-tab 블록 하나로 격리
+ *      교체 시 이 블록과 HTML 주석 블록만 들어내면 나머지 화면에 영향 없음.
+ * ============================================================ */
+.stage-tab {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  /* 가로 중앙정렬 유지 + 화면과 요소 사이 상·하단 8px 밴드 패딩 */
+  margin: 8px auto;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+.stage-tab__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--color-cyan-200); /* 비활성 아이콘: 옅은 청록 */
+  /* 라벨: caption-1 / 400 / 12px */
+  font-size: var(--fs-caption-1);
+  line-height: var(--lh-caption-1);
+  letter-spacing: var(--ls-caption-1);
+  font-weight: 400;
+  white-space: nowrap;
+}
+.stage-tab__item svg {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  color: currentColor;
+}
+.stage-tab__item.is-active {
+  padding: 0 16px;
+  background: var(--color-cyan-100); /* 활성 pill 배경 */
+  color: var(--color-cyan-600); /* 활성 아이콘/텍스트: 진한 청록 */
+}
+
+/* ============================================================
+ * 2) 인사말 타이틀
+ * ============================================================ */
+.home-greeting {
+  color: var(--color-text);
+}
+.home-greeting__accent {
+  color: var(--color-accent-target);
+}
+
+/* ============================================================
+ * 3) 회복 루틴 (점수 + 체크리스트)
+ * ============================================================ */
+.routine-score {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.routine-score__value {
+  font-size: 40px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--color-accent-target);
+}
+.routine-score__target {
+  /* 목표 점수: body-1 / 400 / 18px */
+  font-size: var(--fs-body-1);
+  line-height: var(--lh-body-1);
+  letter-spacing: var(--ls-body-1);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.routine-caption {
+  margin-top: var(--space-2);
+  color: var(--color-gray-700);
+}
+
+/* --- 체크리스트 --- */
+.routine-list {
+  margin-top: var(--space-5);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+.routine-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-4) 0;
+}
+.routine-item__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* 선택지 문구: heading-2 / 700 / 18px */
+  font-size: var(--fs-heading-2);
+  line-height: var(--lh-heading-2);
+  letter-spacing: var(--ls-heading-2);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* 체크형 아이템: 행 전체가 label (어디를 눌러도 토글) */
+.routine-check {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  cursor: pointer;
+}
+/* 실제 체크박스는 화면에서 숨기되 접근성/폼전송은 유지 */
+.routine-check__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.routine-check__box {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--color-primary);
+  border-radius: 8px;
+  background: var(--color-surface);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+/* 체크됨: primary 버튼과 동일한 배경색으로 꽉 채움 (체크마크 없이 면으로 표현) */
+.routine-check__input:checked ~ .routine-check__box {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.routine-check__input:focus-visible ~ .routine-check__box {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* 카운터형 아이템 (물 N회 / 스트레칭 N회)
+ * − 버튼: 비활성 버튼(.btn:disabled)과 동일한 톤 — gray-100 배경 + gray-400 아이콘
+ * + 버튼: 강조 톤 — violet-100 배경 + violet-600 아이콘 (IconPlus 는 violet-900)
+ * data-step 속성(마크업에 이미 존재)으로 구분해 클래스 변경 없이 스타일링.
+ */
+.counter {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.counter__btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+/* − : 비활성 버튼과 동일 톤 */
+.counter__btn[data-step="-1"] {
+  background: var(--color-gray-100);
+  color: var(--color-gray-400);
+}
+.counter__btn[data-step="-1"]:hover {
+  background: var(--color-gray-200);
+}
+/* + : 강조 톤 */
+.counter__btn[data-step="1"] {
+  background: var(--color-violet-100);
+  color: var(--color-violet-600);
+}
+.counter__btn[data-step="1"]:hover {
+  background: var(--color-violet-200);
+}
+.counter__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.counter__btn svg {
+  width: 20px;
+  height: 20px;
+}
+.counter__value {
+  min-width: 34px;
+  text-align: center;
+  white-space: nowrap;
+}
+.counter__num {
+  font-size: var(--fs-heading-3);
+  font-weight: 700;
+  color: var(--color-accent-target);
+}
+.counter__unit {
+  margin-left: 2px;
+  font-size: var(--fs-body-3);
+  color: var(--color-text-muted);
+}
+
+/* CTA 묶음: [오늘 컨디션 기록] + [캘린더 내보내기]
+ * 상·하단 패딩 16px, 두 요소 간 간격 16px */
+.routine-cta {
+  padding: var(--space-4) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+/* 오늘 컨디션 기록 버튼: heading-2 / 700 / 18px */
+.routine-cta .btn {
+  font-size: var(--fs-heading-2);
+  line-height: var(--lh-heading-2);
+  letter-spacing: var(--ls-heading-2);
+  font-weight: 700;
+}
+
+/* '내보내기' 링크 (가운데 정렬 유지) : body-3 / 400 / 14px */
+.home-export {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: var(--fs-body-3);
+  color: var(--color-text);
+  text-decoration: none;
+  line-height: var(--lh-body-3);
+  letter-spacing: var(--ls-body-3);
+  font-weight: 400;
+}
+
+/* 홈 화면 CTA: 공통 .btn 보다 살짝 크고 둥글게 (디자인 대응) */
+.btn--home {
+  height: 60px;
+  font-size: 18px;
+  border-radius: 16px;
+}
+
+/* ============================================================
+ * 4) 컨디션 점수 — 현재/목표 비교 카드
+ * ============================================================ */
+.score-compare {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-2); /* 상·하 16px / 좌·우 8px */
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.score-compare__col {
+  text-align: center;
+}
+.score-compare__num {
+  /* 점수: display-1 / 800 / 40px */
+  font-size: 40px;
+  line-height: 1.1;
+  font-weight: 800;
+  color: var(--color-gray-600); /* 목표: 회색 */
+}
+.score-compare__num--current {
+  color: var(--color-accent-target);
+}
+.score-compare__cap {
+  margin-top: var(--space-1);
+  /* 작은 글씨: body-3 / 400 / 14px */
+  font-size: var(--fs-body-3);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.score-compare__cap--current {
+  color: var(--color-primary);
+}
+.score-compare__plane {
+  color: var(--color-cyan-500); /* 가운데 이륙 아이콘: 청록 */
+}
+.score-compare__plane svg {
+  width: 40px;
+  height: 40px;
+}
+
+/* ============================================================
+ * 5) 요소별 점수 바 (홈 + 리포트 공용)
+ * ============================================================ */
+.factor-card {
+  margin-top: var(--space-5); /* 섹션 요소 간 24px */
+  padding: var(--space-5) var(--space-5) var(--space-6); /* 상·좌·우 24px / 하 32px */
+  background: var(--color-surface-subtle); /* gray-050 카드면 */
+  border-radius: var(--radius-lg);
+}
+.factor + .factor {
+  margin-top: var(--space-5);
+}
+.factor__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.factor__label {
+  /* 항목: heading-2 / 700 / 18px */
+  font-size: var(--fs-heading-2);
+  line-height: var(--lh-heading-2);
+  letter-spacing: var(--ls-heading-2);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.factor__delta {
+  font-size: var(--fs-body-2);
+  font-weight: 400;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+.factor__delta small {
+  font-size: var(--fs-body-2);
+  font-weight: 400;
+  color: var(--color-text);
+}
+/* 진행 바: track(gray-100) + fill(violet-300). width 는 인라인 style 로 서버 주입 */
+.bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-gray-100);
+  overflow: hidden;
+}
+.bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-violet-300);
+}
+
+/* "이 점수는 어떻게 계산되었나요?" 접이식 (native <details>) */
+.calc-toggle {
+  margin-top: var(--space-5); /* 섹션 요소 간 24px */
+  padding-bottom: var(--space-4);
+}
+.calc-toggle__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  list-style: none;
+  cursor: pointer;
+  /* body-3 / 400 / 14px */
+  font-size: var(--fs-body-3);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.calc-toggle__summary::-webkit-details-marker {
+  display: none;
+}
+.calc-toggle__chevron {
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-subtle);
+  transition: transform 0.2s ease;
+}
+.calc-toggle[open] .calc-toggle__chevron {
+  transform: rotate(180deg);
+}
+.calc-toggle__body {
+  margin-top: var(--space-3);
+  padding-bottom: var(--space-4);
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+ * 6) 하단 안내(면책) 캡션 — 3화면 공용
+ * ============================================================ */
+.disclaimer {
+  display: flex;
+  gap: 6px;
+  color: var(--color-text-subtle);
+  font-size: var(--fs-caption-1);
+  line-height: var(--lh-caption-1);
+  letter-spacing: var(--ls-caption-1);
+  font-weight: 400;
+  margin-top: var(--space-4);
+  padding: var(--space-7) 0;
+}
+.disclaimer__icon {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+}
+
+/* ============================================================
+ * 7) 컨디션 기록 화면 (오늘 컨디션 기록)
+ * ============================================================ */
+.condition-head {
+  margin-bottom: -16px;
+}
+.condition-head__caption {
+  margin-top: var(--space-1);
+  color: var(--color-gray-700);
+}
+.condition-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.condition-option {
+  display: block;
+  position: relative;
+}
+.condition-option__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.condition-option__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-gray-100);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-subtle);
+  font-size: var(--fs-body-2);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+}
+.condition-option__input:checked ~ .condition-option__box {
+  background: var(--color-violet-200); /* 선택: 연보라 */
+  border: 1px solid var(--color-violet-200);
+  color: var(--color-text); /* 진한 텍스트 */
+  font-weight: 700;
+}
+.condition-option__input:focus-visible ~ .condition-option__box {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+/* 저장 버튼: 옵션과 간격을 크게 두고 배치 */
+.condition-save {
+  font-size: 18px;
+  margin-top: var(--space-7);
+}
+
+/* ============================================================
+ * 8) 회복 리포트 화면
+ * ============================================================ */
+.report-title {
+  margin-bottom: var(--space-7);
+}
+.report-summary {
+  text-align: center;
+}
+.report-score {
+  font-size: 40px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--color-cyan-500); /* 최종 점수: 청록 강조 */
+}
+.report-summary__caption {
+  margin-top: var(--space-2);
+  color: var(--color-text);
+}
+
+/* 점수 추이 카드 (예측 → 직후 → 최종) */
+.trend-card {
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-3) var(--space-4);
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-lg);
+}
+.trend-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.trend-legend {
+  margin-top: var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+.trend-legend__col {
+  text-align: center;
+}
+.trend-legend__col:first-child {
+  text-align: center;
+}
+.trend-legend__col:last-child {
+  text-align: center;
+}
+.trend-legend__name {
+  font-size: var(--fs-body-3);
+  font-weight: 400;
+  color: var(--color-text);
+}
+.trend-legend__score {
+  margin-top: 2px;
+  font-size: var(--fs-caption-1);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+/* 요소별 분석 아래 요약 문단 */
+.report-note {
+  font-size: var(--fs-body-1);
+  margin-top: var(--space-4);
+  color: var(--color-text);
+  line-height: var(--lh-body-1);
+}
+
+/* 설문조사 2x2 */
+.survey__question {
+  margin-top: -16px;
+  margin-bottom: var(--space-5);
+  color: var(--color-gray-700);
+}
+.survey__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+.survey-option {
+  display: block;
+  position: relative;
+}
+.survey-option__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.survey-option__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-gray-100);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-subtle);
+  font-size: var(--fs-body-3);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+}
+.survey-option__input:checked ~ .survey-option__box {
+  background: var(--color-violet-200);
+  border-color: var(--color-violet-200);
+  color: var(--color-text);
+  font-weight: 700;
+}
+.survey-option__input:focus-visible ~ .survey-option__box {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* 하단 고정 '확인' 액션 바 */
+.report-actions {
+  bottom: 0;
+  margin: var(--space-5) calc(-1 * var(--page-padding-x)) 0;
+  padding: 0 var(--page-padding-x)
+    calc(var(--page-padding-y) + env(safe-area-inset-bottom, 0px));
+}
+
+/* ============================================================
+ * 9) 본문이 탭바 없이 하단 버튼만 있을 때: body를 세로 flex로
+ *    (컨디션 기록 화면에서 면책 캡션을 아래로 밀어내기)
+ * ============================================================ */
+.app__body--push {
+  display: flex;
+  flex-direction: column;
+}
+.app__body--push .push-bottom {
+  margin-top: 40px;
+  padding-top: var(--space-6);
+}
