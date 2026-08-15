@@ -1,27 +1,60 @@
 {% extends "base.html" %}
 
 {% block title %}회원가입 - THRIVE{% endblock %}
+{% block body_class %}app__body--signup{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block app_header %}
+<header class="app-header">
+  <span></span>
+  <h1 class="app-header__title">회원가입</h1>
+  <a class="app-header__btn app-header__btn--close" href="{% url 'accounts:login' %}" aria-label="닫기">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </a>
+</header>
+{% endblock %}
 
 {% block content %}
-<section class="panel narrow">
-  <h1>회원가입</h1>
+<div class="auth-steps" aria-label="회원가입 진행 단계">
+  <span class="auth-steps__dot is-active"></span>
+  <span class="auth-steps__dot"></span>
+</div>
 
-  <form method="post" class="form">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% for field in form %}
-      <label class="{% if field.field.widget.input_type == 'checkbox' %}checkbox{% endif %}">
-        <span>{{ field.label }}</span>
-        {{ field }}
-        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-        {{ field.errors }}
-      </label>
-    {% endfor %}
-    <button type="submit">다음</button>
-  </form>
+<form method="post" class="auth-form auth-form--signup auth-form--tall" data-auth="signup" novalidate>
+  {% csrf_token %}
+  <div class="field" data-field="email"{% if form.email.errors %} data-server-error="{{ form.email.errors|striptags }}"{% endif %}>
+    <label class="field__label" for="{{ form.email.id_for_label }}">이메일</label>
+    {{ form.email }}
+    <p class="field__msg"></p>
+  </div>
 
-  <p class="switch-link">
-    이미 계정이 있나요? <a href="{% url 'accounts:login' %}">로그인</a>
-  </p>
-</section>
+  <div class="field" data-field="password"{% if form.password1.errors %} data-server-error="{{ form.password1.errors|striptags }}"{% endif %}>
+    <label class="field__label" for="{{ form.password1.id_for_label }}">비밀번호</label>
+    {{ form.password1 }}
+    <p class="field__msg" data-pw-hint></p>
+  </div>
+
+  <div class="field" data-field="password-confirm"{% if form.password2.errors %} data-server-error="{{ form.password2.errors|striptags }}"{% endif %}>
+    <label class="field__label" for="{{ form.password2.id_for_label }}">비밀번호 확인</label>
+    {{ form.password2 }}
+    <p class="field__msg"></p>
+  </div>
+
+  <div class="auth-agree">
+    <label class="auth-agree__row">
+      {{ form.terms_agreed }}
+      <span class="auth-agree__box" aria-hidden="true"></span>
+      <span>{{ form.terms_agreed.label }}</span>
+    </label>
+    {% if form.terms_agreed.errors %}
+      <p class="field__msg field__msg--error">{{ form.terms_agreed.errors|striptags }}</p>
+    {% endif %}
+    <a class="auth-agree__more" href="{% url 'accounts:settings' %}">개인정보 처리방침 보기</a>
+  </div>
+
+  <p class="auth-form__error"{% if form.non_field_errors %} data-server-error="{{ form.non_field_errors|striptags }}"{% endif %}></p>
+  <button type="submit" class="btn btn--primary btn--block">다음</button>
+</form>
 {% endblock %}

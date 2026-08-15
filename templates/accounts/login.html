@@ -1,27 +1,37 @@
 {% extends "base.html" %}
 
 {% block title %}로그인 - THRIVE{% endblock %}
+{% block body_class %}app__body--login{% endblock %}
+{% block tabbar %}{% endblock %}
 
 {% block content %}
-<section class="panel narrow">
-  <h1>로그인</h1>
-  <p class="muted">장거리 비행 후 회복을 이어서 관리합니다.</p>
-
-  <form method="post" class="form">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% for field in form %}
-      <label>
-        <span>{{ field.label }}</span>
-        {{ field }}
-        {{ field.errors }}
-      </label>
-    {% endfor %}
-    <button type="submit">로그인</button>
-  </form>
-
-  <p class="switch-link">
-    계정이 없나요? <a href="{% url 'accounts:signup' %}">회원가입</a>
-  </p>
+<section class="auth-brand" aria-labelledby="login-title">
+  <div class="auth-brand__icon" aria-hidden="true">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+      <path d="M3 13h6l2-7 3 14 2-7h5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h1 class="auth-brand__title" id="login-title">LANDING</h1>
+  <p class="auth-brand__subtitle">장거리 비행 후 회복을 이어서 관리합니다</p>
 </section>
+
+<form method="post" class="auth-form auth-form--login auth-form--tall" data-auth="login" novalidate>
+  {% csrf_token %}
+  <div class="field" data-field="email"{% if form.username.errors %} data-server-error="{{ form.username.errors|striptags }}"{% endif %}>
+    <label class="sr-only" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+    {{ form.username }}
+    <p class="field__msg"></p>
+  </div>
+  <div class="field" data-field="password"{% if form.password.errors %} data-server-error="{{ form.password.errors|striptags }}"{% endif %}>
+    <label class="sr-only" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+    {{ form.password }}
+    <p class="field__msg"></p>
+  </div>
+  <p class="auth-form__error"{% if form.non_field_errors %} data-server-error="{{ form.non_field_errors|striptags }}"{% endif %}></p>
+  <button type="submit" class="btn btn--primary btn--block">로그인</button>
+</form>
+
+<p class="auth-alt auth-alt--login">
+  <a class="btn--link" href="{% url 'accounts:signup' %}">회원가입</a>
+</p>
 {% endblock %}

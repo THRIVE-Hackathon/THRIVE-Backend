@@ -7,23 +7,68 @@ from .models import Profile, User
 
 
 class LoginForm(AuthenticationForm):
-    username = forms.EmailField(label="이메일")
-    password = forms.CharField(label="비밀번호", widget=forms.PasswordInput)
+    username = forms.EmailField(
+        label="이메일",
+        widget=forms.EmailInput(
+            attrs={
+                "class": "field__input",
+                "placeholder": "이메일",
+                "autocomplete": "email",
+            }
+        ),
+    )
+    password = forms.CharField(
+        label="비밀번호",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "field__input",
+                "placeholder": "비밀번호",
+                "autocomplete": "current-password",
+            }
+        ),
+    )
 
 
 class SignUpForm(forms.ModelForm):
     password1 = forms.CharField(
         label="비밀번호",
-        widget=forms.PasswordInput,
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "field__input",
+                "placeholder": "비밀번호",
+                "autocomplete": "new-password",
+            }
+        ),
         help_text="8자 이상 입력해 주세요.",
     )
-    password2 = forms.CharField(label="비밀번호 확인", widget=forms.PasswordInput)
-    terms_agreed = forms.BooleanField(label="개인정보 수집 및 이용에 동의합니다")
+    password2 = forms.CharField(
+        label="비밀번호 확인",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "field__input",
+                "placeholder": "비밀번호 확인",
+                "autocomplete": "new-password",
+            }
+        ),
+    )
+    terms_agreed = forms.BooleanField(
+        label="개인정보 수집 및 이용에 동의합니다",
+        widget=forms.CheckboxInput(attrs={"class": "auth-agree__input"}),
+    )
 
     class Meta:
         model = User
         fields = ["email"]
         labels = {"email": "이메일"}
+        widgets = {
+            "email": forms.EmailInput(
+                attrs={
+                    "class": "field__input",
+                    "placeholder": "이메일",
+                    "autocomplete": "email",
+                }
+            )
+        }
 
     def clean_email(self):
         email = self.cleaned_data["email"].lower()
@@ -58,7 +103,18 @@ class SignUpForm(forms.ModelForm):
 
 
 class ProfileForm(forms.ModelForm):
-    nickname = forms.CharField(label="닉네임", min_length=2, max_length=10)
+    nickname = forms.CharField(
+        label="닉네임",
+        min_length=2,
+        max_length=10,
+        widget=forms.TextInput(
+            attrs={
+                "class": "field__input",
+                "placeholder": "닉네임",
+                "autocomplete": "nickname",
+            }
+        ),
+    )
 
     class Meta:
         model = Profile
@@ -69,5 +125,13 @@ class ProfileForm(forms.ModelForm):
         }
         widgets = {
             "gender": forms.RadioSelect,
-            "age": forms.NumberInput(attrs={"min": 1, "max": 120, "inputmode": "numeric"}),
+            "age": forms.NumberInput(
+                attrs={
+                    "class": "field__input",
+                    "placeholder": "나이",
+                    "min": 1,
+                    "max": 120,
+                    "inputmode": "numeric",
+                }
+            ),
         }

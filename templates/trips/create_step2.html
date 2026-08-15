@@ -1,36 +1,60 @@
 {% extends "base.html" %}
 
 {% block title %}비행 시간 정보 - THRIVE{% endblock %}
+{% block body_class %}app__body--signup{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <a class="app-header__btn app-header__btn--back" href="{% url 'trips:create_step1' %}" aria-label="뒤로">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <h1 class="app-header__title">비행 시간 정보</h1>
+  <a class="app-header__btn app-header__btn--close" href="{% url 'trips:registration_cancel' %}" aria-label="닫기">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </a>
+</header>
+{% endblock %}
 
 {% block content %}
-<section class="panel">
-  <div class="section-header">
-    <h1>비행 시간 정보</h1>
-    <span class="muted">2 / 2단계</span>
+<div class="auth-steps" aria-label="여정 등록 진행 단계">
+  <span class="auth-steps__dot"></span>
+  <span class="auth-steps__dot is-active"></span>
+</div>
+
+<form method="post" class="auth-form auth-form--signup auth-form--tall">
+  {% csrf_token %}
+  <div class="field{% if form.departure_at.errors %} has-error{% endif %}">
+    <label class="field__label" for="{{ form.departure_at.id_for_label }}">출발 시간</label>
+    {{ form.departure_at }}
+    <p class="field__msg field__msg--error">{{ form.departure_at.errors|striptags }}</p>
   </div>
 
-  <form method="post">
-    {% csrf_token %}
-
-    <p>출발 시간</p>
-    {{ form.departure_at }}
-
-    <p>도착 시간</p>
+  <div class="field{% if form.arrival_at.errors %} has-error{% endif %}">
+    <label class="field__label" for="{{ form.arrival_at.id_for_label }}">도착 시간</label>
     {{ form.arrival_at }}
+    <p class="field__msg field__msg--error">{{ form.arrival_at.errors|striptags }}</p>
+  </div>
 
-    <p>여행 기간</p>
+  <div class="field{% if form.trip_duration_days.errors %} has-error{% endif %}">
+    <label class="field__label" for="{{ form.trip_duration_days.id_for_label }}">여행 기간</label>
     {{ form.trip_duration_days }}
+    <p class="field__msg field__msg--error">{{ form.trip_duration_days.errors|striptags }}</p>
+  </div>
 
-    {% if form.non_field_errors %}
-      <p class="error">{{ form.non_field_errors }}</p>
-    {% endif %}
+  {% if form.non_field_errors %}
+    <p class="auth-form__error">{{ form.non_field_errors|striptags }}</p>
+  {% endif %}
 
-    <p class="hint">
-      총 비행시간이 6시간 미만인 여정은 등록 불가.<br>
-      최대 3일 간 도움(여행 기간이 일주일이어도 3일 활성화)
-    </p>
+  <p class="disclaimer">
+    <span class="disclaimer__icon" aria-hidden="true">!</span>
+    총 비행시간이 6시간 미만인 여정은 등록할 수 없습니다.
+  </p>
 
-    <button type="submit" class="button-primary">다음</button>
-  </form>
-</section>
+  <button type="submit" class="btn btn--primary btn--block">다음</button>
+</form>
 {% endblock %}

@@ -104,12 +104,34 @@ def trip_create_step1_view(request):
     return render(request, "trips/create_step1.html", {"form": form})
 
 class TripStep1Form(forms.Form):
-    origin_airport = forms.ModelChoiceField(queryset=Airport.objects.filter(active=True), label="출발 공항")
-    destination_airport = forms.ModelChoiceField(queryset=Airport.objects.filter(active=True), label="도착 공항")
-    layover_count = forms.ChoiceField(
-        choices=Trip.LayoverCount.choices, widget=forms.RadioSelect, initial="none"
+    origin_airport = forms.ModelChoiceField(
+        queryset=Airport.objects.filter(active=True),
+        label="출발 공항",
+        widget=forms.Select(attrs={"class": "field__select"}),
     )
-    max_layover_minutes = forms.IntegerField(required=False, min_value=0, label="대기 시간")
+    destination_airport = forms.ModelChoiceField(
+        queryset=Airport.objects.filter(active=True),
+        label="도착 공항",
+        widget=forms.Select(attrs={"class": "field__select"}),
+    )
+    layover_count = forms.ChoiceField(
+        choices=Trip.LayoverCount.choices,
+        widget=forms.RadioSelect(attrs={"class": "survey-option__input"}),
+        initial="none",
+        label="경유 여부",
+    )
+    max_layover_minutes = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label="대기 시간 입력",
+        widget=forms.NumberInput(
+            attrs={
+                "class": "field__input",
+                "placeholder": "대기 시간(분)",
+                "inputmode": "numeric",
+            }
+        ),
+    )
 
 @login_required
 def trip_create_step2_view(request):
@@ -203,16 +225,25 @@ TRIP_DURATION_CHOICES = [(i, f"{i}일") for i in range(1, 15)]
 class TripStep2Form(forms.Form):
     departure_at = forms.DateTimeField(
         label="출발 시간",
-        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": "field__input"},
+            format="%Y-%m-%dT%H:%M",
+        ),
         input_formats=["%Y-%m-%dT%H:%M"],
     )
     arrival_at = forms.DateTimeField(
         label="도착 시간",
-        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": "field__input"},
+            format="%Y-%m-%dT%H:%M",
+        ),
         input_formats=["%Y-%m-%dT%H:%M"],
     )
     trip_duration_days = forms.TypedChoiceField(
-        choices=TRIP_DURATION_CHOICES, coerce=int, label="여행 기간"
+        choices=TRIP_DURATION_CHOICES,
+        coerce=int,
+        label="여행 기간",
+        widget=forms.Select(attrs={"class": "field__select"}),
     )
 
     def _to_utc_from_kst(self, value):

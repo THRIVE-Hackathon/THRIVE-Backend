@@ -1,49 +1,85 @@
 {% extends "base.html" %}
 
 {% block title %}장거리 비행 여부 - THRIVE{% endblock %}
+{% block body_class %}app__body--push{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <a class="app-header__btn app-header__btn--back" href="{% url 'trips:create_step2' %}" aria-label="뒤로">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <h1 class="app-header__title">장거리 비행 여부</h1>
+  <a class="app-header__btn app-header__btn--close" href="{% url 'trips:survey_skip' trip.id %}" aria-label="건너뛰기">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </a>
+</header>
+{% endblock %}
 
 {% block content %}
-<section class="panel">
-  <div class="section-header">
-    <h1>장거리 비행 여부</h1>
-  </div>
-  <p class="muted">최근 1년 사이, 6시간 이상의 비행 경험이 있으신가요?</p>
-
-  <form method="post" id="survey-form">
-    {% csrf_token %}
-
-    <div class="choice-group">
-      <label><input type="radio" name="has_recent_flight_experience" value="false"> 없음</label>
-      <label><input type="radio" name="has_recent_flight_experience" value="true" checked> 있음</label>
-    </div>
-
-    <div id="experience-fields">
-      <p>마지막 비행 일자</p>
-      <input type="date" name="last_flight_date">
-
-      <p>총 비행 시간 (시간 단위)</p>
-      <input type="number" name="last_flight_hours" min="0">
-
-      <p>평소 컨디션</p>
-      <p class="muted">평소 이동 거리 및 시간이 어느 정도의 영향력을 끼치나요?</p>
-      {% for value, label in impact_choices %}
-        <label class="radio-option">
-          <input type="radio" name="typical_impact" value="{{ value }}">
-          {{ label }}
-        </label>
-      {% endfor %}
-    </div>
-
-    <button type="submit" class="button-primary">확인</button>
-  </form>
+<section class="home-section">
+  <h1 class="text-heading-1">최근 1년 사이 6시간 이상의 비행 경험이 있으신가요?</h1>
+  <p class="text-muted">이전 비행 경험은 예상 컨디션 점수를 보정하는 데 사용됩니다.</p>
 </section>
 
+<form method="post" id="survey-form" class="auth-form auth-form--profile auth-form--tall">
+  {% csrf_token %}
+
+  <div class="survey__grid">
+    <label class="survey-option">
+      <input class="survey-option__input" type="radio" name="has_recent_flight_experience" value="false">
+      <span class="survey-option__box">없음</span>
+    </label>
+    <label class="survey-option">
+      <input class="survey-option__input" type="radio" name="has_recent_flight_experience" value="true" checked>
+      <span class="survey-option__box">있음</span>
+    </label>
+  </div>
+
+  <div id="experience-fields" class="auth-form">
+    <div class="field">
+      <label class="field__label" for="last_flight_date">마지막 비행 일자</label>
+      <input class="field__input" id="last_flight_date" type="date" name="last_flight_date">
+      <p class="field__msg"></p>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="last_flight_hours">총 비행 시간</label>
+      <input class="field__input" id="last_flight_hours" type="number" name="last_flight_hours" min="0" inputmode="numeric" placeholder="시간 단위">
+      <p class="field__msg"></p>
+    </div>
+
+    <div class="field">
+      <span class="field__label">평소 컨디션 영향</span>
+      <p class="text-muted text-caption">평소 이동 거리와 시간이 어느 정도 영향을 주나요?</p>
+      <div class="condition-options">
+        {% for value, label in impact_choices %}
+          <label class="condition-option">
+            <input class="condition-option__input" type="radio" name="typical_impact" value="{{ value }}">
+            <span class="condition-option__box">{{ label }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="push-bottom">
+    <button type="submit" class="btn btn--primary btn--block">확인</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
 <script>
   const radios = document.querySelectorAll('input[name="has_recent_flight_experience"]');
   const fields = document.getElementById('experience-fields');
   function toggleFields() {
     const selected = document.querySelector('input[name="has_recent_flight_experience"]:checked');
-    fields.style.display = selected && selected.value === 'true' ? 'block' : 'none';
+    fields.style.display = selected && selected.value === 'true' ? 'flex' : 'none';
   }
   radios.forEach(r => r.addEventListener('change', toggleFields));
   toggleFields();

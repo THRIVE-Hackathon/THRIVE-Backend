@@ -7,7 +7,7 @@ class TripResultForm(forms.ModelForm):
     disruption_score = forms.ChoiceField(
         label="착륙 다음 날, 계획했던 일을 얼마나 하셨나요?",
         choices=TripResult.DisruptionScore.choices,
-        widget=forms.RadioSelect,
+        widget=forms.RadioSelect(attrs={"class": "survey-option__input"}),
     )
 
     class Meta:

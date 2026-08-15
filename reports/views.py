@@ -8,16 +8,35 @@ from trips.models import Trip
 from .forms import TripResultForm
 
 
+COMPONENT_LABELS = {
+    "sleep": "수면·리듬",
+    "circulation": "순환",
+    "hydration": "수분",
+    "skin": "피부",
+}
+
+
 def _score_breakdown_items(score_breakdown):
     items = []
     for key, value in score_breakdown.items():
         if isinstance(value, dict):
             detail = value.get("reason") or value.get("description") or value.get("label") or value
             score = value.get("score") or value.get("delta") or value.get("penalty")
+        elif isinstance(value, (int, float)):
+            detail = "예상 감점"
+            score = value
         else:
             detail = value
             score = None
-        items.append({"label": key, "detail": detail, "score": score})
+        magnitude = abs(score) if isinstance(score, (int, float)) else None
+        items.append(
+            {
+                "label": COMPONENT_LABELS.get(key, key),
+                "detail": detail,
+                "score": score,
+                "magnitude": magnitude,
+            }
+        )
     return items
 
 

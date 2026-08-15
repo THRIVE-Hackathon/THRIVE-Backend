@@ -1,69 +1,100 @@
 {% extends "base.html" %}
 {% load dict_extras %}
+
 {% block title %}기내 컨디션 관리 - THRIVE{% endblock %}
 
-{% block content %}
-<section class="panel">
-  <h1>기내 컨디션 관리</h1>
-  <p class="muted">착륙까지 남은 시간 동안 할 수 있는 행동들을 기록하세요</p>
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <span></span>
+  <h1 class="app-header__title">메인</h1>
+  <span></span>
+</header>
+{% endblock %}
 
-  <div class="checklist" id="checklist" data-trip-id="{{ trip.id }}">
+{% block content %}
+<div class="stage-tab" aria-label="여정 단계">
+  <span class="stage-tab__item">비행 전</span>
+  <span class="stage-tab__item is-active">비행 중</span>
+  <span class="stage-tab__item">비행 후</span>
+</div>
+
+<section class="home-section">
+  <h1 class="text-heading-1">착륙까지 {{ remaining_hours|default:0 }}시간 {{ remaining_minutes|default:0 }}분 남았어요</h1>
+  <p class="routine-caption">남은 시간 동안 할 수 있는 행동들을 기록하세요.</p>
+</section>
+
+<section class="home-section">
+  <h2 class="home-section__title text-heading-2">기내 관리</h2>
+  <div class="routine-list" id="checklist" data-trip-id="{{ trip.id }}">
     {% for check_type, check in checks.items %}
-    <article class="check-item" data-check-type="{{ check_type }}" data-input-mode="{{ input_modes|dict_get:check_type }}">
-      <div>
-        <strong>
+      <article class="routine-item check-item" data-check-type="{{ check_type }}" data-input-mode="{{ input_modes|dict_get:check_type }}">
+        <span class="routine-item__label">
           {% if check_type == "water" %}물 100ml 마시기
           {% elif check_type == "stretch" %}팔·다리 스트레칭하기
           {% elif check_type == "moisturize" %}피부 보습하기
           {% elif check_type == "sleep" %}6시간 취침하기
-          {% endif %}
-        </strong>
-      </div>
+          {% else %}{{ check.get_check_type_display }}{% endif %}
+        </span>
 
-      {% if input_modes|dict_get:check_type == "toggle" %}
-        <button type="button" class="check-toggle-btn {% if check.count > 0 %}is-checked{% endif %}">
-          {% if check.count > 0 %}완료됨{% else %}체크{% endif %}
-        </button>
-      {% else %}
-        <div class="stepper">
-          <button type="button" class="check-btn" data-action="decrement">-</button>
-          <span class="check-count">{{ check.count }}</span>
-          <button type="button" class="check-btn" data-action="increment">+</button>
-        </div>
-      {% endif %}
-    </article>
+        {% if input_modes|dict_get:check_type == "toggle" %}
+          <button type="button" class="counter__btn check-toggle-btn {% if check.count > 0 %}is-checked{% endif %}" data-step="1" aria-label="완료 토글">
+            {% if check.count > 0 %}✓{% else %}+{% endif %}
+          </button>
+        {% else %}
+          <div class="counter">
+            <button type="button" class="counter__btn check-btn" data-step="-1" data-action="decrement" aria-label="감소">-</button>
+            <span class="counter__value"><strong class="counter__num check-count">{{ check.count }}</strong><span class="counter__unit">회</span></span>
+            <button type="button" class="counter__btn check-btn" data-step="1" data-action="increment" aria-label="증가">+</button>
+          </div>
+        {% endif %}
+      </article>
     {% endfor %}
   </div>
-    <p class="label">비행 일정</p>
-  <p class="score-headline">착륙까지 {{ remaining_hours }}시간 {{ remaining_minutes }}분 남았어요.</p>
-  <p class="muted">
-    {% if trip.layover_count == "none" %}
-      총 비행시간 {{ flight_hours }}시간 00분 예정이에요.
-    {% else %}
-      총 비행시간 {{ flight_hours }}시간 00분, 경유 {{ trip.get_layover_count_display }} 예정이에요.
-    {% endif %}
-  </p>
-  <ul class="flight-timeline">
-    <li>{{ trip.origin_airport.iata_code }} 출발 {{ departure_local|date:"n월 j일" }} {{ departure_local|date:"H:i" }}</li>
-    <li>{{ trip.destination_airport.iata_code }} 도착 {{ arrival_local|date:"n월 j일" }} {{ arrival_local|date:"H:i" }}</li>
-  </ul>
-  <a href="{% url 'trips:edit_start' trip.id %}">비행 일정 수정하기</a>
-
-  <p class="label">예상 컨디션 점수</p>
-  <p class="score-headline"><strong>{{ trip.expected_score }}</strong> / 100점</p>
-  <div class="score-breakdown">
-    <div class="score-bar"><span>수면·리듬</span><span>{{ trip.score_breakdown.sleep }}점</span></div>
-    <div class="score-bar"><span>순환</span><span>{{ trip.score_breakdown.circulation }}점</span></div>
-    <div class="score-bar"><span>수분</span><span>{{ trip.score_breakdown.hydration }}점</span></div>
-    <div class="score-bar"><span>피부</span><span>{{ trip.score_breakdown.skin }}점</span></div>
-  </div>
-
-  <p class="hint">💡 팁: 각 항목을 탭할 때마다 횟수가 기록됩니다. 네트워크가 없어도 자동 저장됩니다.</p>
 </section>
 
+<section class="home-section">
+  <h2 class="home-section__title text-heading-2">비행 일정</h2>
+  <article class="flight-card">
+    <div class="flight-card__route">
+      <div class="flight-card__point">
+        <div class="flight-card__code">{{ trip.origin_airport.iata_code }}</div>
+        <div class="flight-card__airport">{{ trip.origin_airport.city_name }}</div>
+      </div>
+      <span class="flight-card__plane" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18M14 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <div class="flight-card__point">
+        <div class="flight-card__code">{{ trip.destination_airport.iata_code }}</div>
+        <div class="flight-card__airport">{{ trip.destination_airport.city_name }}</div>
+      </div>
+    </div>
+    <div class="flight-card__meta">
+      <span>총 {{ trip.total_flight_minutes|div_minutes_to_hours }}시간</span>
+      <span class="flight-card__sep">·</span>
+      <span>경유 {{ trip.get_layover_count_display }}</span>
+    </div>
+  </article>
+</section>
+
+<section class="home-section">
+  <h2 class="home-section__title text-heading-2">예상 컨디션 점수</h2>
+  <div class="routine-score">
+    <strong class="routine-score__value">{{ trip.expected_score }}</strong>
+    <span class="routine-score__target">/ 100점</span>
+  </div>
+</section>
+
+<p class="disclaimer">
+  <span class="disclaimer__icon" aria-hidden="true">!</span>
+  네트워크가 없어도 입력값은 임시 저장 후 자동 동기화됩니다.
+</p>
+{% endblock %}
+
+{% block scripts %}
 <script>
 (function () {
   const container = document.getElementById("checklist");
+  if (!container) return;
   const tripId = container.dataset.tripId;
   const storageKey = `thrive_pending_checks_${tripId}`;
 
@@ -71,21 +102,16 @@
     const match = document.cookie.match(/csrftoken=([^;]+)/);
     return match ? match[1] : "";
   }
-
   function loadPending() {
     try { return JSON.parse(localStorage.getItem(storageKey)) || {}; }
     catch (e) { return {}; }
   }
-
   function savePending(pending) {
     localStorage.setItem(storageKey, JSON.stringify(pending));
   }
-
   function flushPending() {
     const pending = loadPending();
-    const hasPending = Object.values(pending).some((v) => v !== 0);
-    if (!hasPending) return;
-
+    if (!Object.values(pending).some((v) => v !== 0)) return;
     fetch(`/recovery/${tripId}/checks/sync/`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken() },
@@ -97,11 +123,10 @@
         Object.entries(data.counts).forEach(([checkType, count]) => {
           const item = container.querySelector(`[data-check-type="${checkType}"]`);
           if (!item) return;
-          const mode = item.dataset.inputMode;
-          if (mode === "toggle") {
+          if (item.dataset.inputMode === "toggle") {
             const btn = item.querySelector(".check-toggle-btn");
             btn.classList.toggle("is-checked", count > 0);
-            btn.textContent = count > 0 ? "완료됨" : "체크";
+            btn.textContent = count > 0 ? "✓" : "+";
           } else {
             item.querySelector(".check-count").textContent = count;
           }
@@ -110,7 +135,6 @@
       .catch(() => {});
   }
 
-  // 카운터형 (+/-)
   container.querySelectorAll(".check-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const item = btn.closest(".check-item");
@@ -118,7 +142,6 @@
       const delta = btn.dataset.action === "increment" ? 1 : -1;
       const countEl = item.querySelector(".check-count");
       countEl.textContent = Math.max(0, parseInt(countEl.textContent, 10) + delta);
-
       const pending = loadPending();
       pending[checkType] = (pending[checkType] || 0) + delta;
       savePending(pending);
@@ -126,17 +149,14 @@
     });
   });
 
-  // 토글형 (한 번만)
   container.querySelectorAll(".check-toggle-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const item = btn.closest(".check-item");
       const checkType = item.dataset.checkType;
       const isChecked = btn.classList.contains("is-checked");
-      const delta = isChecked ? -1 : 1;  // 토글이라 -1 또는 +1만 발생
-
+      const delta = isChecked ? -1 : 1;
       btn.classList.toggle("is-checked");
-      btn.textContent = isChecked ? "체크" : "완료됨";
-
+      btn.textContent = isChecked ? "+" : "✓";
       const pending = loadPending();
       pending[checkType] = (pending[checkType] || 0) + delta;
       savePending(pending);
@@ -148,6 +168,5 @@
   setInterval(flushPending, 15000);
   flushPending();
 })();
-
 </script>
 {% endblock %}

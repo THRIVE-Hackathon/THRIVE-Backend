@@ -1,104 +1,170 @@
 {% extends "base.html" %}
+{% load dict_extras %}
 
 {% block title %}회복 리포트 - THRIVE{% endblock %}
 
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <a class="app-header__btn app-header__btn--back" href="{% url 'trips:list' %}" aria-label="뒤로">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <h1 class="app-header__title">회복 리포트</h1>
+  <a class="app-header__btn app-header__btn--close" href="{% url 'trips:calendar' trip.id %}" aria-label="캘린더 내보내기">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 3v4M17 3v4M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+</header>
+{% endblock %}
+
 {% block content %}
-<section class="panel">
-  <div class="section-header">
-    <div>
-      <h1>회복 리포트</h1>
-      <p class="muted">{{ trip.route_name }}</p>
+<article class="trip-card">
+  <div class="trip-card__main">
+    <div class="trip-card__route">
+      <span class="trip-card__point">
+        <strong class="trip-card__code">{{ trip.origin_airport.iata_code }}</strong>
+        <span class="trip-card__city">{{ trip.origin_airport.city_name }}</span>
+      </span>
+      <svg class="trip-card__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="trip-card__point">
+        <strong class="trip-card__code">{{ trip.destination_airport.iata_code }}</strong>
+        <span class="trip-card__city">{{ trip.destination_airport.city_name }}</span>
+      </span>
     </div>
-    <a class="button secondary" href="{% url 'trips:calendar' trip.id %}">캘린더에 담기</a>
+    <p class="trip-card__meta">
+      {{ trip.created_at|date:"Y.m.d" }}
+      <span class="trip-card__meta-sep">·</span>
+      총 {{ trip.total_flight_minutes|div_minutes_to_hours }}시간
+      <span class="trip-card__meta-sep">·</span>
+      경유 {{ trip.get_layover_count_display }}
+    </p>
+  </div>
+  <div class="trip-card__score">
+    <span class="trip-card__score-label">점수</span>
+    <strong class="trip-card__score-value">{% if trip.current_score is not None %}{{ trip.current_score }}{% else %}-{% endif %}</strong>
+  </div>
+</article>
+
+<section class="home-section">
+  <h2 class="report-title text-heading-2">회복 점수 요약</h2>
+  <div class="report-summary">
+    <strong class="report-score">{% if trip.current_score is not None %}{{ trip.current_score }}{% else %}-{% endif %}</strong>
+    <p class="report-summary__caption">최종 컨디션 점수</p>
   </div>
 
-  <div class="score-row">
-    {% for label, value in score_points %}
-      <div>
-        <span>{{ label }}</span>
-        <strong>{% if value is not None %}{{ value }}{% else %}-{% endif %}</strong>
-      </div>
-    {% endfor %}
+  <div class="trend-card">
+    <svg class="trend-chart" viewBox="0 0 320 100" role="img" aria-label="점수 추이">
+      <polyline points="53.33,70 160,48 266.67,32" fill="none" stroke="var(--color-primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="53.33" cy="70" r="6" fill="var(--color-primary)"/>
+      <circle cx="160" cy="48" r="6" fill="var(--color-primary)"/>
+      <g transform="translate(266.67,32)">
+        <path d="M0-9 2.6-2.8 9-2.8 3.8 1.1 5.8 7.5 0 3.8-5.8 7.5-3.8 1.1-9-2.8-2.6-2.8Z" fill="var(--color-cyan-500)"/>
+      </g>
+    </svg>
+    <div class="trend-legend">
+      {% for label, value in score_points %}
+        <div class="trend-legend__col">
+          <p class="trend-legend__name">{{ label }}</p>
+          <p class="trend-legend__score">
+            {% if label == "예측" %}
+              <span data-predicted-score>{% if value is not None %}{{ value }}{% else %}-{% endif %}</span>점
+            {% elif label == "직후" %}
+              <span data-immediate-score>{% if value is not None %}{{ value }}{% else %}-{% endif %}</span>점
+            {% else %}
+              <span data-final-score>{% if value is not None %}{{ value }}{% else %}-{% endif %}</span>점
+            {% endif %}
+          </p>
+        </div>
+      {% endfor %}
+    </div>
   </div>
-
-  {% if target_progress is not None %}
-    <section>
-      <h2>목표 달성률</h2>
-      <div class="progress">
-        <div style="width: {{ target_progress }}%"></div>
-      </div>
-      <p class="muted">목표 {{ trip.target_score }}점 중 현재 {{ trip.current_score }}점</p>
-    </section>
-  {% endif %}
-
-  <section>
-    <h2>점수 근거</h2>
-    {% if score_breakdown_items %}
-      <ul class="item-list">
-        {% for item in score_breakdown_items %}
-          <li>
-            <span>{{ item.label }}</span>
-            <span>
-              {% if item.score is not None %}{{ item.score }} · {% endif %}
-              {{ item.detail }}
-            </span>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="empty">점수 근거는 예상/실측 점수 계산이 완료되면 표시됩니다.</p>
-    {% endif %}
-  </section>
-
-  <section>
-    <h2>회복 항목 수행</h2>
-    <p>{{ completed_count }} / {{ total_recovery_count }}개 완료</p>
-    {% if recovery_items %}
-      <ul class="item-list">
-        {% for item in recovery_items %}
-          <li>
-            <span>{{ item.scheduled_at|date:"m.d H:i" }} · {{ item.title }}</span>
-            <span>{{ item.get_component_display }} +{{ item.score_delta }}</span>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="empty">아직 생성된 회복 항목이 없습니다.</p>
-    {% endif %}
-  </section>
-
-  <section>
-    <h2>요소별 회복 계획</h2>
-    {% if component_summary %}
-      <div class="component-grid">
-        {% for component in component_summary %}
-          <div>
-            <span>{{ component.label }}</span>
-            <strong>{{ component.completed }}/{{ component.planned }}</strong>
-            <p>계획 +{{ component.planned_delta }} · 반영 +{{ component.applied_delta }}</p>
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <p class="empty">회복 계획이 생성되면 수면, 순환, 수분, 피부별 수행 현황이 표시됩니다.</p>
-    {% endif %}
-  </section>
-
-  <section>
-    <h2>일정 차질도</h2>
-    {% if result %}
-      <p class="result-score">{{ result.disruption_score }}점 · {{ result.selected_answer }}</p>
-    {% else %}
-      <form method="post" class="form">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
-        {{ form.disruption_score.errors }}
-        {{ form.disruption_score }}
-        <button type="submit">저장</button>
-      </form>
-    {% endif %}
-  </section>
-
-  <p class="notice">의학적 진단이 아닌 참고 지표입니다.</p>
 </section>
+
+{% if target_progress is not None %}
+  <section class="home-section">
+    <h2 class="home-section__title text-heading-2">목표 달성률</h2>
+    <div class="bar" aria-label="목표 달성률 {{ target_progress }}%">
+      <span class="bar__fill" style="width: {{ target_progress }}%;"></span>
+    </div>
+    <p class="report-note">목표 {{ trip.target_score }}점 중 현재 {{ trip.current_score }}점까지 회복했어요.</p>
+  </section>
+{% endif %}
+
+<section class="home-section">
+  <h2 class="home-section__title text-heading-2">요소별 분석</h2>
+  {% if score_breakdown_items %}
+    <div class="factor-card">
+      {% for item in score_breakdown_items %}
+        <div class="factor">
+          <div class="factor__head">
+            <span class="factor__label">{{ item.label }}</span>
+            {% if item.score is not None %}
+              <span class="factor__delta">{{ item.score }}점</span>
+            {% endif %}
+          </div>
+          {% if item.magnitude is not None %}
+            <div class="bar"><span class="bar__fill" style="width: {{ item.magnitude }}%;"></span></div>
+          {% endif %}
+          <p class="report-note">{{ item.detail }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">점수 근거는 예상/실측 점수 계산이 완료되면 표시됩니다.</p>
+  {% endif %}
+</section>
+
+<section class="home-section">
+  <h2 class="home-section__title text-heading-2">회복 항목 수행</h2>
+  <p class="routine-caption">{{ completed_count }} / {{ total_recovery_count }}개 완료</p>
+  {% if component_summary %}
+    <div class="factor-card">
+      {% for component in component_summary %}
+        <div class="factor">
+          <div class="factor__head">
+            <span class="factor__label">{{ component.label }}</span>
+            <span class="factor__delta">{{ component.completed }}/{{ component.planned }}</span>
+          </div>
+          <p class="text-muted text-caption">계획 +{{ component.planned_delta }} · 반영 +{{ component.applied_delta }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">회복 계획이 생성되면 수행 현황이 표시됩니다.</p>
+  {% endif %}
+</section>
+
+<section class="home-section">
+  <h2 class="home-section__title text-heading-2">일정 차질도</h2>
+  {% if result %}
+    <p class="survey-result">{{ result.selected_answer }}</p>
+  {% else %}
+    <p class="survey__question">착륙 다음 날, 계획했던 일을 얼마나 하셨나요?</p>
+    <form method="post" id="survey-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {{ form.disruption_score.errors }}
+      <div class="survey__grid">
+        {% for value, label in form.disruption_score.field.choices %}
+          <label class="survey-option">
+            <input class="survey-option__input" type="radio" name="disruption_score" value="{{ value }}" {% if form.disruption_score.value == value|stringformat:"s" %}checked{% endif %}>
+            <span class="survey-option__box">{{ label }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      <div class="report-actions">
+        <button type="submit" class="btn btn--primary btn--block">확인</button>
+      </div>
+    </form>
+  {% endif %}
+</section>
+
+<p class="disclaimer">
+  <span class="disclaimer__icon" aria-hidden="true">!</span>
+  이 점수는 의학적 진단이 아닌 참고 지표입니다.
+</p>
 {% endblock %}

@@ -1,35 +1,55 @@
 {% extends "base.html" %}
-{% load dict_extras %}
+
+{% block title %}착륙 점수 확인 - THRIVE{% endblock %}
+{% block body_class %}app__body--push{% endblock %}
+
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <span></span>
+  <h1 class="app-header__title">착륙 점수 확인</h1>
+  <span></span>
+</header>
+{% endblock %}
+
 {% block content %}
-<section class="panel">
-  <div class="modal-header">
-    <h1>착륙 점수 확인</h1>
-    <a href="{% url 'trips:home' %}">✕</a>
-  </div>
+<div class="stage-tab" aria-label="여정 단계">
+  <span class="stage-tab__item">비행 전</span>
+  <span class="stage-tab__item">비행 중</span>
+  <span class="stage-tab__item is-active">비행 후</span>
+</div>
 
-  <h2>컨디션 확인</h2>
-  {% if trip.summary_text %}<p class="ai-summary">{{ trip.summary_text }}</p>{% endif %}
-
-  <div class="score-compare">
-    <div><span>예상</span><strong>{{ trip.expected_score }}</strong></div>
-    <span>✈️</span>
-    <div><span>현재</span><strong>{{ trip.current_score }}</strong></div>
-  </div>
-
-  <div class="score-breakdown">
-    <div class="score-bar"><span>수면·리듬</span><span>+{{ trip.score_breakdown.sleep }}점</span></div>
-    <div class="score-bar"><span>순환</span><span>+{{ trip.score_breakdown.circulation }}점</span></div>
-    <div class="score-bar"><span>수면·리듬</span><span>{{ trip.score_breakdown.hydration }}점</span></div>
-    <div class="score-bar"><span>피부</span><span>+{{ trip.score_breakdown.skin }}점</span></div>
-  </div>
-
-  <p>목표 점수</p>
-  <p class="score-headline"><strong>{{ trip.target_score }}</strong> / 현재 {{ trip.current_score }}점</p>
-  <p class="muted">앞으로 {{ trip.next_schedule_after_minutes|div_minutes_to_days }}일 간 함께 회복 점수를 올려봐요.</p>
-
-  <form method="post" action="{% url 'trips:start_recovery' trip.id %}">
-  {% csrf_token %}
-  <button type="submit" class="button-primary">회복 루틴 실행</button>
-  </form>
+<section class="home-section">
+  <h1 class="text-heading-1">컨디션 확인</h1>
+  {% if trip.summary_text %}<p class="report-note">{{ trip.summary_text }}</p>{% endif %}
 </section>
+
+<section class="home-section">
+  <div class="score-compare">
+    <div class="score-compare__col">
+      <strong class="score-compare__num">{{ trip.expected_score }}</strong>
+      <p class="score-compare__cap">예상</p>
+    </div>
+    <span class="score-compare__plane" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18M14 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <div class="score-compare__col">
+      <strong class="score-compare__num score-compare__num--current">{{ trip.current_score }}</strong>
+      <p class="score-compare__cap score-compare__cap--current">현재</p>
+    </div>
+  </div>
+</section>
+
+<section class="home-section">
+  <h2 class="home-section__title text-heading-2">목표 점수</h2>
+  <div class="routine-score">
+    <strong class="routine-score__value">{{ trip.target_score }}</strong>
+    <span class="routine-score__target">/ 현재 {{ trip.current_score }}점</span>
+  </div>
+  <p class="routine-caption">앞으로 함께 회복 점수를 올려봐요.</p>
+</section>
+
+<form method="post" action="{% url 'trips:start_recovery' trip.id %}" class="push-bottom">
+  {% csrf_token %}
+  <button type="submit" class="btn btn--primary btn--block btn--home">회복 루틴 실행</button>
+</form>
 {% endblock %}

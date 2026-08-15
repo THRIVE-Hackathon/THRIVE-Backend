@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}메인 - THRIVE{% endblock %}
+
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <span></span>
+  <h1 class="app-header__title">메인</h1>
+  <span></span>
+</header>
+{% endblock %}
+
+{% block content %}
+<section class="home-section">
+  <h1 class="home-greeting text-heading-1">장거리 비행 후 회복을 준비해볼까요?</h1>
+  <p class="routine-caption">여정을 등록하면 착륙 시점 예상 점수와 회복 루틴을 확인할 수 있어요.</p>
+</section>
+
+<section class="home-section">
+  <a class="btn btn--primary btn--block btn--home" href="{% url 'trips:create_step1' %}">여정 등록</a>
+</section>
+
+<p class="disclaimer">
+  <span class="disclaimer__icon" aria-hidden="true">!</span>
+  이 점수는 의학적 진단이 아닌 참고 지표입니다.
+</p>
+{% endblock %}

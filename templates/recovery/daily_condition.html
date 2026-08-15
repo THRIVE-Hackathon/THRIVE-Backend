@@ -1,26 +1,39 @@
 {% extends "base.html" %}
 
-{% block title %}데일리 컨디션 입력 - THRIVE{% endblock %}
+{% block title %}오늘 컨디션 기록 - THRIVE{% endblock %}
+{% block body_class %}app__body--push{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <a class="app-header__btn app-header__btn--back" href="{% url 'trips:home' %}" aria-label="뒤로">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <h1 class="app-header__title">오늘 컨디션 기록</h1>
+  <span></span>
+</header>
+{% endblock %}
 
 {% block content %}
-<section class="panel">
-  <h1>오늘의 컨디션을 알려주세요</h1>
-  <p class="muted">회복 진행 상황을 더 정확히 파악하기 위해 기록됩니다</p>
-
-  <form method="post">
-    {% csrf_token %}
-    <div class="condition-choices">
-      {% for value, label in choices %}
-        <button
-          type="submit"
-          name="score"
-          value="{{ value }}"
-          class="condition-btn {% if existing.score == value %}is-selected{% endif %}"
-        >
-          {{ label }}
-        </button>
-      {% endfor %}
-    </div>
-  </form>
+<section class="condition-head">
+  <h1 class="text-heading-1">오늘의 컨디션을 알려주세요</h1>
+  <p class="condition-head__caption">회복 진행 상황을 더 정확히 파악하기 위해 기록됩니다.</p>
 </section>
+
+<form method="post" class="condition-form">
+  {% csrf_token %}
+  <div class="condition-options">
+    {% for value, label in choices %}
+      <label class="condition-option">
+        <input class="condition-option__input" type="radio" name="score" value="{{ value }}" {% if existing.score == value %}checked{% endif %}>
+        <span class="condition-option__box">{{ label }}</span>
+      </label>
+    {% endfor %}
+  </div>
+  <div class="push-bottom">
+    <button type="submit" class="btn btn--primary btn--block condition-save">저장</button>
+  </div>
+</form>
 {% endblock %}

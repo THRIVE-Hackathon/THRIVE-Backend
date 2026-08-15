@@ -1,26 +1,49 @@
 {% extends "base.html" %}
 
 {% block title %}프로필 수정 - THRIVE{% endblock %}
+{% block body_class %}app__body--profile{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <a class="app-header__btn app-header__btn--back" href="{% url 'accounts:profile' %}" aria-label="뒤로">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <h1 class="app-header__title">프로필 수정</h1>
+  <span></span>
+</header>
+{% endblock %}
 
 {% block content %}
-<section class="panel narrow">
-  <h1>프로필 수정</h1>
-  <p class="muted">닉네임, 성별, 나이는 리포트와 비교 통계에 사용됩니다.</p>
+<p class="auth-caption">비교 리포트와 회복 통계에 사용할 기본 정보를 수정합니다.</p>
 
-  <form method="post" class="form">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% for field in form %}
-      <fieldset>
-        <legend>{{ field.label }}</legend>
-        {{ field }}
-        {{ field.errors }}
-      </fieldset>
-    {% endfor %}
-    <div class="actions">
-      <button type="submit">저장</button>
-      <a class="button secondary" href="{% url 'accounts:profile' %}">취소</a>
+<form method="post" class="auth-form auth-form--profile auth-form--tall" data-auth="profile" novalidate>
+  {% csrf_token %}
+  <div class="field" data-field="nickname"{% if form.nickname.errors %} data-server-error="{{ form.nickname.errors|striptags }}"{% endif %}>
+    <label class="field__label" for="{{ form.nickname.id_for_label }}">닉네임</label>
+    {{ form.nickname }}
+    <p class="field__msg"></p>
+  </div>
+
+  <div class="field" data-field="gender"{% if form.gender.errors %} data-server-error="{{ form.gender.errors|striptags }}"{% endif %}>
+    <span class="field__label">성별</span>
+    <input type="hidden" name="gender" value="{{ form.gender.value|default:'' }}" data-gender-value>
+    <div class="segmented" role="group" aria-label="성별">
+      <button type="button" class="segmented__btn {% if form.gender.value == 'female' %}is-active{% endif %}" data-value="female" aria-pressed="{% if form.gender.value == 'female' %}true{% else %}false{% endif %}">여성</button>
+      <button type="button" class="segmented__btn {% if form.gender.value == 'male' %}is-active{% endif %}" data-value="male" aria-pressed="{% if form.gender.value == 'male' %}true{% else %}false{% endif %}">남성</button>
     </div>
-  </form>
-</section>
+    <p class="field__msg"></p>
+  </div>
+
+  <div class="field" data-field="age"{% if form.age.errors %} data-server-error="{{ form.age.errors|striptags }}"{% endif %}>
+    <label class="field__label" for="{{ form.age.id_for_label }}">나이</label>
+    {{ form.age }}
+    <p class="field__msg"></p>
+  </div>
+
+  <p class="auth-form__error"{% if form.non_field_errors %} data-server-error="{{ form.non_field_errors|striptags }}"{% endif %}></p>
+  <button type="submit" class="btn btn--primary btn--block">저장</button>
+</form>
 {% endblock %}

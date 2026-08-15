@@ -1,33 +1,55 @@
 {% extends "base.html" %}
+
 {% block title %}회복 가이드 - THRIVE{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <a class="app-header__btn app-header__btn--back" href="{% url 'trips:home' %}" aria-label="뒤로">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <h1 class="app-header__title">회복 가이드</h1>
+  <span></span>
+</header>
+{% endblock %}
 
 {% block content %}
-<section class="panel">
-  <a href="{% url 'trips:home' %}">←</a>
-  <h1>회복 가이드</h1>
-
-  <h2>비행 중 회복</h2>
-  <p class="muted">비행 중에는 활동에 제약이 있을 수 있어요. 무리하기보다는 잠시 환기한다는 생각으로 가볍게 참여하세요.</p>
-  <div class="guide-list">
+<section class="home-section">
+  <h1 class="text-heading-1">비행 중 회복</h1>
+  <p class="routine-caption">무리하기보다는 잠시 환기한다는 생각으로 가볍게 참여하세요.</p>
+  <div class="factor-card">
     {% for tip in inflight_tips %}
-      <article class="guide-item">
-        <div><strong>{{ tip.title }}</strong><p class="muted">{{ tip.desc }}</p></div>
-        <span class="tag">{{ tip.component }}</span>
-      </article>
+      <div class="factor">
+        <div class="factor__head">
+          <span class="factor__label">{{ tip.title }}</span>
+          <span class="factor__delta">{{ tip.component }}</span>
+        </div>
+        <p class="text-muted text-caption">{{ tip.desc }}</p>
+      </div>
     {% endfor %}
   </div>
-
-  <h2>경유 대기 중 회복</h2>
-  <p class="muted">경유 시간을 활용하면 효율적으로 컨디션을 관리할 수 있어요.</p>
-  <div class="guide-list">
-    {% for tip in layover_tips %}
-      <article class="guide-item">
-        <div><strong>{{ tip.title }}</strong><p class="muted">{{ tip.desc }}</p></div>
-        <span class="tag">{{ tip.component }}</span>
-      </article>
-    {% endfor %}
-  </div>
-
-  <p class="hint">이 가이드는 의학적 진단이 아닌 참고 지표입니다</p>
 </section>
+
+<section class="home-section">
+  <h2 class="home-section__title text-heading-2">경유 대기 중 회복</h2>
+  <p class="routine-caption">경유 시간을 활용하면 효율적으로 컨디션을 관리할 수 있어요.</p>
+  <div class="factor-card">
+    {% for tip in layover_tips %}
+      <div class="factor">
+        <div class="factor__head">
+          <span class="factor__label">{{ tip.title }}</span>
+          <span class="factor__delta">{{ tip.component }}</span>
+        </div>
+        <p class="text-muted text-caption">{{ tip.desc }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<p class="disclaimer">
+  <span class="disclaimer__icon" aria-hidden="true">!</span>
+  이 가이드는 의학적 진단이 아닌 참고 지표입니다.
+</p>
 {% endblock %}

@@ -5,31 +5,64 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}THRIVE{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+  <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/variables.css' %}">
+  <link rel="stylesheet" href="{% static 'css/common.css' %}">
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  <link rel="stylesheet" href="{% static 'css/record.css' %}">
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="{% url 'trips:list' %}">THRIVE</a>
-    {% if request.user.is_authenticated %}
-      <nav class="nav">
-        <a href="{% url 'trips:list' %}">기록</a>
-        <a href="{% url 'trips:home' %}">홈</a>
-        <a href="{% url 'accounts:profile' %}">프로필</a>
-        <a href="{% url 'accounts:settings' %}">설정</a>
-        <a href="{% url 'accounts:logout' %}">로그아웃</a>
-      </nav>
-    {% endif %}
-  </header>
+  <div class="app">
+    {% block app_header %}{% endblock %}
 
-  <main class="page">
-    {% if messages %}
-      <div class="messages">
-        {% for message in messages %}
-          <p class="message {{ message.tags }}">{{ message }}</p>
-        {% endfor %}
-      </div>
-    {% endif %}
-    {% block content %}{% endblock %}
-  </main>
+    <main class="app__body {% block body_class %}{% endblock %}">
+      {% if messages %}
+        <div class="message-stack" role="status" aria-live="polite">
+          {% for message in messages %}
+            <p class="card text-caption message message--{{ message.tags }}">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+
+    {% block tabbar %}
+      {% if request.user.is_authenticated %}
+        {% with app=request.resolver_match.app_name url=request.resolver_match.url_name %}
+          <nav class="app-tabbar" aria-label="주요 메뉴">
+            <a class="app-tabbar__item {% if app == 'reports' or url == 'list' %}is-active{% endif %}" href="{% url 'trips:list' %}" {% if app == 'reports' or url == 'list' %}aria-current="page"{% endif %}>
+              <svg class="app-tabbar__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 4h10a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M9 9h6M9 13h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span class="app-tabbar__label">기록</span>
+            </a>
+            <a class="app-tabbar__item {% if app == 'trips' and url != 'list' or app == 'recovery' %}is-active{% endif %}" href="{% url 'trips:home' %}" {% if app == 'trips' and url != 'list' or app == 'recovery' %}aria-current="page"{% endif %}>
+              <svg class="app-tabbar__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-8.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+              <span class="app-tabbar__label">메인</span>
+            </a>
+            <a class="app-tabbar__item {% if app == 'accounts' %}is-active{% endif %}" href="{% url 'accounts:settings' %}" {% if app == 'accounts' %}aria-current="page"{% endif %}>
+              <svg class="app-tabbar__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span class="app-tabbar__label">설정</span>
+            </a>
+          </nav>
+        {% endwith %}
+      {% endif %}
+    {% endblock %}
+  </div>
+
+  <script src="{% static 'js/auth-form.js' %}" defer></script>
+  <script src="{% static 'js/profile-form.js' %}" defer></script>
+  <script src="{% static 'js/condition-record.js' %}" defer></script>
+  <script src="{% static 'js/recovery-report.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

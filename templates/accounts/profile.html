@@ -2,33 +2,44 @@
 
 {% block title %}프로필 - THRIVE{% endblock %}
 
-{% block content %}
-<section class="panel">
-  <div class="section-header">
-    <div>
-      <h1>{{ profile.nickname }}님</h1>
-      <p class="muted">{{ profile.age }}세 · {{ profile.get_gender_display }}</p>
-    </div>
-    <a class="button secondary" href="{% url 'accounts:profile_edit' %}">프로필 수정</a>
-  </div>
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <a class="app-header__btn app-header__btn--back" href="{% url 'accounts:settings' %}" aria-label="뒤로">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <h1 class="app-header__title">프로필</h1>
+  <a class="app-header__btn app-header__btn--close" href="{% url 'accounts:profile_edit' %}" aria-label="프로필 수정">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+</header>
+{% endblock %}
 
+{% block content %}
+<section class="home-section">
+  <h1 class="text-heading-1">{{ profile.nickname }}님</h1>
+  <p class="routine-caption">{{ profile.age }}세 · {{ profile.get_gender_display }}</p>
+</section>
+
+<section class="home-section">
+  <h2 class="home-section__title text-heading-2">회복 통계</h2>
   {% if total_trips >= 2 %}
-    <dl class="stats">
-      <div>
-        <dt>누적 여정</dt>
-        <dd>{{ total_trips }}회</dd>
+    <div class="factor-card">
+      <div class="factor">
+        <div class="factor__head"><span class="factor__label">누적 여정</span><span class="factor__delta">{{ total_trips }}회</span></div>
       </div>
-      <div>
-        <dt>평균 차질도</dt>
-        <dd>{{ avg_disruption }}점</dd>
+      <div class="factor">
+        <div class="factor__head"><span class="factor__label">평균 차질도</span><span class="factor__delta">{{ avg_disruption }}점</span></div>
       </div>
-      <div>
-        <dt>가장 느린 회복</dt>
-        <dd>{{ slowest_component|default:"집계 중" }}</dd>
+      <div class="factor">
+        <div class="factor__head"><span class="factor__label">가장 느린 회복</span><span class="factor__delta">{{ slowest_component|default:"집계 중" }}</span></div>
       </div>
-    </dl>
+    </div>
   {% else %}
-    <p class="empty">첫 여정을 완료하면 회복 패턴을 보여드립니다.</p>
+    <p class="text-muted">첫 여정을 완료하면 회복 패턴을 보여드립니다.</p>
   {% endif %}
 </section>
 {% endblock %}

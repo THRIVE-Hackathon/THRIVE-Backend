@@ -109,7 +109,7 @@ def daily_condition_view(request, trip_id):
                 defaults={"score": int(score)},
             )
             messages.success(request, "오늘의 컨디션이 기록됐어요")
-            return redirect("recovery:plan", trip_id=trip.pk)
+            return redirect("trips:home")
         messages.error(request, "컨디션을 선택해주세요")
 
     existing = DailyCondition.objects.filter(trip=trip, local_date=today_local).first()

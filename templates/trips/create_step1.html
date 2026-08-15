@@ -1,39 +1,73 @@
 {% extends "base.html" %}
 
 {% block title %}여정 등록 - THRIVE{% endblock %}
+{% block body_class %}app__body--signup{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block app_header %}
+<header class="app-header app-header--bordered">
+  <a class="app-header__btn app-header__btn--back" href="{% url 'trips:home' %}" aria-label="뒤로">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <h1 class="app-header__title">여정 등록</h1>
+  <a class="app-header__btn app-header__btn--close" href="{% url 'trips:registration_cancel' %}" aria-label="닫기">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </a>
+</header>
+{% endblock %}
 
 {% block content %}
-<section class="panel">
-  <div class="section-header">
-    <h1>여정 등록</h1>
-    <span class="muted">1 / 2단계</span>
+<div class="auth-steps" aria-label="여정 등록 진행 단계">
+  <span class="auth-steps__dot is-active"></span>
+  <span class="auth-steps__dot"></span>
+</div>
+
+<form method="post" class="auth-form auth-form--signup auth-form--tall">
+  {% csrf_token %}
+  <div class="field{% if form.origin_airport.errors %} has-error{% endif %}">
+    <label class="field__label" for="{{ form.origin_airport.id_for_label }}">출발 공항</label>
+    {{ form.origin_airport }}
+    <p class="field__msg field__msg--error">{{ form.origin_airport.errors|striptags }}</p>
   </div>
 
-  <form method="post">
-    {% csrf_token %}
-
-    <p>출발 공항</p>
-    {{ form.origin_airport }}
-
-    <p>도착 공항</p>
+  <div class="field{% if form.destination_airport.errors %} has-error{% endif %}">
+    <label class="field__label" for="{{ form.destination_airport.id_for_label }}">도착 공항</label>
     {{ form.destination_airport }}
+    <p class="field__msg field__msg--error">{{ form.destination_airport.errors|striptags }}</p>
+  </div>
 
-    <p>경유 여부</p>
-    {{ form.layover_count }}
+  <div class="field{% if form.layover_count.errors %} has-error{% endif %}">
+    <span class="field__label">경유 여부</span>
+    <div class="survey__grid">
+      {% for value, label in form.layover_count.field.choices %}
+        <label class="survey-option">
+          <input class="survey-option__input" type="radio" name="layover_count" value="{{ value }}" {% if form.layover_count.value == value or not form.layover_count.value and value == "none" %}checked{% endif %}>
+          <span class="survey-option__box">{{ label }}</span>
+        </label>
+      {% endfor %}
+    </div>
+    <p class="field__msg field__msg--error">{{ form.layover_count.errors|striptags }}</p>
+  </div>
 
-    <p>대기 시간 입력</p>
+  <div class="field{% if form.max_layover_minutes.errors %} has-error{% endif %}">
+    <label class="field__label" for="{{ form.max_layover_minutes.id_for_label }}">대기 시간 입력</label>
     {{ form.max_layover_minutes }}
+    <p class="field__msg field__msg--error">{{ form.max_layover_minutes.errors|striptags }}</p>
+  </div>
 
-    {% if form.non_field_errors %}
-      <p class="error">{{ form.non_field_errors }}</p>
-    {% endif %}
+  {% if form.non_field_errors %}
+    <p class="auth-form__error">{{ form.non_field_errors|striptags }}</p>
+  {% endif %}
 
-    <p class="hint">
-      총 비행시간이 6시간 미만인 여정은 등록 불가.<br>
-      경유 없음을 선택한 경우, 대기 시간 인풋 필드 활성화 안 됨.
-    </p>
+  <p class="disclaimer">
+    <span class="disclaimer__icon" aria-hidden="true">!</span>
+    총 비행시간이 6시간 미만인 여정은 등록할 수 없습니다.
+  </p>
 
-    <button type="submit" class="button-primary">다음</button>
-  </form>
-</section>
+  <button type="submit" class="btn btn--primary btn--block">다음</button>
+</form>
 {% endblock %}
