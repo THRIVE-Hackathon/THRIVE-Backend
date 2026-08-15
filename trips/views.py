@@ -232,7 +232,6 @@ def trip_registration_cancel_view(request):
     request.session.pop("trip_draft", None)
     return redirect("trips:home")
 
-
 @login_required
 def trip_survey_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id, user=request.user)

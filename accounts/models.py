@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -55,13 +56,6 @@ class Profile(models.Model):
         MALE = "male", "남성"
         UNDISCLOSED = "undisclosed", "응답 안 함"
 
-    class AgeGroup(models.TextChoices):
-        TEENS = "teens", "10대"
-        TWENTIES_EARLY = "twenties_early", "20대 초반"
-        TWENTIES_LATE = "twenties_late", "20대 후반"
-        THIRTIES = "thirties", "30대"
-        FORTIES_PLUS = "forties_plus", "40대 이상"
-
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -70,7 +64,7 @@ class Profile(models.Model):
     )
     nickname = models.CharField("닉네임", max_length=10)
     gender = models.CharField("성별", max_length=20, choices=Gender.choices)
-    age_group = models.CharField("연령대", max_length=30, choices=AgeGroup.choices)
+    age = models.PositiveSmallIntegerField("나이", validators=[MinValueValidator(1), MaxValueValidator(120)])
     created_at = models.DateTimeField("생성 시각", auto_now_add=True)
     updated_at = models.DateTimeField("수정 시각", auto_now=True)
 

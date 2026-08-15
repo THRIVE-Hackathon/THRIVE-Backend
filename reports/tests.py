@@ -49,13 +49,17 @@ class ReportTests(TestCase):
 
         response = self.client.post(
             reverse("reports:detail", kwargs={"trip_id": self.trip.pk}),
-            {"disruption_score": TripResult.DisruptionScore.DELAYED},
+            {"disruption_score": TripResult.DisruptionScore.MOST_CANCELLED},
         )
 
         self.assertRedirects(response, reverse("reports:detail", kwargs={"trip_id": self.trip.pk}))
         self.trip.refresh_from_db()
         self.assertEqual(self.trip.status, Trip.Status.DONE)
-        self.assertEqual(self.trip.result.disruption_score, TripResult.DisruptionScore.DELAYED)
+        self.assertEqual(
+            self.trip.result.disruption_score,
+            TripResult.DisruptionScore.MOST_CANCELLED,
+        )
+        self.assertEqual(self.trip.result.selected_answer, "대부분의 일정 취소")
 
     def test_report_detail_shows_score_breakdown(self):
         self.client.force_login(self.user)
@@ -63,8 +67,27 @@ class ReportTests(TestCase):
         response = self.client.get(reverse("reports:detail", kwargs={"trip_id": self.trip.pk}))
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["score_points"],
+            [
+                ("예측", 44),
+                ("직후", 61),
+                ("최종", 73),
+            ],
+        )
         self.assertContains(response, "목표 달성률")
         self.assertContains(response, "시차 8시간")
         self.assertContains(response, "저습도 노출")
+
+    def test_report_disruption_form_has_four_design_options(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("reports:detail", kwargs={"trip_id": self.trip.pk}))
+
+        self.assertEqual(len(response.context["form"].fields["disruption_score"].choices), 4)
+        self.assertContains(response, "문제 없음")
+        self.assertContains(response, "대부분의 일정 수행")
+        self.assertContains(response, "절반 정도 수행")
+        self.assertContains(response, "대부분의 일정 취소")
 
 # Create your tests here.

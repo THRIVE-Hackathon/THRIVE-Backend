@@ -5,12 +5,10 @@ from trips.models import Trip
 
 class TripResult(models.Model):
     class DisruptionScore(models.IntegerChoices):
-        NONE = 0, "평소처럼 다 했어요"
-        MILD = 1, "힘들었지만 계획대로 했어요"
-        REDUCED = 2, "일부를 줄이거나 짧게 했어요"
-        DELAYED = 3, "하루치 일정을 미뤘어요"
-        LOST_DAY = 4, "하루를 통째로 쉬었어요"
-        MAJOR_LOSS = 5, "이틀 이상 영향을 받았어요"
+        NONE = 0, "문제 없음"
+        MOST_DONE = 1, "대부분의 일정 수행"
+        HALF_DONE = 2, "절반 정도 수행"
+        MOST_CANCELLED = 3, "대부분의 일정 취소"
 
     trip = models.OneToOneField(
         Trip,

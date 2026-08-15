@@ -27,7 +27,7 @@ class UserAdmin(DjangoUserAdmin):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ["nickname", "user", "gender", "age_group", "created_at"]
+    list_display = ["nickname", "user", "gender", "age", "created_at"]
     search_fields = ["nickname", "user__email"]
 
 # Register your models here.

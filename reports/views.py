@@ -77,10 +77,9 @@ def report_detail_view(request, trip_id):
         item for item in recovery_items if item.status == RecoveryItem.Status.COMPLETED
     ]
     score_points = [
-        ("예상", trip.expected_score),
-        ("실측", trip.actual_score),
-        ("현재", trip.current_score),
-        ("목표", trip.target_score),
+        ("예측", trip.expected_score),
+        ("직후", trip.actual_score),
+        ("최종", trip.current_score),
     ]
     target_progress = None
     if trip.current_score is not None and trip.target_score:

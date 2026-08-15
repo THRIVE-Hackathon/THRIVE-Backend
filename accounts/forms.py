@@ -62,12 +62,12 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ["nickname", "gender", "age_group"]
+        fields = ["nickname", "gender", "age"]
         labels = {
             "gender": "성별",
-            "age_group": "연령대",
+            "age": "나이",
         }
         widgets = {
             "gender": forms.RadioSelect,
-            "age_group": forms.RadioSelect,
+            "age": forms.NumberInput(attrs={"min": 1, "max": 120, "inputmode": "numeric"}),
         }

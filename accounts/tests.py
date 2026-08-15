@@ -32,12 +32,13 @@ class AccountFlowTests(TestCase):
             {
                 "nickname": "지유",
                 "gender": Profile.Gender.FEMALE,
-                "age_group": Profile.AgeGroup.TWENTIES_LATE,
+                "age": 28,
             },
         )
 
         self.assertRedirects(response, reverse("trips:list"))
         self.assertEqual(user.profile.nickname, "지유")
+        self.assertEqual(user.profile.age, 28)
 
     def test_profile_edit_updates_profile(self):
         user = get_user_model().objects.create_user(
@@ -48,7 +49,7 @@ class AccountFlowTests(TestCase):
             user=user,
             nickname="지유",
             gender=Profile.Gender.FEMALE,
-            age_group=Profile.AgeGroup.TWENTIES_LATE,
+            age=28,
         )
         self.client.force_login(user)
 
@@ -57,7 +58,7 @@ class AccountFlowTests(TestCase):
             {
                 "nickname": "유정",
                 "gender": Profile.Gender.UNDISCLOSED,
-                "age_group": Profile.AgeGroup.THIRTIES,
+                "age": 31,
             },
         )
 
@@ -65,6 +66,7 @@ class AccountFlowTests(TestCase):
         user.profile.refresh_from_db()
         self.assertEqual(user.profile.nickname, "유정")
         self.assertEqual(user.profile.gender, Profile.Gender.UNDISCLOSED)
+        self.assertEqual(user.profile.age, 31)
 
     def test_settings_page_shows_policy_summary(self):
         user = get_user_model().objects.create_user(
@@ -75,7 +77,7 @@ class AccountFlowTests(TestCase):
             user=user,
             nickname="지유",
             gender=Profile.Gender.FEMALE,
-            age_group=Profile.AgeGroup.TWENTIES_LATE,
+            age=28,
         )
         self.client.force_login(user)
 
