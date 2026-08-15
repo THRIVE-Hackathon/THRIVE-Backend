@@ -1,0 +1,56 @@
+/* ============================================================
+ * icons.css — 외부 SVG 아이콘 시스템
+ * ============================================================ */
+
+.svg-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  /* 크기는 컨텍스트/유틸에서 지정 (기본값 두지 않음 → 기존 규칙과 충돌 방지) */
+}
+
+/* ---------- 아이콘별 mask (static/icons/) ---------- */
+.svg-icon--account { -webkit-mask-image: url("../icons/IconAccount.svg"); mask-image: url("../icons/IconAccount.svg"); }
+.svg-icon--close   { -webkit-mask-image: url("../icons/IconClose.svg");   mask-image: url("../icons/IconClose.svg"); }
+.svg-icon--dash    { -webkit-mask-image: url("../icons/IconDash.svg");    mask-image: url("../icons/IconDash.svg"); }
+.svg-icon--down    { -webkit-mask-image: url("../icons/IconDown.svg");    mask-image: url("../icons/IconDown.svg"); }
+.svg-icon--flight  { -webkit-mask-image: url("../icons/IconFlight.svg");  mask-image: url("../icons/IconFlight.svg"); }
+.svg-icon--guide   { -webkit-mask-image: url("../icons/IconGuide.svg");   mask-image: url("../icons/IconGuide.svg"); }
+.svg-icon--home    { -webkit-mask-image: url("../icons/IconHome.svg");    mask-image: url("../icons/IconHome.svg"); }
+.svg-icon--land    { -webkit-mask-image: url("../icons/IconLand.svg");    mask-image: url("../icons/IconLand.svg"); }
+.svg-icon--left    { -webkit-mask-image: url("../icons/IconLeft.svg");    mask-image: url("../icons/IconLeft.svg"); }
+.svg-icon--minus   { -webkit-mask-image: url("../icons/IconMinus.svg");   mask-image: url("../icons/IconMinus.svg"); }
+.svg-icon--more    { -webkit-mask-image: url("../icons/IconMore.svg");    mask-image: url("../icons/IconMore.svg"); }
+.svg-icon--next    { -webkit-mask-image: url("../icons/IconNext.svg");    mask-image: url("../icons/IconNext.svg"); }
+.svg-icon--plane   { -webkit-mask-image: url("../icons/IconPlane.svg");   mask-image: url("../icons/IconPlane.svg"); }
+.svg-icon--plus    { -webkit-mask-image: url("../icons/IconPlus.svg");    mask-image: url("../icons/IconPlus.svg"); }
+.svg-icon--record  { -webkit-mask-image: url("../icons/IconRecord.svg");  mask-image: url("../icons/IconRecord.svg"); }
+.svg-icon--right   { -webkit-mask-image: url("../icons/IconRight.svg");   mask-image: url("../icons/IconRight.svg"); }
+.svg-icon--star    { -webkit-mask-image: url("../icons/Star.svg");        mask-image: url("../icons/Star.svg"); }
+
+/* ---------- 컨텍스트별 크기 재지정 ---------- */
+.stage-tab__item .svg-icon      { width: 24px; height: 24px; flex: 0 0 24px; }
+.flight-card__plane .svg-icon   { width: 32px; height: 32px; }
+.score-compare__plane .svg-icon { width: 40px; height: 40px; }
+
+/* ---------- 이번 아이콘 교체분 크기/색상 보강 ---------- */
+.auth-brand__icon .svg-icon      { width: 44px; height: 44px; }
+.app-header__btn .svg-icon       { width: 24px; height: 24px; }
+.trip-card__arrow.svg-icon       { width: 20px; height: 20px; }
+.calc-toggle__chevron.svg-icon   { width: 20px; height: 20px; color: var(--color-gray-300); }
+
+/* stage-tab: 파일엔 색이 없으므로 상태별 색을 여기서 지정 */
+.stage-tab__item .svg-icon           { color: var(--color-cyan-200); }
+.stage-tab__item.is-active .svg-icon { color: var(--color-cyan-500); }
+.score-compare__plane .svg-icon      { color: var(--color-cyan-500); }
+
+/* 카운터 ± 버튼(main-done) / 탭바(base) */
+.counter__btn[data-step="-1"] .svg-icon { color: var(--color-gray-400);   width: 20px; height: 20px; }
+.counter__btn[data-step="1"]  .svg-icon { color: var(--color-violet-900); width: 20px; height: 20px; }
+.app-tabbar__icon.svg-icon              { width: 24px; height: 24px; }

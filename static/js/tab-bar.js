@@ -11,11 +11,19 @@
  */
 (function () {
   const NS = (window.THRIVE = window.THRIVE || {});
-
+ 
+  /* 서버에서 hrefs를 넘기지 않았을 때의 폴백
+     (권장: 템플릿에서 {% url %} 로 직접 주입 -> 이 값은 사용되지 않음) */
+  const DEFAULT_HREFS = {
+    record: "/trips/",
+    home: "/trips/home/",
+    mypage: "/accounts/profile/",
+  };
+ 
   const TABS = [
-    { key: "record", label: "기록", href: "../THRIVE-Frontend/src/pages/record/record.html", icon: iconRecord },
-    { key: "home",   label: "메인", href: "../../../index.html",       icon: iconHome },
-    { key: "mypage", label: "설정", href: "../THRIVE-Frontend/src/pages/mypage/profile.html",   icon: iconAccount },
+    { key: "record", label: "기록", icon: iconRecord },
+    { key: "home", label: "메인", icon: iconHome },
+    { key: "mypage", label: "설정", icon: iconAccount },
   ];
 
   NS.createTabBar = function createTabBar(opts) {
