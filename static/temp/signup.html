@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 회원가입</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/auth.css" />
+  </head>
+  <body>
+    <!-- 인증 화면(A2): 헤더 O(회원가입 + 닫기), 탭바 없음 -->
+    <div class="app" id="app">
+      <!-- 헤더: 가운데 제목 + 우측 닫기(X). common.css .app-header 재사용 -->
+      <header class="app-header">
+        <h1 class="app-header__title">회원가입</h1>
+        <!-- 닫기: 가입 취소 → 로그인으로. [Django] 필요 시 서버 라우트로 교체 -->
+        <a
+          class="app-header__btn app-header__btn--close"
+          href="./login.html"
+          aria-label="닫기"
+        >
+          <span class="svg-icon svg-icon--close"></span>
+        </a>
+      </header>
+
+      <main class="app__body app__body--signup">
+        <!-- 2단계 진행바: 1/2 (이메일·비밀번호 단계) -->
+        <div class="auth-steps" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="2" aria-label="회원가입 1/2 단계">
+          <span class="auth-steps__dot is-active"></span>
+          <span class="auth-steps__dot"></span>
+        </div>
+
+        <!--
+          [Django 연동 지점]
+          - action        : 회원가입 처리 URL (예: {% url 'auth:signup' %})
+          - 성공 시 서버는 A3 프로필 입력으로 리다이렉트 (명세서 A2 예외: 가입 성공 → A3)
+          - data-next     : 데모 모드에서 JS가 이동시킬 다음 화면(A3). 서버 연동 시 미사용.
+          - data-demo="true": 서버 미연동 상태에서 실제 POST를 막고 A3 이동만 시연.
+                              Django 연동 시 이 속성만 제거하면 폼이 그대로 POST됨.
+        -->
+        <form
+          class="auth-form auth-form--signup auth-form--tall"
+          method="post"
+          action="/auth/signup/"
+          novalidate
+          data-auth="signup"
+          data-demo="true"
+          data-next="./profile-setup.html"
+        >
+          <!-- [Django] {% csrf_token %} 으로 치환 -->
+          <input type="hidden" name="csrfmiddlewaretoken" value="" data-csrf />
+
+          <!-- FA201 이메일 형식 / FA202 중복(서버) -->
+          <div class="field" data-field="email">
+            <label class="field__label" for="signup-email">이메일</label>
+            <input
+              class="field__input"
+              id="signup-email"
+              name="email"
+              type="email"
+              placeholder="E-mail@email.com"
+              autocomplete="email"
+              value=""
+              required
+            />
+            <!-- 이메일이면 이 요소에
+              data-server-error="이미 가입된 이메일입니다" 주입 (FA202 예외)
+            -->
+            <p class="field__msg"></p>
+          </div>
+
+          <!-- FA203 비밀번호 8자 이상, 실시간 조건 표시 -->
+          <div class="field" data-field="password">
+            <label class="field__label" for="signup-password">비밀번호</label>
+            <input
+              class="field__input"
+              id="signup-password"
+              name="password1"
+              type="password"
+              placeholder="8자 이상"
+              autocomplete="new-password"
+              required
+            />
+            <!-- 실시간 힌트 전용 요소(auth-form.js). 입력 전엔 비워 두어 숨김 -->
+            <p class="field__msg" data-pw-hint></p>
+          </div>
+
+          <!-- FA204 비밀번호 확인 일치 검사 -->
+          <div class="field" data-field="password-confirm">
+            <label class="field__label" for="signup-password2">비밀번호 확인</label>
+            <input
+              class="field__input"
+              id="signup-password2"
+              name="password2"
+              type="password"
+              placeholder="8자 이상"
+              autocomplete="new-password"
+              required
+            />
+            <p class="field__msg"></p>
+          </div>
+
+          <!-- FA205 약관 동의(필수 1건) + 전문 보기 -->
+          <div class="auth-agree">
+            <label class="auth-agree__row">
+              <input
+                class="auth-agree__input"
+                type="checkbox"
+                name="terms_agreed"
+                value="on"
+                required
+              />
+              <span class="auth-agree__box" aria-hidden="true"></span>
+              <span>개인정보 수집·이용에 동의합니다 (필수)</span>
+            </label>
+          </div>
+
+          <!--
+            FA206 계정 생성. 명세 예외:
+            - 비밀번호 8자 미만 / 불일치 / 동의 미체크 → [다음] 비활성 유지
+          -->
+          <button class="btn btn--primary btn--block" type="submit" disabled>다음</button>
+        </form>
+      </main>
+    </div>
+
+    <script src="../../scripts/auth-form.js"></script>
+  </body>
+</html>

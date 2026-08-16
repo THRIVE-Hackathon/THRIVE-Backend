@@ -58,9 +58,8 @@
 /* trip-card__arrow, disclaimer__icon 등 '아이콘 요소 자체'에 클래스가 붙는 경우는
  * 기존 규칙의 width/height/color 가 그대로 유효하므로 별도 크기 지정 불필요.
  * (그 요소에 svg-icon svg-icon--right 만 함께 붙이면 됨) */
-
-/* ---------- 이번 아이콘 교체분 크기/색상 보강 ---------- */
 .auth-brand__icon .svg-icon      { width: 44px; height: 44px; }
+.home-empty__title-icon .svg-icon      { width: 48px; height: 48px; color: var(--color-cyan-400);}
 .app-header__btn .svg-icon       { width: 24px; height: 24px; }
 .app-header__btn--close .svg-icon {
   width: 16px;
@@ -73,7 +72,7 @@
 /* stage-tab: 파일엔 색이 없으므로 상태별 색을 여기서 지정(원본은 svg fill에 하드코딩돼 있었음) */
 .stage-tab__item .svg-icon           { color: var(--color-cyan-200); }
 .stage-tab__item.is-active .svg-icon { color: var(--color-cyan-500); }
-.score-compare__plane .svg-icon      { color: var(--color-cyan-500); }
+.score-compare__plane .svg-icon      { color: var(--color-cyan-400); }
 
 /* 카운터 ± 버튼(main-done) / 탭바(base) */
 .counter__btn[data-step="-1"] .svg-icon { color: var(--color-gray-400);   width: 20px; height: 20px; }

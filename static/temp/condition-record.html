@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 오늘 컨디션 기록</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/home.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+  </head>
+  <body>
+    <!--
+      컨디션 기록(main-done-input) — 모달형 전체화면 (상단 헤더 + X, 하단 탭바 없음)
+      [Django] 폼 제출 → 서버 저장 후 홈으로 리다이렉트.
+        · action  : {% url 'home:condition_save' %}
+        · 성공 시 : 홈(../../../index.html, 레포 루트)으로 redirect
+        · data-demo="true" 동안엔 실제 POST 없이 홈으로 이동만 시연.
+    -->
+    <div class="app" id="app">
+      <!-- 헤더 mount 자리 (createHeader 로 title + X) -->
+      <div id="header-mount"></div>
+
+      <main class="app__body app__body--push">
+        <div class="condition-head">
+          <h1 class="text-title-1">컨디션 기록</h1>
+          <p class="condition-head__caption">
+            오늘의 컨디션은 어떠한지 선택해 주세요.
+          </p>
+        </div>
+
+        <!--
+          단일 선택(radio). 선택 상태는 :checked 로 스타일링.
+          [Django] {% for opt in condition_options %} 로 반복 가능.
+                   초기 선택값이 있으면 해당 input 에 checked 주입.
+        -->
+        <form
+          class="condition-form"
+          method="post"
+          action="/home/condition/save/"
+          data-demo="true"
+          data-home="../../../index.html"
+        >
+          <input type="hidden" name="csrfmiddlewaretoken" value="" data-csrf />
+
+          <div class="condition-options" role="radiogroup" aria-label="오늘 컨디션">
+            <label class="condition-option">
+              <input class="condition-option__input" type="radio" name="score" value="5" />
+              <span class="condition-option__box">매우 좋음</span>
+            </label>
+            <label class="condition-option">
+              <input class="condition-option__input" type="radio" name="score" value="4" />
+              <span class="condition-option__box">좋음</span>
+            </label>
+            <label class="condition-option">
+              <input class="condition-option__input" type="radio" name="score" value="3" />
+              <span class="condition-option__box">보통</span>
+            </label>
+            <label class="condition-option">
+              <input class="condition-option__input" type="radio" name="score" value="2" checked />
+              <span class="condition-option__box">피곤함</span>
+            </label>
+            <label class="condition-option">
+              <input class="condition-option__input" type="radio" name="score" value="1" />
+              <span class="condition-option__box">매우 피곤함</span>
+            </label>
+          </div>
+
+          <button class="btn btn--primary btn--block btn--home condition-save" type="submit">
+            컨디션 저장
+          </button>
+        </form>
+
+        <!-- 면책 안내는 화면 맨 아래로 -->
+        <p class="disclaimer push-bottom">
+          <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="currentColor"/></svg>
+          <span
+            >이 기록은 점수에 직접 반영되지 않으며 참고 지표입니다. 회복 과정의
+            변화를 기록하면 리포트 분석에 도움이 됩니다.</span
+          >
+        </p>
+      </main>
+    </div>
+
+    <script src="../../components/header.js"></script>
+    <script src="../../scripts/condition-record.js"></script>
+    <script>
+      // 상단 헤더: 가운데 제목 + 우측 X (닫으면 홈으로)
+      document.getElementById("header-mount").append(
+        THRIVE.createHeader({
+          title: "오늘 컨디션 기록",
+          onClose: function () {
+            window.location.href = "../../../index.html";
+          },
+        })
+      );
+    </script>
+  </body>
+</html>

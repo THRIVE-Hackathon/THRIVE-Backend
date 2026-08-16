@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 회복 리포트</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/home.css" />
+    <link rel="stylesheet" href="../../styles/record.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+  </head>
+  <body>
+    <!--
+      ============================================================
+      회복 리포트 (통합) → 백엔드 reports/detail.html
+      ============================================================
+      · report.html(지난 리포트 조회) + recovery-report.html(종료 직후·설문) 을
+        하나로 합류한 기준 파일입니다. 두 화면의 차이는 딱 두 군데뿐입니다:
+          (A) 최상단 타이틀      (조회=날짜 / 신규=인사문구)
+          (B) '일정 차질도' 섹션 (조회=응답 결과 표시 / 신규=설문 폼)
+        나머지 블록(여정카드·점수요약·추이·요소분석·면책)은 두 상태 공통 = 완전 동일.
+      · [Django] 분기는 {% if result %} … {% else %} … {% endif %} 로 처리.
+        result 는 TripResult(설문 응답) 객체. 있으면 '조회', 없으면 '설문'.
+      · data-list : 닫기(X) 시 이동할 기록 목록 경로. 연동 시 {% url 'trips:list' %}.
+    -->
+    <div class="app" id="app" data-list="../record/record.html">
+      <div id="header-mount"></div>
+
+      <main class="app__body">
+        <!-- ============ (A) 최상단 타이틀 : 상태별 분기 ============ -->
+        <!-- [Django] {% if result %} 조회 상태: 날짜 타이틀 -->
+        <h1 class="record-report__date text-title-1" data-report-date>26년 09월 17일</h1>
+        <!-- [Django] {% else %} 신규 상태: 인사 타이틀
+        <h1 class="report-title text-title-1">
+          <span data-user>유저</span>님, 회복 루틴이 종료되어<br />리포트가 생성되었어요.
+        </h1>
+        {% endif %} -->
+
+        <!-- ============ 여정 요약 카드 (공통) ============ -->
+        <!--
+          [Django] 주입 필드:
+            · trip.origin_airport.iata_code / .city_name
+            · trip.destination_airport.iata_code / .city_name
+            · trip.created_at                       → 날짜(Y.m.d)
+            · trip.total_flight_minutes             → 시간 환산
+            · trip.get_layover_count_display        → 경유
+            · 점수: {% if trip.current_score is not None %}{{ trip.current_score }}{% else %}-{% endif %}
+        -->
+        <article class="trip-card">
+          <div class="trip-card__main">
+            <div class="trip-card__route">
+              <span class="trip-card__point">
+                <span class="trip-card__code" data-origin-code>BKK</span>
+                <span class="trip-card__city" data-origin-city>수완나품</span>
+              </span>
+              <span class="trip-card__arrow svg-icon svg-icon--next" aria-hidden="true"></span>
+              <span class="trip-card__point">
+                <span class="trip-card__code" data-dest-code>ICN</span>
+                <span class="trip-card__city" data-dest-city>인천</span>
+              </span>
+            </div>
+            <div class="trip-card__meta">
+              <span data-date>26년 09월 17일</span><span class="trip-card__meta-sep" aria-hidden="true">│</span><span data-flight-hours>9시간 55분</span><span class="trip-card__meta-sep" aria-hidden="true">│</span><span data-layover>경유 1</span>
+            </div>
+          </div>
+          <div class="trip-card__score">
+            <span class="trip-card__score-label">점수</span>
+            <span class="trip-card__score-value" data-final-score>89</span>
+          </div>
+        </article>
+
+        <!-- ============ 회복 점수 요약 (공통) ============ -->
+        <section class="home-section">
+          <h2 class="home-section__title text-heading-1">회복 점수 요약</h2>
+
+          <!--
+            [Django] data-final-score  → {{ trip.current_score }}
+                     data-goal-percent → {{ target_progress }}  (목표 대비 %)
+          -->
+          <div class="report-summary">
+            <div class="report-score"><span data-final-score>89</span>점</div>
+            <p class="report-summary__caption">
+              목표를 <span data-goal-percent>100</span>% 달성했어요.
+            </p>
+          </div>
+
+          <!--
+            점수 추이 (예측 → 직후 → 최종)
+            [Django] 값 주입:
+              data-predicted-score → 예측(expected_score)
+              data-immediate-score → 직후(actual_score)
+              data-final-score     → 최종(current_score)
+            (백엔드 score_points 리스트를 쓰면 라벨/값 순서대로 매핑됩니다.)
+          -->
+          <div class="trend-card">
+            <svg
+              class="trend-chart"
+              viewBox="0 0 320 100"
+              role="img"
+              aria-label="점수 추이: 예측 76점, 직후 87점, 최종 89점"
+            >
+              <polyline
+                points="53.33,66.67 160,46.67 266.67,33.33"
+                fill="none"
+                stroke="var(--color-gray-300)"
+                stroke-width="2"
+              />
+              <circle cx="53.33" cy="66.67" r="10" fill="var(--color-violet-200)" />
+              <circle cx="160" cy="46.67" r="10" fill="var(--color-violet-400)" />
+              <g transform="translate(266.67,33.33)" fill="var(--color-violet-500)">
+                <path
+                  transform="translate(-12,-11)"
+                  d="M10.9841 0.560024C11.4376 -0.186675 12.5624 -0.186674 13.0159 0.560025L16.1735 5.759C16.3396 6.03253 16.618 6.22648 16.9406 6.29348L23.0722 7.56683C23.9528 7.74971 24.3004 8.77564 23.7001 9.42001L19.5199 13.9065C19.3 14.1425 19.1937 14.4564 19.2269 14.7713L19.8589 20.7573C19.9497 21.617 19.0397 22.251 18.2151 21.9026L12.4741 19.4764C12.172 19.3488 11.828 19.3488 11.5259 19.4764L5.78489 21.9026C4.96034 22.251 4.05032 21.617 4.14109 20.7573L4.77307 14.7713C4.80632 14.4564 4.69999 14.1425 4.48007 13.9065L0.299942 9.42001C-0.300426 8.77564 0.0471687 7.74971 0.927817 7.56683L7.05942 6.29348C7.38202 6.22648 7.66039 6.03253 7.82652 5.75899L10.9841 0.560024Z"
+                />
+              </g>
+            </svg>
+            <div class="trend-legend">
+              <div class="trend-legend__col">
+                <div class="trend-legend__name">예측</div>
+                <div class="trend-legend__score">
+                  <span data-predicted-score>76</span>점
+                </div>
+              </div>
+              <div class="trend-legend__col">
+                <div class="trend-legend__name">직후</div>
+                <div class="trend-legend__score">
+                  <span data-immediate-score>87</span>점
+                </div>
+              </div>
+              <div class="trend-legend__col">
+                <div class="trend-legend__name">최종</div>
+                <div class="trend-legend__score">
+                  <span data-final-score>89</span>점
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 요소별 분석 (공통) ============ -->
+        <section class="home-section">
+          <h2 class="home-section__title text-heading-1">요소별 분석</h2>
+
+          <div class="factor-card">
+            <!--
+              [Django] {% for item in score_breakdown_items %}
+              ↓↓↓ 아래 .factor 하나당 항목 1개입니다. 이 블록만 반복 렌더하는 형태로 수정이 가능합니다.
+              주입 필드:
+                · item.label                 → 요소명(수면·리듬/순환/수분/피부)
+                · item.score                 → +N점 / −N점 (부호 포함)
+                · 상태 문구(회복됨/지연됨)   → item.detail 등
+                · bar__fill width            → item.magnitude (%)  없으면 바 생략
+            -->
+            <div class="factor">
+              <div class="factor__head">
+                <span class="factor__label" data-factor-label>수면·리듬</span>
+                <span class="factor__delta"><span data-factor-score>+ 4점</span> <small data-factor-state>(회복됨)</small></span>
+              </div>
+              <div class="bar"><span class="bar__fill" style="width: 88%"></span></div>
+            </div>
+            <div class="factor">
+              <div class="factor__head">
+                <span class="factor__label" data-factor-label>순환</span>
+                <span class="factor__delta"><span data-factor-score>+ 4점</span> <small data-factor-state>(회복됨)</small></span>
+              </div>
+              <div class="bar"><span class="bar__fill" style="width: 88%"></span></div>
+            </div>
+            <div class="factor">
+              <div class="factor__head">
+                <span class="factor__label" data-factor-label>수면·리듬</span>
+                <span class="factor__delta"><span data-factor-score>+ 4점</span> <small data-factor-state>(회복됨)</small></span>
+              </div>
+              <div class="bar"><span class="bar__fill" style="width: 88%"></span></div>
+            </div>
+            <div class="factor">
+              <div class="factor__head">
+                <span class="factor__label" data-factor-label>피부</span>
+                <span class="factor__delta"><span data-factor-score>+ 4점</span> <small data-factor-state>(회복됨)</small></span>
+              </div>
+              <div class="bar"><span class="bar__fill" style="width: 88%"></span></div>
+            </div>
+            <!-- [Django] {% endfor %} -->
+          </div>
+
+          <!-- [Django] 요약 문구 → {{ report_note }} 등 -->
+          <p class="report-note" data-report-note>모든 관리가 잘 이루어졌어요.</p>
+        </section>
+
+        <!-- ============ (B) 일정 차질도 : 상태별 분기 ============ -->
+        <section class="home-section">
+          <h2 class="home-section__title text-heading-1">일정 차질도</h2>
+
+          <!-- ─────────── [Django] {% if result %} 조회 상태: 저장된 응답만 표시 ─────────── -->
+          <p class="survey__question">
+            착륙 다음 날, 계획했던 일을 얼마나 하셨나요?
+          </p>
+          <div class="survey-result" data-survey-result>일부를 줄이거나 짧게 했어요</div>
+          <!-- [Django] data-survey-result → {{ result.selected_answer }} -->
+
+          <!-- ─────────── [Django] {% else %} 신규 상태: 설문 폼 ───────────
+          <p class="survey__question">착륙 다음 날, 계획했던 일을 얼마나 하셨나요?</p>
+          <form
+            id="survey-form"
+            class="survey"
+            method="post"
+            action=""              [Django] action="{% url 'reports:detail' trip.id %}" (POST)
+            data-demo="true"
+            data-home="../../../index.html"
+          >
+            [Django] {% csrf_token %}
+            <input type="hidden" name="csrfmiddlewaretoken" value="" data-csrf />
+            <div class="survey__grid" role="radiogroup" aria-label="일정 차질도">
+
+              [Django] {% for value, label in form.disruption_score.field.choices %}
+              ↓↓↓ 아래 survey-option 하나가 '대표(정답) 1개'입니다. 이 블록만 반복 렌더하세요.
+              name 은 반드시 "disruption_score", value 는 0~5 (총 6개):
+                0 평소처럼 다 했어요 / 1 힘들었지만 계획대로 했어요 /
+                2 일부를 줄이거나 짧게 했어요 / 3 하루치 일정을 미뤘어요 /
+                4 하루를 통째로 쉬었어요 / 5 이틀 이상 영향을 받았어요
+              <label class="survey-option">
+                <input class="survey-option__input" type="radio" name="disruption_score" value="{{ value }}" />
+                <span class="survey-option__box">{{ label }}</span>
+              </label>
+              [Django] {% endfor %}
+
+            </div>
+          </form>
+          {% endif %} -->
+        </section>
+
+        <!-- ============ 면책 안내 (공통) ============ -->
+        <p class="disclaimer" style="margin-top: var(--space-5)">
+          <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="currentColor"/></svg>
+          <span>이 점수는 의학적 진단이 아닌 참고 지표입니다.</span>
+        </p>
+
+        <!-- ============ 하단 고정 확인 버튼 : 신규(설문) 상태에서만 ============ -->
+        <!-- [Django] {% if not result %} -->
+        <div class="report-actions">
+          <button
+            class="btn btn--primary btn--block btn--home"
+            type="submit"
+            form="survey-form"
+          >
+            확인
+          </button>
+        </div>
+        <!-- [Django] {% endif %} -->
+      </main>
+    </div>
+
+    <script src="../../components/header.js"></script>
+    <script src="../../scripts/recovery-report.js"></script>
+    <script>
+      (function () {
+        var app = document.getElementById("app");
+        var listUrl = app.dataset.list || "./record.html";
+        document.getElementById("header-mount").append(
+          THRIVE.createHeader({
+            // [Django] 조회="지난 회복 리포트" / 신규="회복 리포트" 로 분기 가능
+            title: "회복 리포트",
+            onClose: function () {
+              window.location.href = listUrl;
+            },
+          })
+        );
+      })();
+    </script>
+  </body>
+</html>

@@ -18,9 +18,9 @@
      (권장: 템플릿에서 {% url %} 로 직접 주입 -> 이 값은 사용되지 않음)
      현재는 정적 HTML 데모 단계라 상대경로로 채워 화면 이동이 가능하게 함. */
   const DEFAULT_HREFS = {
-    record: "../record/record.html",
-    home: "../../../index.html",
-    mypage: "../mypage/profile.html",
+    record: "src/pages/record/record.html",
+    home: "index.html",
+    mypage: "src/pages/mypage/profile.html",
   };
 
   const TABS = [
