@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 프로필 작성</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/auth.css" />
+  </head>
+  <body>
+    <!-- 인증 화면(A3): 헤더 O(회원가입 + 닫기), 탭바 없음 -->
+    <div class="app" id="app">
+      <header class="app-header">
+        <h1 class="app-header__title">회원가입</h1>
+        <a
+          class="app-header__btn app-header__btn--close"
+          href="./login.html"
+          aria-label="닫기"
+        >
+          <span class="svg-icon svg-icon--close"></span>
+        </a>
+      </header>
+
+      <main class="app__body app__body--profile">
+        <!-- 2단계 진행바: 2/2 (프로필 단계) -->
+        <div class="auth-steps" role="progressbar" aria-valuenow="2" aria-valuemin="1" aria-valuemax="2" aria-label="회원가입 2/2 단계">
+          <span class="auth-steps__dot"></span>
+          <span class="auth-steps__dot is-active"></span>
+        </div>
+        
+        <!--
+          [Django 연동 지점]
+          - action        : 프로필 저장 처리 URL (예: {% url 'auth:profile' %})
+          - 성공 시 서버는 Profile 생성 후 홈(index.html)으로 리다이렉트 (FA305)
+          - data-home     : 데모 모드에서 JS가 이동시킬 홈 경로. 서버 연동 시 미사용.
+          - data-demo="true": 서버 미연동 상태에서 실제 POST를 막고 홈 이동만 시연.
+                              Django 연동 시 이 속성만 제거하면 폼이 그대로 POST됨.
+        -->
+        <form
+          class="auth-form auth-form--profile auth-form--tall"
+          method="post"
+          action="/auth/profile/"
+          novalidate
+          data-auth="profile"
+          data-demo="true"
+          data-home="../../../index.html"
+        >
+          <!-- [Django] {% csrf_token %} 으로 치환 -->
+          <input type="hidden" name="csrfmiddlewaretoken" value="" data-csrf />
+
+          <!-- FA301 닉네임: 2~10자 -->
+          <div class="field" data-field="nickname">
+            <label class="field__label" for="profile-nickname">닉네임</label>
+            <input
+              class="field__input"
+              id="profile-nickname"
+              name="nickname"
+              type="text"
+              placeholder="2자 이상"
+              autocomplete="nickname"
+              maxlength="10"
+              value=""
+              required
+            />
+            <p class="field__msg"></p>
+          </div>
+
+          <!-- FA302 성별: 여성 / 남성 (세그먼트 토글). 선택값은 hidden input으로 전송 -->
+          <div class="field" data-field="gender">
+            <span class="field__label">성별</span>
+            <div class="segmented" role="radiogroup" aria-label="성별">
+              <button type="button" class="segmented__btn" data-value="female" aria-pressed="false">여성</button>
+              <button type="button" class="segmented__btn" data-value="male" aria-pressed="false">남성</button>
+            </div>
+            <input type="hidden" name="gender" value="" data-gender-value />
+            <p class="field__msg"></p>
+          </div>
+
+          <!--
+            FA303 나이 입력.
+          -->
+          <div class="field" data-field="age">
+            <label class="field__label" for="profile-age">나이</label>
+            <input
+              class="field__input"
+              id="profile-age"
+              name="age"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              max="120"
+              placeholder="입력"
+              required
+            />
+            <p class="field__msg"></p>
+          </div>
+
+          <!-- 미완성 제출 시 하단 통합 안내(디자인의 "*필수 입력란입니다."). 평소엔 숨김 -->
+          <p class="auth-form__error" role="alert" data-server-error=""></p>
+
+          <!--
+            FA305 프로필 저장 / 홈 이동
+          -->
+          <button class="btn btn--primary btn--block" type="submit" disabled>완료</button>
+        </form>
+      </main>
+    </div>
+
+    <script src="../../scripts/profile-form.js"></script>
+  </body>
+</html>

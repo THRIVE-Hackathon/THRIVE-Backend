@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 기록</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/record.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+  </head>
+  <body>
+    <!--
+      기록 탭(record/trip-list) → 백엔드 trips/list.html
+      [Django] data-home : 홈(index) 경로. 하단 탭바 '메인' 링크를 이 값으로 교정
+               → 연동 시 {% url 'trips:home' %}
+    -->
+    <div class="app" id="app" data-home="../../../index.html">
+      <main class="app__body">
+        <!-- ============ 진행 중 여정 ============ -->
+        <!--
+          [Django] {% if active_trip %}  (진행 중 여정이 있을 때만 이 section 출력)
+          주입 필드:
+            · active_trip.origin_airport.iata_code / .city_name
+            · active_trip.destination_airport.iata_code / .city_name
+            · active_trip.departure_at            → 출발일시
+            · active_trip.total_flight_minutes    → 시간 환산(div_minutes_to_hours)
+            · active_trip.get_layover_count_display → 경유
+          링크: 카드 클릭 시 {% url 'trips:home' %}
+        -->
+        <section>
+          <h2 class="record-section__title text-heading-1">진행 중 여정</h2>
+
+          <article class="flight-card">
+            <div class="flight-card__route">
+              <div class="flight-card__point">
+                <div class="flight-card__code" data-origin-code>ICN</div>
+                <div class="flight-card__airport" data-origin-city>인천국제공항</div>
+              </div>
+
+              <span class="flight-card__plane" aria-hidden="true">
+                <span class="svg-icon svg-icon--flight"></span>
+              </span>
+
+              <div class="flight-card__point">
+                <div class="flight-card__code" data-dest-code>MXP</div>
+                <div class="flight-card__airport" data-dest-city>말펜사공항</div>
+              </div>
+            </div>
+
+            <div class="flight-card__meta">
+              <span data-departure>10월 11일(일) 15:30 출발</span>
+              <span class="flight-card__sep" aria-hidden="true">│</span>
+              <span data-flight-hours>총 22시간 비행</span>
+              <span class="flight-card__sep" aria-hidden="true">│</span>
+              <span data-layover>경유 1</span>
+            </div>
+          </article>
+        </section>
+        <!-- [Django] {% endif %} -->
+
+        <!-- ============ 지난 여정 ============ -->
+        <section>
+          <h2 class="record-section__title text-heading-1">지난 여정</h2>
+
+          <div class="trip-list">
+            <!--
+              [Django] {% for trip in past_trips %}
+              ↓↓↓ 아래 trip-card 하나가 '대표(정답) 1개'입니다. 이 블록만 반복 렌더하세요.
+              주입 필드:
+                · href                                 → {% url 'reports:detail' trip.id %}
+                · trip.origin_airport.iata_code/.city_name
+                · trip.destination_airport.iata_code/.city_name
+                · trip.created_at                      → 날짜(m.d 등)
+                · trip.total_flight_minutes            → 시간 환산
+                · 상태/메타 라인 마지막칸:
+                    {% if trip.result %}{{ trip.result.selected_answer }}
+                    {% elif trip.is_report_required %}리포트 작성 필요
+                    {% else %}{{ trip.get_status_display }}{% endif %}
+                · 점수:
+                    {% if trip.current_score is not None %}{{ trip.current_score }}
+                    {% elif trip.actual_score is not None %}{{ trip.actual_score }}
+                    {% elif trip.expected_score is not None %}{{ trip.expected_score }}
+                    {% else %}-{% endif %}
+            -->
+            <a class="trip-card" href="../home/recovery-report.html">
+              <div class="trip-card__main">
+                <div class="trip-card__route">
+                  <span class="trip-card__point">
+                    <span class="trip-card__code" data-origin-code>BKK</span>
+                    <span class="trip-card__city" data-origin-city>수완나품</span>
+                  </span>
+                  <span class="trip-card__arrow svg-icon svg-icon--next" aria-hidden="true"></span>
+                  <span class="trip-card__point">
+                    <span class="trip-card__code" data-dest-code>ICN</span>
+                    <span class="trip-card__city" data-dest-city>인천</span>
+                  </span>
+                </div>
+                <div class="trip-card__meta">
+                  <span data-date>26년 09월 17일</span><span class="trip-card__meta-sep" aria-hidden="true">│</span><span data-flight-hours>9시간 55분</span><span class="trip-card__meta-sep" aria-hidden="true">│</span><span data-status>경유 1</span>
+                </div>
+              </div>
+              <div class="trip-card__score">
+                <span class="trip-card__score-label">점수</span>
+                <span class="trip-card__score-value" data-score>89</span>
+              </div>
+            </a>
+            <!-- [Django] {% endfor %} -->
+
+            <!--
+              [Django] {% empty %} 또는 {% if not past_trips %} 빈 상태
+              <p class="text-muted">아직 지난 여정 기록이 없습니다.</p>
+            -->
+          </div>
+        </section>
+      </main>
+
+      <!-- 하단 탭바 mount 자리: 기록 탭 활성 -->
+    </div>
+
+    <script src="../../components/tab-bar.js"></script>
+    <script>
+      (function () {
+        var app = document.getElementById("app");
+        var tabbar = THRIVE.createTabBar({ active: "record" });
+        var homeTab = tabbar.querySelector('a[data-key="home"]');
+        if (homeTab && app.dataset.home) homeTab.setAttribute("href", app.dataset.home);
+        app.append(tabbar);
+      })();
+    </script>
+  </body>
+</html>

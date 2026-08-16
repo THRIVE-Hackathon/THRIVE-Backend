@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 회복 계획 (비행 후)</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/home.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+  </head>
+  <body>
+    <!--
+      ============================================================
+      회복 계획 · 비행 후 (백엔드 recovery/plan.html 에 대응)
+      ============================================================
+      · 라우팅 상태: thrive_trip_status = "recovering" 일 때 index.html 이 이 화면으로 리다이렉트.
+      · 이 파일은 순수 HTML(디자인 미리보기)입니다. 표시된 숫자/항목은 샘플입니다.
+      · [Django] 주석 = 실제 연동 시 그 자리에 들어갈 서버 템플릿 코드.
+    -->
+    <div class="app" id="app">
+      <!-- [Django] 상단 헤더 없음(프론트 기준). base 의 app_header 블록 미override -->
+
+      <!-- ============ 여정 단계 탭 (비행 후 활성) ============ -->
+      <nav class="stage-tab" aria-label="여정 단계">
+        <span class="stage-tab__item" aria-label="비행 전">
+          <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
+        </span>
+        <span class="stage-tab__item" aria-label="비행 중">
+          <span class="svg-icon svg-icon--plane" aria-hidden="true"></span>
+        </span>
+        <span class="stage-tab__item is-active" aria-current="step" aria-label="비행 후">
+          <span class="svg-icon svg-icon--land" aria-hidden="true"></span>
+          <span>비행 후</span>
+        </span>
+      </nav>
+
+      <main class="app__body">
+        <!-- 인사말: 닉네임 + 남은 시간 -->
+        <!-- [Django] 유저 → {{ request.user.profile.nickname }} , 68 → {{ remaining_hours }} -->
+        <h1 class="home-greeting text-title-1">
+          <span data-user>유저</span>님, 회복 루틴 종료까지<br />
+          <span class="home-greeting__accent"><span data-remaining-hours>68</span>시간</span>
+          남았어요.
+        </h1>
+
+        <!-- ============ 회복 루틴 ============ -->
+        <section class="home-section">
+          <h2 class="home-section__title text-heading-1">회복 루틴</h2>
+
+          <!-- [Django] 74 → {{ trip.current_score }} , 84 → {{ trip.target_score }} -->
+          <p class="routine-score">
+            <span class="routine-score__value"><span data-current-score>74</span>점</span>
+            <span class="routine-score__target">/ 목표 <span data-target-score>84</span>점</span>
+          </p>
+          <p class="routine-caption">오늘 완료한 루틴은 회복 점수에 반영됩니다.</p>
+
+          <!--
+            회복 루틴 목록
+            [Django] <ul ... data-trip-id="{{ trip.id }}"> {% for item in items %} ... {% endfor %}
+            아래 6개 항목은 미리보기용 샘플(실데이터 아님).
+          -->
+          <div class="routine">
+            <ul class="routine-list" id="recovery-list" data-trip-id="1">
+              <li class="routine-item" data-item-id="101" data-mode="toggle">
+                <label class="routine-check">
+                  <input class="routine-check__input" type="checkbox" value="1" checked />
+                  <span class="routine-item__label">피부 보습하기</span>
+                  <span class="routine-check__box" aria-hidden="true"></span>
+                </label>
+              </li>
+              <li class="routine-item" data-item-id="102" data-mode="toggle">
+                <label class="routine-check">
+                  <input class="routine-check__input" type="checkbox" value="1" />
+                  <span class="routine-item__label">6시간 취침하기</span>
+                  <span class="routine-check__box" aria-hidden="true"></span>
+                </label>
+              </li>
+              <li class="routine-item" data-item-id="103" data-mode="toggle">
+                <label class="routine-check">
+                  <input class="routine-check__input" type="checkbox" value="1" />
+                  <span class="routine-item__label">가볍게 산책하기</span>
+                  <span class="routine-check__box" aria-hidden="true"></span>
+                </label>
+              </li>
+              <li class="routine-item" data-item-id="104" data-mode="toggle">
+                <label class="routine-check">
+                  <input class="routine-check__input" type="checkbox" value="1" />
+                  <span class="routine-item__label">햇빛 쬐기</span>
+                  <span class="routine-check__box" aria-hidden="true"></span>
+                </label>
+              </li>
+              <li class="routine-item routine-item--counter" data-item-id="105" data-mode="counter">
+                <span class="routine-item__label">물 100ml 마시기</span>
+                <div class="counter">
+                  <button type="button" class="counter__btn recovery-btn" data-step="-1" data-action="decrement" aria-label="물 100ml 마시기 줄이기">
+                    <span class="svg-icon svg-icon--minus" aria-hidden="true"></span>
+                  </button>
+                  <span class="counter__value"><strong class="counter__num recovery-count">4</strong><span class="counter__unit">회</span></span>
+                  <button type="button" class="counter__btn recovery-btn" data-step="1" data-action="increment" aria-label="물 100ml 마시기 늘리기">
+                    <span class="svg-icon svg-icon--plus" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </li>
+              <li class="routine-item routine-item--counter" data-item-id="106" data-mode="counter">
+                <span class="routine-item__label">팔·다리 스트레칭하기</span>
+                <div class="counter">
+                  <button type="button" class="counter__btn recovery-btn" data-step="-1" data-action="decrement" aria-label="팔·다리 스트레칭하기 줄이기">
+                    <span class="svg-icon svg-icon--minus" aria-hidden="true"></span>
+                  </button>
+                  <span class="counter__value"><strong class="counter__num recovery-count">2</strong><span class="counter__unit">회</span></span>
+                  <button type="button" class="counter__btn recovery-btn" data-step="1" data-action="increment" aria-label="팔·다리 스트레칭하기 늘리기">
+                    <span class="svg-icon svg-icon--plus" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- CTA: 오늘 컨디션 기록 + 캘린더(서버 링크) -->
+          <div class="routine-cta">
+            <a class="btn btn--primary btn--block btn--home" href="./condition-record.html">오늘 컨디션 기록</a>
+            <a class="home-export btn--link" href="#">회복 가이드 캘린더로 내보내기</a>
+          </div>
+        </section>
+
+        <!-- ============ 컨디션 점수 (프론트 디자인 유지) ============ -->
+        <section class="home-section">
+          <h2 class="home-section__title text-heading-1">컨디션 점수</h2>
+
+          <div class="score-compare">
+            <div class="score-compare__col">
+              <div class="score-compare__num score-compare__num--current">74</div>
+              <div class="score-compare__cap score-compare__cap--current">현재</div>
+            </div>
+            <div class="score-compare__plane" aria-hidden="true">
+              <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
+            </div>
+            <div class="score-compare__col">
+              <div class="score-compare__num">84</div>
+              <div class="score-compare__cap">목표</div>
+            </div>
+          </div>
+
+          <div class="factor-card">
+            <div class="factor">
+              <div class="factor__head"><span class="factor__label">수면·리듬</span><span class="factor__delta">+ 2점</span></div>
+              <div class="bar"><span class="bar__fill" style="width: 62%"></span></div>
+            </div>
+            <div class="factor">
+              <div class="factor__head"><span class="factor__label">순환</span><span class="factor__delta">+ 9점</span></div>
+              <div class="bar"><span class="bar__fill" style="width: 90%"></span></div>
+            </div>
+            <div class="factor">
+              <div class="factor__head"><span class="factor__label">수분</span><span class="factor__delta">− 2점</span></div>
+              <div class="bar"><span class="bar__fill" style="width: 78%"></span></div>
+            </div>
+            <div class="factor">
+              <div class="factor__head"><span class="factor__label">피부</span><span class="factor__delta">+ 0점</span></div>
+              <div class="bar"><span class="bar__fill" style="width: 84%"></span></div>
+            </div>
+          </div>
+
+          <details class="calc-toggle">
+            <summary class="calc-toggle__summary">
+              <span>이 점수는 어떻게 계산되었나요?</span>
+              <span class="calc-toggle__chevron svg-icon svg-icon--down" aria-hidden="true"></span>
+            </summary>
+            <div class="calc-toggle__body">
+              수면·리듬, 순환, 피부 등 요소별 지표를 여정 정보와 함께 종합해 계산한 참고 점수입니다.
+            </div>
+          </details>
+        </section>
+
+        <p class="disclaimer">
+          <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="currentColor"/></svg>
+          <span>이 점수는 여정 정보 기반 참고 지표입니다. 의학적 진단이 아니며 개인 건강 상태에 따라 실제 회복 정도는 다를 수 있습니다.</span>
+        </p>
+      </main>
+
+      <!-- 하단 탭바: 미리보기용 JS mount. [Django] 실제로는 base.html 이 서버에서 렌더 -->
+      <div id="tabbar-mount"></div>
+    </div>
+
+    <!-- 컴포넌트 & 스크립트 -->
+    <script src="../../components/tab-bar.js"></script>
+    <script src="../../scripts/home.js"></script>
+    <script>
+      document
+        .getElementById("tabbar-mount")
+        .append(THRIVE.createTabBar({ active: "home" }));
+    </script>
+
+    <!-- 라우팅 테스트용 임시 스위처 (연동 후 이 두 줄 제거) -->
+    <script>window.THRIVE_ROOT = "../../../index.html";</script>
+    <script src="../../components/state-switcher.js"></script>
+  </body>
+</html>

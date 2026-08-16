@@ -55,7 +55,7 @@
   text-overflow: ellipsis;
 }
 .flight-card__plane {
-  color: var(--color-cyan-500);
+  color: var(--color-cyan-400);
   display: inline-flex;
 }
 .flight-card__plane svg {
