@@ -2,8 +2,12 @@
  * 가운데 제목 + 우측 닫기(X). 좌측 뒤로가기는 옵션.
  * 좌/우 슬롯 폭이 같아 제목은 항상 화면 정중앙 정렬.
  *
+ * [아이콘 방식 변경] 인라인 <svg> 대신 icons.css 의 svg-icon(mask) 클래스를 사용.
+ *   · 뒤로가기 → svg-icon--left (IconLeft.svg)
+ *   · 닫기(X)  → svg-icon--close (IconClose.svg)
+ *   크기/색상은 icons.css 의 `.app-header__btn .svg-icon` 규칙이 담당.
+ *
  * 사용법:
- *   // 등록/모달형 (제목 + 우측 X)
  *   const header = THRIVE.createHeader({
  *     title: "비행 여정 등록",
  *     onClose: function () { history.back(); }
@@ -40,7 +44,7 @@
       back.type = "button";
       back.className = "app-header__btn app-header__btn--back";
       back.setAttribute("aria-label", "뒤로가기");
-      back.innerHTML = iconBack();
+      back.innerHTML = iconLeft();
       back.addEventListener("click", onBack);
       header.appendChild(back);
     }
@@ -69,19 +73,11 @@
     return header;
   };
 
-  /* --- 아이콘(24px, stroke=currentColor) --- */
-  function iconBack() {
-    return (
-      '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
-      '<path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-      "</svg>"
-    );
+  /* --- 아이콘 (static/icons/*.svg 를 mask 로 불러옴, icons.css 필요) --- */
+  function iconLeft() {
+    return '<span class="svg-icon svg-icon--left" aria-hidden="true"></span>';
   }
   function iconClose() {
-    return (
-      '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
-      '<path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-      "</svg>"
-    );
+    return '<span class="svg-icon svg-icon--close" aria-hidden="true"></span>';
   }
 })();

@@ -1,0 +1,294 @@
+/* ===== mypage.css : 내 정보 탭 전용 스타일 =====
+ * 공통 토큰은 variables.css, 공통 컴포넌트(.btn/.field/.card)는 common.css 재사용.
+ */
+
+/* ---------- 프로필 카드 (내 정보 탭 상단) ---------- */
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.profile-card__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-gray-200);
+  flex: 0 0 auto;
+}
+.profile-card__info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.profile-card__name {
+  font-weight: 700;
+  color: var(--color-text);
+}
+.profile-card__meta {
+  font-size: var(--fs-caption-1);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ---------- 통계 리스트 (회복 통계) ---------- */
+.stat-box {
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-body-3);
+  color: var(--color-text);
+}
+.stat-row__value {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* ---------- 설정 리스트 (계정 설정, 서비스 정보 목록) ---------- */
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.settings-list a,
+.settings-list button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: var(--fs-body-3);
+  background: var(--color-surface);
+}
+.settings-list a:last-child,
+.settings-list button:last-child {
+  border-bottom: none;
+}
+.settings-list a:hover,
+.settings-list button:hover {
+  background: var(--color-gray-050);
+}
+
+.settings-link-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.settings-link-row a {
+  color: var(--color-link);
+  font-size: var(--fs-body-3);
+}
+
+/* ---------- 회원 탈퇴 모달 ---------- */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--color-opacity-black-400);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal:not([hidden]) {
+  display: flex;
+}
+.modal__box {
+  width: min(320px, calc(100% - 48px));
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.modal__box h2 {
+  font-size: var(--fs-heading-2);
+  color: var(--color-text);
+}
+.modal__box ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--fs-body-3);
+  color: var(--color-text-muted);
+}
+.modal__actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+.modal__actions button {
+  flex: 1;
+  height: 48px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+.modal__actions .btn--cancel {
+  background: var(--color-gray-050);
+  color: var(--color-text);
+}
+.modal__actions .btn--confirm {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* ---------- 정책 리스트 (개인정보처리방침 / 서비스 소개) ---------- */
+.policy-box {
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.policy-box ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.policy-box li {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-body-3);
+  color: var(--color-text);
+}
+.policy-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--fs-body-3);
+  color: var(--color-text);
+}
+
+/* ---------- 면책 문구 (disclaimer) — 작은 아이콘 + 텍스트 한 줄 ---------- */
+.disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-caption-1);
+  line-height: var(--lh-caption-1);
+  color: var(--color-text-muted);
+}
+.disclaimer__icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- 프로필 수정 — 성별/나이 한 줄 배치 ---------- */
+.profile-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+/* ---------- 내 정보 메인 화면 (프로필 히어로) ---------- */
+.profile-hero {
+  text-align: center;
+  padding: var(--space-3) 0;
+}
+.profile-hero__name {
+  font-size: var(--fs-heading-1);
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: var(--space-1);
+}
+.profile-hero__meta {
+  font-size: var(--fs-body-3);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.btn--tonal {
+  background: var(--color-accent-subtle);
+  color: var(--color-text);
+}
+.btn--tonal:hover {
+  background: var(--color-violet-300);
+}
+
+.stat-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.stat-list .stat-row {
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.stat-list .stat-row:last-child {
+  border-bottom: none;
+}
+
+.logout-link {
+  display: block;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--fs-body-3);
+  margin-top: var(--space-4);
+}
+
+/* ---------- 성별 선택 바텀시트 ---------- */
+.field__select--btn {
+  cursor: pointer;
+}
+.sheet-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--color-opacity-black-400);
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+.sheet-overlay:not([hidden]) {
+  display: flex;
+}
+.sheet {
+  width: 100%;
+  max-width: var(--app-width);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.sheet__handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-gray-200);
+  margin: 0 auto var(--space-2);
+}
+.sheet__options {
+  display: flex;
+  gap: var(--space-3);
+}
+.sheet__option {
+  flex: 1;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+}
+.sheet__option.is-selected {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-color: var(--color-primary);
+}

@@ -1,11 +1,23 @@
 /* ============================================================
  * icons.css — 외부 SVG 아이콘 시스템
+ * ------------------------------------------------------------
+ * · static/icons/*.svg 파일을 CSS mask로 불러온다(= HTML에 SVG를 그리지 않음).
+ * · 색상은 background-color: currentColor 로 처리 → 요소의 `color` 를 그대로 물려받음.
+ *   따라서 기존 색상 규칙(예: .flight-card__plane{color:cyan-500})이 그대로 적용됨.
+ * · 경로는 이 파일(static/css/icons.css) 기준 상대경로 ../icons/ → static/icons/.
+ *
+ * [사용법]
+ *   <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
+ *   색상: 부모나 자신에 color 지정 (또는 기존 래퍼 클래스의 color 사용)
+ *   크기: 컨텍스트 규칙(아래) 또는 width/height 로 지정
  * ============================================================ */
 
 .svg-icon {
   display: inline-block;
   flex: 0 0 auto;
-  background-color: currentColor;
+  width: 24px;                         /* 기본 크기(컨텍스트 규칙이 덮어씀) */
+  height: 24px;
+  background-color: currentColor;      /* ← color 로 색상 제어 */
   -webkit-mask-repeat: no-repeat;
           mask-repeat: no-repeat;
   -webkit-mask-position: center;
@@ -34,18 +46,31 @@
 .svg-icon--right   { -webkit-mask-image: url("../icons/IconRight.svg");   mask-image: url("../icons/IconRight.svg"); }
 .svg-icon--star    { -webkit-mask-image: url("../icons/Star.svg");        mask-image: url("../icons/Star.svg"); }
 
-/* ---------- 컨텍스트별 크기 재지정 ---------- */
+/* ---------- 컨텍스트별 크기 재지정 ----------
+ * 기존 CSS는 `.wrapper svg { width/height }` 로 SVG 자식을 잡았는데,
+ * 이제 자식이 <span class="svg-icon"> 이므로 아래로 동일 크기를 재지정한다.
+ * (색상은 각 래퍼의 color 규칙이 그대로 적용되므로 여기서 손대지 않음)
+ */
 .stage-tab__item .svg-icon      { width: 24px; height: 24px; flex: 0 0 24px; }
 .flight-card__plane .svg-icon   { width: 32px; height: 32px; }
 .score-compare__plane .svg-icon { width: 40px; height: 40px; }
 
+/* trip-card__arrow, disclaimer__icon 등 '아이콘 요소 자체'에 클래스가 붙는 경우는
+ * 기존 규칙의 width/height/color 가 그대로 유효하므로 별도 크기 지정 불필요.
+ * (그 요소에 svg-icon svg-icon--right 만 함께 붙이면 됨) */
+
 /* ---------- 이번 아이콘 교체분 크기/색상 보강 ---------- */
 .auth-brand__icon .svg-icon      { width: 44px; height: 44px; }
 .app-header__btn .svg-icon       { width: 24px; height: 24px; }
-.trip-card__arrow.svg-icon       { width: 20px; height: 20px; }
+.app-header__btn--close .svg-icon {
+  width: 16px;
+  height: 16px;
+  box-sizing: content-box;
+  color: var(--color-gray-500);
+}
+.trip-card__arrow.svg-icon       { width: 16px; height: 16px; }
 .calc-toggle__chevron.svg-icon   { width: 20px; height: 20px; color: var(--color-gray-300); }
-
-/* stage-tab: 파일엔 색이 없으므로 상태별 색을 여기서 지정 */
+/* stage-tab: 파일엔 색이 없으므로 상태별 색을 여기서 지정(원본은 svg fill에 하드코딩돼 있었음) */
 .stage-tab__item .svg-icon           { color: var(--color-cyan-200); }
 .stage-tab__item.is-active .svg-icon { color: var(--color-cyan-500); }
 .score-compare__plane .svg-icon      { color: var(--color-cyan-500); }

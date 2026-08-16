@@ -1,12 +1,10 @@
 /* ===== record.css : 기록 탭 전용 스타일 =====
  * 공통 토큰은 variables.css, 공통 컴포넌트(.btn/.card/.app-header/.app-tabbar)는
- * common.css 를 그대로 재사용한다. 지난 회복 리포트 화면의 점수 요약·추이·요소분석·
- * 설문 문구 등은 home.css 를 함께 로드해 재사용한다(회복 리포트와 동일 컴포넌트).
+ * common.css 를 그대로 재사용한다.
  */
 
 /* ============================================================
  * 0) 섹션 제목 (기록 리스트)
- *    "진행 중 여정" / "지난 여정" 사이 간격은 .app__body > * + * (40px)로 유지.
  * ============================================================ */
 .record-section__title {
   margin-bottom: var(--space-5);
@@ -21,8 +19,6 @@
 
 /* ============================================================
  * 1) 진행 중 여정 카드 (.flight-card)
- *    상단: 출발/도착 공항(코드 + 한글명) + 가운데 이륙 아이콘
- *    하단: 연보라 밴드에 출발일시 · 총 비행시간 · 경유 요약
  * ============================================================ */
 .flight-card {
   background: var(--color-surface);
@@ -58,7 +54,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* 가운데 이륙 아이콘: 청록 */
 .flight-card__plane {
   color: var(--color-cyan-500);
   display: inline-flex;
@@ -67,19 +62,16 @@
   width: 32px;
   height: 32px;
 }
-/* 하단 요약 밴드 */
 .flight-card__meta {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: var(--space-2);
-  /* 카드 안쪽에 좌·우·아래 여백을 둬서 '띠'처럼 띄운다 */
   margin: 0 0 var(--space-3);
   padding: var(--space-3);
   background: var(--color-violet-100);
   color: var(--color-violet-700);
-  /* 요약 문구: 한 줄 유지되게 살짝 축소 / SemiBold */
   font-size: 13px;
   line-height: 20px;
   letter-spacing: -0.4px;
@@ -93,9 +85,6 @@
 
 /* ============================================================
  * 2) 여정 카드 (.trip-card) — 리스트 항목 & 리포트 상단 요약 공용
- *    왼쪽(main): 노선(코드+도시) + 메타(일자·비행시간·경유)
- *    오른쪽(score): 옅은 회색 면 + "점수" 라벨 + 큰 보라 점수
- *    리스트에서는 <a class="trip-card"> 로 써서 상세로 이동한다.
  * ============================================================ */
 .trip-card {
   display: flex;
@@ -109,14 +98,12 @@
   text-decoration: none;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
-/* 링크형(리스트)일 때만 눌림 힌트 */
 a.trip-card:hover {
   border-color: var(--color-accent-subtle);
 }
 a.trip-card:active {
   background: var(--color-surface-subtle);
 }
-
 .trip-card__main {
   flex: 1 1 auto;
   min-width: 0;
@@ -149,7 +136,6 @@ a.trip-card:active {
   color: var(--color-text-muted);
   white-space: nowrap;
 }
-/* 노선 방향 삼각형: 보라 */
 .trip-card__arrow {
   flex: 0 0 auto;
   width: 16px;
@@ -168,8 +154,6 @@ a.trip-card:active {
   margin: 0 6px;
   color: var(--color-gray-300);
 }
-
-/* 오른쪽 점수 블록 */
 .trip-card__score {
   flex: 0 0 auto;
   display: flex;
@@ -179,7 +163,7 @@ a.trip-card:active {
   gap: 2px;
   min-width: 78px;
   padding: var(--space-3);
-  background: var(--color-surface-subtle); /* 옅은 회색 면 */
+  background: var(--color-surface-subtle);
   border-left: 1px solid var(--color-border);
 }
 .trip-card__score-label {
@@ -193,7 +177,7 @@ a.trip-card:active {
   line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.5px;
-  color: var(--color-accent); /* violet-600 */
+  color: var(--color-accent);
 }
 
 /* ============================================================
@@ -204,9 +188,7 @@ a.trip-card:active {
 }
 
 /* ============================================================
- * 4) 설문 결과 (읽기전용) — 저장된 응답을 그대로 노출
- *    회복 리포트의 설문 선택(.survey-option 선택 상태)과 같은 톤이지만,
- *    입력이 아니라 결과 표시이므로 전체 폭 단일 박스로 둔다.
+ * 4) 설문 결과 (읽기전용)
  * ============================================================ */
 .survey-result {
   display: flex;
@@ -217,10 +199,223 @@ a.trip-card:active {
   border-radius: var(--radius-lg);
   background: var(--color-violet-200);
   color: var(--color-violet-900);
-  /* 응답 문구: body-2 / 700 */
   font-size: var(--fs-body-2);
   line-height: var(--lh-body-2);
   letter-spacing: var(--ls-body-2);
   font-weight: 700;
   text-align: center;
+}
+
+/* ============================================================
+ * 5) 카운터 행 (기내 컨디션 관리: 물/걷기/보습 +/-)
+ * ============================================================ */
+.counter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.counter-row:last-child {
+  border-bottom: none;
+}
+.counter-row__btns {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.counter-row__btns button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.counter-row__btns button:hover {
+  background: var(--color-gray-050);
+}
+.counter-row__value {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* ============================================================
+ * 6) 라디오 그룹 (기준값 설문 · 경유 여부)
+ * ============================================================ */
+.field label:has(input[type="radio"]) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  font-size: var(--fs-body-3);
+  color: var(--color-text);
+}
+.field input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent);
+}
+
+/* ============================================================
+ * 7) 레이오버 가이드 카드
+ * ============================================================ */
+.trip-card .trip-card__main strong {
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+/* ============================================================
+ * 8) 예상/실측 점수 화면 공용 — 박스형
+ * ============================================================ */
+.score-summary {
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.score-summary__label {
+  font-size: var(--fs-body-3);
+  color: var(--color-text-muted);
+}
+.score-summary__value {
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--color-accent);
+  line-height: 1.2;
+}
+.score-summary__meta {
+  margin-top: var(--space-1);
+  font-size: var(--fs-caption-1);
+  color: var(--color-text-muted);
+}
+.score-note {
+  font-size: var(--fs-body-3);
+  color: var(--color-text);
+}
+
+.factor-box {
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.factor-row {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.factor-row__head {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+.factor-row__bar {
+  height: 8px;
+  background: var(--color-gray-100);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.factor-row__bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.breakdown-box {
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.breakdown-box__title {
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--fs-body-3);
+  color: var(--color-text);
+}
+
+.score-compare {
+  display: flex;
+  gap: var(--space-4);
+}
+.score-compare__col {
+  flex: 1;
+  text-align: center;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.score-compare__label {
+  font-size: var(--fs-body-3);
+  color: var(--color-text-muted);
+}
+.score-compare__value {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+.btn--sm {
+  display: block;
+  width: fit-content;
+  height: 44px;
+  padding: 0 var(--space-4);
+  font-size: var(--fs-body-3);
+  align-self: flex-start;
+}
+
+/* ============================================================
+ * 9) 면책 문구 (disclaimer) — 작은 아이콘 + 텍스트 한 줄
+ * ============================================================ */
+.disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-caption-1);
+  line-height: var(--lh-caption-1);
+  color: var(--color-text-muted);
+}
+.disclaimer__icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+ * 10) 여정 등록 (trip-register) — 단계 표시 점
+ * ============================================================ */
+.step-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: var(--space-3);
+}
+.step-dots span {
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-gray-100);
+}
+.step-dots span.is-active {
+  background: var(--color-primary);
 }

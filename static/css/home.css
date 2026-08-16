@@ -36,7 +36,7 @@
   /* 가로 중앙정렬 유지 + 화면과 요소 사이 상·하단 8px 밴드 패딩 */
   margin: 8px auto;
   align-items: center;
-  gap: var(--space-1);
+  gap: 2px;
   padding: 4px;
   border: 1px solid var(--color-border);
   border-radius: 999px;
@@ -48,7 +48,7 @@
   justify-content: center;
   gap: 6px;
   height: 40px;
-  padding: 0 10px;
+  padding: 6px 8px;
   border-radius: 999px;
   color: var(--color-cyan-200); /* 비활성 아이콘: 옅은 청록 */
   /* 라벨: caption-1 / 400 / 12px */
