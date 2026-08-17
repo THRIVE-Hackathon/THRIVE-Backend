@@ -12,7 +12,7 @@ class LoginForm(AuthenticationForm):
         widget=forms.EmailInput(
             attrs={
                 "class": "field__input",
-                "placeholder": "이메일",
+                "placeholder": "E-mail@email.com",
                 "autocomplete": "email",
             }
         ),
@@ -35,7 +35,7 @@ class SignUpForm(forms.ModelForm):
         widget=forms.PasswordInput(
             attrs={
                 "class": "field__input",
-                "placeholder": "비밀번호",
+                "placeholder": "8자 이상",
                 "autocomplete": "new-password",
             }
         ),
@@ -46,7 +46,7 @@ class SignUpForm(forms.ModelForm):
         widget=forms.PasswordInput(
             attrs={
                 "class": "field__input",
-                "placeholder": "비밀번호 확인",
+                "placeholder": "8자 이상",
                 "autocomplete": "new-password",
             }
         ),
@@ -64,7 +64,7 @@ class SignUpForm(forms.ModelForm):
             "email": forms.EmailInput(
                 attrs={
                     "class": "field__input",
-                    "placeholder": "이메일",
+                    "placeholder": "E-mail@email.com",
                     "autocomplete": "email",
                 }
             )
@@ -110,7 +110,7 @@ class ProfileForm(forms.ModelForm):
         widget=forms.TextInput(
             attrs={
                 "class": "field__input",
-                "placeholder": "닉네임",
+                "placeholder": "2자 이상",
                 "autocomplete": "nickname",
             }
         ),
@@ -128,7 +128,7 @@ class ProfileForm(forms.ModelForm):
             "age": forms.NumberInput(
                 attrs={
                     "class": "field__input",
-                    "placeholder": "나이",
+                    "placeholder": "입력",
                     "min": 1,
                     "max": 120,
                     "inputmode": "numeric",

@@ -6,25 +6,23 @@
 
 {% block app_header %}
 <header class="app-header app-header--bordered">
-  <a class="app-header__btn app-header__btn--back" href="{% url 'trips:home' %}" aria-label="뒤로">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </a>
-  <h1 class="app-header__title">오늘 컨디션 기록</h1>
   <span></span>
+  <h1 class="app-header__title">오늘 컨디션 기록</h1>
+  <a class="app-header__btn app-header__btn--close" href="{% url 'trips:home' %}" aria-label="닫기">
+    <span class="svg-icon svg-icon--close"></span>
+  </a>
 </header>
 {% endblock %}
 
 {% block content %}
 <section class="condition-head">
-  <h1 class="text-heading-1">오늘의 컨디션을 알려주세요</h1>
-  <p class="condition-head__caption">회복 진행 상황을 더 정확히 파악하기 위해 기록됩니다.</p>
+  <h1 class="text-title-1">컨디션 기록</h1>
+  <p class="condition-head__caption">오늘의 컨디션은 어떠한지 선택해 주세요.</p>
 </section>
 
 <form method="post" class="condition-form">
   {% csrf_token %}
-  <div class="condition-options">
+  <div class="condition-options" role="radiogroup" aria-label="오늘 컨디션">
     {% for value, label in choices %}
       <label class="condition-option">
         <input class="condition-option__input" type="radio" name="score" value="{{ value }}" {% if existing.score == value %}checked{% endif %}>
@@ -33,7 +31,12 @@
     {% endfor %}
   </div>
   <div class="push-bottom">
-    <button type="submit" class="btn btn--primary btn--block condition-save">저장</button>
+    <button type="submit" class="btn btn--primary btn--block btn--home condition-save">컨디션 저장</button>
   </div>
 </form>
+
+<p class="disclaimer push-bottom">
+  <span class="disclaimer__icon svg-icon svg-icon--guide" aria-hidden="true"></span>
+  <span>이 기록은 점수에 직접 반영되지 않으며 참고 지표입니다. 회복 과정의 변화를 기록하면 리포트 분석에 도움이 됩니다.</span>
+</p>
 {% endblock %}

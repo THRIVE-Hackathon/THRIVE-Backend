@@ -7,15 +7,11 @@
 {% block app_header %}
 <header class="app-header app-header--bordered">
   <a class="app-header__btn app-header__btn--back" href="{% url 'trips:create_step2' %}" aria-label="뒤로">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+    <span class="svg-icon svg-icon--left"></span>
   </a>
   <h1 class="app-header__title">장거리 비행 여부</h1>
   <a class="app-header__btn app-header__btn--close" href="{% url 'trips:survey_skip' trip.id %}" aria-label="건너뛰기">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-    </svg>
+    <span class="svg-icon svg-icon--close"></span>
   </a>
 </header>
 {% endblock %}

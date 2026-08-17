@@ -5,15 +5,11 @@
 {% block app_header %}
 <header class="app-header app-header--bordered">
   <a class="app-header__btn app-header__btn--back" href="{% url 'accounts:settings' %}" aria-label="뒤로">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+    <span class="svg-icon svg-icon--left"></span>
   </a>
   <h1 class="app-header__title">프로필</h1>
   <a class="app-header__btn app-header__btn--close" href="{% url 'accounts:profile_edit' %}" aria-label="프로필 수정">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+    <span class="svg-icon svg-icon--more"></span>
   </a>
 </header>
 {% endblock %}

@@ -13,9 +13,16 @@
 
 {% block content %}
 <div class="stage-tab" aria-label="여정 단계">
-  <span class="stage-tab__item">비행 전</span>
-  <span class="stage-tab__item">비행 중</span>
-  <span class="stage-tab__item is-active">비행 후</span>
+  <span class="stage-tab__item" aria-label="비행 전">
+    <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
+  </span>
+  <span class="stage-tab__item" aria-label="비행 중">
+    <span class="svg-icon svg-icon--plane" aria-hidden="true"></span>
+  </span>
+  <span class="stage-tab__item is-active" aria-current="step" aria-label="비행 후">
+    <span class="svg-icon svg-icon--land" aria-hidden="true"></span>
+    <span>비행 후</span>
+  </span>
 </div>
 
 <section class="home-section">
@@ -30,7 +37,7 @@
       <p class="score-compare__cap">예상</p>
     </div>
     <span class="score-compare__plane" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18M14 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="svg-icon svg-icon--flight"></span>
     </span>
     <div class="score-compare__col">
       <strong class="score-compare__num score-compare__num--current">{{ trip.current_score }}</strong>

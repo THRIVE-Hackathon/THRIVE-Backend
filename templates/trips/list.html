@@ -9,9 +9,7 @@
   <h1 class="app-header__title">기록</h1>
   {% if not active_trip %}
     <a class="app-header__btn app-header__btn--close" href="{% url 'trips:create_step1' %}" aria-label="여정 등록">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
+      <span class="svg-icon svg-icon--plus"></span>
     </a>
   {% else %}
     <span></span>
@@ -22,7 +20,7 @@
 {% block content %}
 {% if active_trip %}
   <section>
-    <h2 class="record-section__title text-heading-2">진행 중 여정</h2>
+    <h2 class="record-section__title text-heading-1">진행 중 여정</h2>
     <article class="flight-card">
       <div class="flight-card__route">
         <div class="flight-card__point">
@@ -30,9 +28,7 @@
           <div class="flight-card__airport">{{ active_trip.origin_airport.city_name }}</div>
         </div>
         <span class="flight-card__plane" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M3 12h18M14 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <span class="svg-icon svg-icon--flight"></span>
         </span>
         <div class="flight-card__point">
           <div class="flight-card__code">{{ active_trip.destination_airport.iata_code }}</div>
@@ -55,9 +51,7 @@
             <strong class="trip-card__code">{{ active_trip.origin_airport.iata_code }}</strong>
             <span class="trip-card__city">{{ active_trip.origin_airport.city_name }}</span>
           </span>
-          <svg class="trip-card__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <span class="trip-card__arrow svg-icon svg-icon--next" aria-hidden="true"></span>
           <span class="trip-card__point">
             <strong class="trip-card__code">{{ active_trip.destination_airport.iata_code }}</strong>
             <span class="trip-card__city">{{ active_trip.destination_airport.city_name }}</span>
@@ -92,7 +86,7 @@
 {% endif %}
 
 <section>
-  <h2 class="record-section__title text-heading-2">지난 여정</h2>
+  <h2 class="record-section__title text-heading-1">지난 여정</h2>
   {% if past_trips %}
     <div class="trip-list">
       {% for trip in past_trips %}
@@ -103,9 +97,7 @@
                 <strong class="trip-card__code">{{ trip.origin_airport.iata_code }}</strong>
                 <span class="trip-card__city">{{ trip.origin_airport.city_name }}</span>
               </span>
-              <svg class="trip-card__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              <span class="trip-card__arrow svg-icon svg-icon--next" aria-hidden="true"></span>
               <span class="trip-card__point">
                 <strong class="trip-card__code">{{ trip.destination_airport.iata_code }}</strong>
                 <span class="trip-card__city">{{ trip.destination_airport.city_name }}</span>

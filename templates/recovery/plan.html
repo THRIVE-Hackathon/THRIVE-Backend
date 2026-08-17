@@ -1,163 +1,125 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}회복 계획 - THRIVE{% endblock %}
 
-{% block app_header %}
-<header class="app-header app-header--bordered">
-  <span></span>
-  <h1 class="app-header__title">메인</h1>
-  <a class="app-header__btn app-header__btn--close" href="{% url 'trips:calendar' trip.id %}" aria-label="캘린더 내보내기">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3v4M17 3v4M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </a>
-</header>
-{% endblock %}
-
 {% block content %}
-<div class="stage-tab" aria-label="여정 단계">
-  <span class="stage-tab__item">비행 전</span>
-  <span class="stage-tab__item">비행 중</span>
-  <span class="stage-tab__item is-active">비행 후</span>
-</div>
+<nav class="stage-tab" aria-label="여정 단계">
+  <span class="stage-tab__item" aria-label="비행 전">
+    <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
+  </span>
+  <span class="stage-tab__item" aria-label="비행 중">
+    <span class="svg-icon svg-icon--plane" aria-hidden="true"></span>
+  </span>
+  <span class="stage-tab__item is-active" aria-current="step" aria-label="비행 후">
+    <span class="svg-icon svg-icon--land" aria-hidden="true"></span>
+    <span>비행 후</span>
+  </span>
+</nav>
+
+<h1 class="home-greeting text-title-1">
+  <span>{{ request.user.profile.nickname|default:"유저" }}</span>님, 회복 루틴 종료까지<br>
+  <span class="home-greeting__accent"><span data-remaining-hours>{{ remaining_hours }}</span>시간</span>
+  남았어요.
+</h1>
 
 <section class="home-section">
-  <h1 class="home-greeting text-heading-1">회복 루틴 종료까지 <span class="home-greeting__accent">{{ remaining_hours }}</span>시간 남았어요</h1>
-  <div class="routine-score">
-    <strong class="routine-score__value">{{ trip.current_score }}</strong>
-    <span class="routine-score__target">/ 목표 {{ trip.target_score }}점</span>
-  </div>
+  <h2 class="home-section__title text-heading-1">회복 루틴</h2>
+
+  <p class="routine-score">
+    <span class="routine-score__value"><span data-current-score>{{ trip.current_score }}</span>점</span>
+    <span class="routine-score__target">/ 목표 <span data-target-score>{{ trip.target_score }}</span>점</span>
+  </p>
   <p class="routine-caption">오늘 완료한 루틴은 회복 점수에 반영됩니다.</p>
-</section>
 
-<section class="home-section">
-  <h2 class="home-section__title text-heading-2">회복 루틴</h2>
-  <div class="routine-list" id="recovery-list" data-trip-id="{{ trip.id }}">
-    {% for item in items %}
-      <article class="routine-item recovery-item" data-item-id="{{ item.id }}" data-mode="{{ item.mode }}">
-        <span class="routine-item__label">{{ item.title }}</span>
+  <div class="routine">
+    <ul class="routine-list" id="recovery-list" data-trip-id="{{ trip.id }}">
+      {% for item in items %}
         {% if item.mode == "counter" %}
-          <div class="counter">
-            <button type="button" class="counter__btn recovery-btn" data-step="-1" data-action="decrement" aria-label="감소">-</button>
-            <span class="counter__value"><strong class="counter__num recovery-count">{{ item.count }}</strong><span class="counter__unit">회</span></span>
-            <button type="button" class="counter__btn recovery-btn" data-step="1" data-action="increment" aria-label="증가">+</button>
-          </div>
+          <li class="routine-item routine-item--counter" data-item-id="{{ item.id }}" data-mode="{{ item.mode }}">
+            <span class="routine-item__label">{{ item.title }}</span>
+            <div class="counter">
+              <button type="button" class="counter__btn recovery-btn" data-step="-1" data-action="decrement" aria-label="{{ item.title }} 줄이기">
+                <span class="svg-icon svg-icon--minus" aria-hidden="true"></span>
+              </button>
+              <span class="counter__value"><strong class="counter__num recovery-count">{{ item.count }}</strong><span class="counter__unit">회</span></span>
+              <button type="button" class="counter__btn recovery-btn" data-step="1" data-action="increment" aria-label="{{ item.title }} 늘리기">
+                <span class="svg-icon svg-icon--plus" aria-hidden="true"></span>
+              </button>
+            </div>
+          </li>
         {% else %}
-          <button type="button" class="counter__btn recovery-toggle-btn {% if item.status == 'completed' %}is-checked{% endif %}" data-step="1" aria-label="완료 토글">
-            {% if item.status == "completed" %}✓{% else %}+{% endif %}
-          </button>
+          <li class="routine-item" data-item-id="{{ item.id }}" data-mode="{{ item.mode }}">
+            <label class="routine-check">
+              <input class="routine-check__input" type="checkbox" value="1" {% if item.status == "completed" %}checked{% endif %}>
+              <span class="routine-item__label">{{ item.title }}</span>
+              <span class="routine-check__box" aria-hidden="true"></span>
+            </label>
+          </li>
         {% endif %}
-      </article>
-    {% endfor %}
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="routine-cta">
+    <a class="btn btn--primary btn--block btn--home" href="{% url 'recovery:daily_condition' trip.id %}">오늘 컨디션 기록</a>
+    <a class="home-export btn--link" href="{% url 'trips:calendar' trip.id %}">회복 가이드 캘린더로 내보내기</a>
   </div>
 </section>
 
-<section class="routine-cta">
-  <a href="{% url 'recovery:daily_condition' trip.id %}" class="btn btn--primary btn--block btn--home">오늘 컨디션 기록</a>
-  <a class="home-export" href="{% url 'trips:calendar' trip.id %}">캘린더로 내보내기</a>
-</section>
-
 <section class="home-section">
-  <h2 class="home-section__title text-heading-2">컨디션 점수</h2>
+  <h2 class="home-section__title text-heading-1">컨디션 점수</h2>
+
   <div class="score-compare">
     <div class="score-compare__col">
-      <strong class="score-compare__num score-compare__num--current">{{ trip.current_score }}</strong>
-      <p class="score-compare__cap score-compare__cap--current">현재</p>
+      <div class="score-compare__num score-compare__num--current">{{ trip.current_score }}</div>
+      <div class="score-compare__cap score-compare__cap--current">현재</div>
     </div>
-    <span class="score-compare__plane" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18M14 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </span>
+    <div class="score-compare__plane" aria-hidden="true">
+      <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
+    </div>
     <div class="score-compare__col">
-      <strong class="score-compare__num">{{ trip.target_score }}</strong>
-      <p class="score-compare__cap">목표</p>
+      <div class="score-compare__num">{{ trip.target_score }}</div>
+      <div class="score-compare__cap">목표</div>
     </div>
   </div>
+
+  <div class="factor-card">
+    <div class="factor">
+      <div class="factor__head"><span class="factor__label">수면·리듬</span><span class="factor__delta">{{ trip.score_breakdown.sleep }}점</span></div>
+      <div class="bar"><span class="bar__fill" style="width: 62%"></span></div>
+    </div>
+    <div class="factor">
+      <div class="factor__head"><span class="factor__label">순환</span><span class="factor__delta">{{ trip.score_breakdown.circulation }}점</span></div>
+      <div class="bar"><span class="bar__fill" style="width: 90%"></span></div>
+    </div>
+    <div class="factor">
+      <div class="factor__head"><span class="factor__label">수분</span><span class="factor__delta">{{ trip.score_breakdown.hydration }}점</span></div>
+      <div class="bar"><span class="bar__fill" style="width: 78%"></span></div>
+    </div>
+    <div class="factor">
+      <div class="factor__head"><span class="factor__label">피부</span><span class="factor__delta">{{ trip.score_breakdown.skin }}점</span></div>
+      <div class="bar"><span class="bar__fill" style="width: 84%"></span></div>
+    </div>
+  </div>
+
+  <details class="calc-toggle">
+    <summary class="calc-toggle__summary">
+      <span>이 점수는 어떻게 계산되었나요?</span>
+      <span class="calc-toggle__chevron svg-icon svg-icon--down" aria-hidden="true"></span>
+    </summary>
+    <div class="calc-toggle__body">
+      수면·리듬, 순환, 수분, 피부 요소를 여정 정보와 회복 루틴 수행 기록과 함께 종합해 계산한 참고 점수입니다.
+    </div>
+  </details>
 </section>
 
 <p class="disclaimer">
-  <span class="disclaimer__icon" aria-hidden="true">!</span>
-  이 점수는 의학적 진단이 아닌 참고 지표입니다.
+  <span class="disclaimer__icon svg-icon svg-icon--guide" aria-hidden="true"></span>
+  <span>이 점수는 여정 정보 기반 참고 지표입니다. 의학적 진단이 아니며 개인 건강 상태에 따라 실제 회복 정도는 다를 수 있습니다.</span>
 </p>
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function () {
-  const container = document.getElementById("recovery-list");
-  if (!container) return;
-  const tripId = container.dataset.tripId;
-  const storageKey = `thrive_pending_recovery_${tripId}`;
-
-  function getCsrfToken() {
-    const match = document.cookie.match(/csrftoken=([^;]+)/);
-    return match ? match[1] : "";
-  }
-  function loadPending() {
-    try { return JSON.parse(localStorage.getItem(storageKey)) || {}; }
-    catch (e) { return {}; }
-  }
-  function savePending(p) {
-    localStorage.setItem(storageKey, JSON.stringify(p));
-  }
-  function flushPending() {
-    const pending = loadPending();
-    if (!Object.values(pending).some(v => v !== 0)) return;
-    fetch(`/recovery/${tripId}/items/sync/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken() },
-      body: JSON.stringify({ deltas: pending }),
-    })
-      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
-      .then(data => {
-        savePending({});
-        Object.entries(data.items).forEach(([itemId, info]) => {
-          const item = container.querySelector(`[data-item-id="${itemId}"]`);
-          if (!item) return;
-          if (item.dataset.mode === "counter") {
-            item.querySelector(".recovery-count").textContent = info.count;
-          } else {
-            const btn = item.querySelector(".recovery-toggle-btn");
-            const checked = info.status === "completed";
-            btn.classList.toggle("is-checked", checked);
-            btn.textContent = checked ? "✓" : "+";
-          }
-        });
-      })
-      .catch(() => {});
-  }
-
-  container.querySelectorAll(".recovery-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const item = btn.closest(".recovery-item");
-      const itemId = item.dataset.itemId;
-      const delta = btn.dataset.action === "increment" ? 1 : -1;
-      const countEl = item.querySelector(".recovery-count");
-      countEl.textContent = Math.max(0, parseInt(countEl.textContent, 10) + delta);
-      const pending = loadPending();
-      pending[itemId] = (pending[itemId] || 0) + delta;
-      savePending(pending);
-      if (navigator.onLine) flushPending();
-    });
-  });
-
-  container.querySelectorAll(".recovery-toggle-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const item = btn.closest(".recovery-item");
-      const itemId = item.dataset.itemId;
-      const isChecked = btn.classList.contains("is-checked");
-      const delta = isChecked ? -1 : 1;
-      btn.classList.toggle("is-checked");
-      btn.textContent = isChecked ? "+" : "✓";
-      const pending = loadPending();
-      pending[itemId] = (pending[itemId] || 0) + delta;
-      savePending(pending);
-      if (navigator.onLine) flushPending();
-    });
-  });
-
-  window.addEventListener("online", flushPending);
-  setInterval(flushPending, 15000);
-  flushPending();
-})();
-</script>
+<script src="{% static 'js/home.js' %}" defer></script>
 {% endblock %}

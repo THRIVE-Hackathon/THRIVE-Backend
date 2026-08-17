@@ -207,7 +207,7 @@
     var emailInput = inputOf(emailField);
     var pwInput = inputOf(pwField);
     var pw2Input = inputOf(pw2Field);
-    var agree = form.querySelector('input[name="agree_privacy"]');
+    var agree = form.querySelector('input[name="agree_privacy"], input[name="terms_agreed"]');
     var submitBtn = form.querySelector('button[type="submit"]');
     var pwHint = form.querySelector("[data-pw-hint]"); // = pwField 의 .field__msg
 

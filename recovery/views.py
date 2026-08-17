@@ -87,11 +87,11 @@ def inflight_check_sync(request, trip_id):
 DAILY_RECOVERY_LIMIT = 15
 
 CONDITION_CHOICES = [
-    (5, "아주 좋아요"),
-    (4, "좋아요"),
-    (3, "보통이에요"),
-    (2, "피곤해요"),
-    (1, "많이 피곤해요"),
+    (5, "매우 좋음"),
+    (4, "좋음"),
+    (3, "보통"),
+    (2, "피곤함"),
+    (1, "매우 피곤함"),
 ]
 
 

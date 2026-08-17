@@ -5,21 +5,23 @@
 
 {% block app_header %}
 <header class="app-header app-header--bordered">
-  <a class="app-header__btn app-header__btn--back" href="{% url 'trips:list' %}" aria-label="뒤로">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </a>
+  <span></span>
   <h1 class="app-header__title">회복 리포트</h1>
-  <a class="app-header__btn app-header__btn--close" href="{% url 'trips:calendar' trip.id %}" aria-label="캘린더 내보내기">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 3v4M17 3v4M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+  <a class="app-header__btn app-header__btn--close" href="{% url 'trips:list' %}" aria-label="닫기">
+    <span class="svg-icon svg-icon--close"></span>
   </a>
 </header>
 {% endblock %}
 
 {% block content %}
+{% if result %}
+  <h1 class="record-report__date text-title-1">{{ trip.created_at|date:"y년 m월 d일" }}</h1>
+{% else %}
+  <h1 class="report-title text-title-1">
+    <span>{{ request.user.profile.nickname|default:"유저" }}</span>님, 회복 루틴이 종료되어<br>리포트가 생성되었어요.
+  </h1>
+{% endif %}
+
 <article class="trip-card">
   <div class="trip-card__main">
     <div class="trip-card__route">
@@ -27,9 +29,7 @@
         <strong class="trip-card__code">{{ trip.origin_airport.iata_code }}</strong>
         <span class="trip-card__city">{{ trip.origin_airport.city_name }}</span>
       </span>
-      <svg class="trip-card__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <span class="trip-card__arrow svg-icon svg-icon--next" aria-hidden="true"></span>
       <span class="trip-card__point">
         <strong class="trip-card__code">{{ trip.destination_airport.iata_code }}</strong>
         <span class="trip-card__city">{{ trip.destination_airport.city_name }}</span>
@@ -50,10 +50,12 @@
 </article>
 
 <section class="home-section">
-  <h2 class="report-title text-heading-2">회복 점수 요약</h2>
+  <h2 class="report-title text-heading-1">회복 점수 요약</h2>
   <div class="report-summary">
     <strong class="report-score">{% if trip.current_score is not None %}{{ trip.current_score }}{% else %}-{% endif %}</strong>
-    <p class="report-summary__caption">최종 컨디션 점수</p>
+    <p class="report-summary__caption">
+      {% if target_progress is not None %}목표를 {{ target_progress }}% 달성했어요.{% else %}최종 컨디션 점수{% endif %}
+    </p>
   </div>
 
   <div class="trend-card">
@@ -86,7 +88,7 @@
 
 {% if target_progress is not None %}
   <section class="home-section">
-    <h2 class="home-section__title text-heading-2">목표 달성률</h2>
+    <h2 class="home-section__title text-heading-1">목표 달성률</h2>
     <div class="bar" aria-label="목표 달성률 {{ target_progress }}%">
       <span class="bar__fill" style="width: {{ target_progress }}%;"></span>
     </div>
@@ -95,7 +97,7 @@
 {% endif %}
 
 <section class="home-section">
-  <h2 class="home-section__title text-heading-2">요소별 분석</h2>
+  <h2 class="home-section__title text-heading-1">요소별 분석</h2>
   {% if score_breakdown_items %}
     <div class="factor-card">
       {% for item in score_breakdown_items %}
@@ -119,7 +121,7 @@
 </section>
 
 <section class="home-section">
-  <h2 class="home-section__title text-heading-2">회복 항목 수행</h2>
+  <h2 class="home-section__title text-heading-1">회복 항목 수행</h2>
   <p class="routine-caption">{{ completed_count }} / {{ total_recovery_count }}개 완료</p>
   {% if component_summary %}
     <div class="factor-card">
@@ -139,8 +141,9 @@
 </section>
 
 <section class="home-section">
-  <h2 class="home-section__title text-heading-2">일정 차질도</h2>
+  <h2 class="home-section__title text-heading-1">일정 차질도</h2>
   {% if result %}
+    <p class="survey__question">착륙 다음 날, 계획했던 일을 얼마나 하셨나요?</p>
     <p class="survey-result">{{ result.selected_answer }}</p>
   {% else %}
     <p class="survey__question">착륙 다음 날, 계획했던 일을 얼마나 하셨나요?</p>

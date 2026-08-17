@@ -1,27 +1,25 @@
 {% extends "base.html" %}
 
 {% block title %}메인 - THRIVE{% endblock %}
-
-{% block app_header %}
-<header class="app-header app-header--bordered">
-  <span></span>
-  <h1 class="app-header__title">메인</h1>
-  <span></span>
-</header>
-{% endblock %}
+{% block body_class %}app__body--center{% endblock %}
 
 {% block content %}
-<section class="home-section">
-  <h1 class="home-greeting text-heading-1">장거리 비행 후 회복을 준비해볼까요?</h1>
-  <p class="routine-caption">여정을 등록하면 착륙 시점 예상 점수와 회복 루틴을 확인할 수 있어요.</p>
-</section>
+<section class="home-empty">
+  <div class="home-empty__title-box">
+    <span class="home-empty__title-icon" aria-hidden="true">
+      <span class="svg-icon svg-icon--flight"></span>
+    </span>
+    <h1 class="home-empty__title text-title-1">
+      <span>{{ request.user.profile.nickname|default:"유저" }}</span>님, 여정을 등록해 주세요.
+    </h1>
+  </div>
 
-<section class="home-section">
-  <a class="btn btn--primary btn--block btn--home" href="{% url 'trips:create_step1' %}">여정 등록</a>
-</section>
+  <ul class="home-empty__points">
+    <li><span>1. 예상 컨디션 회복도를 점수로 확인할 수 있어요.</span></li>
+    <li><span>2. 어떤 관리가 필요할지 예측할 수 있어요.</span></li>
+    <li><span>3. 랜딩의 도움을 받아 장거리 비행 중 컨디션을 최상으로 끌어올릴 수 있어요!</span></li>
+  </ul>
 
-<p class="disclaimer">
-  <span class="disclaimer__icon" aria-hidden="true">!</span>
-  이 점수는 의학적 진단이 아닌 참고 지표입니다.
-</p>
+  <a class="btn btn--primary btn--block" href="{% url 'trips:create_step1' %}">비행 여정 등록</a>
+</section>
 {% endblock %}
