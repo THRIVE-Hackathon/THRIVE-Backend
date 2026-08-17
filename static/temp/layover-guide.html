@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 회복 가이드 확인</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/record.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <!-- 상단 헤더 마운트 위치 -->
+      <div id="header-mount"></div>
+      
+      <main class="app__body">
+        <!-- 기존의 최상단 <h1> 제거 및 디자인에 맞춰 Section 재구성 -->
+        
+        <!-- 1. 비행 중 회복 섹션 -->
+        <section class="guide-section">
+          <h2 class="text-heading-1">비행 중 회복</h2>
+          <p class="guide-section__desc">비행 중에는 활동에 제약이 있을 수 있어요.<br />무리하기 보다는 잠시 환기한다는 생각으로 가볍게 참여해요.</p>
+          <div class="guide-vertical">
+            <div class="guide-card guide-card--gray">
+              <strong class="guide-card__title">스트레칭</strong>
+              <p class="guide-card__desc">순환을 돕고, 장시간 착석으로 굳은 다리를 풀어요.</p>
+            </div>
+            <div class="guide-card guide-card--gray">
+              <strong class="guide-card__title">물 섭취</strong>
+              <p class="guide-card__desc">기내 건조한 환경으로 손실된 수분을 보충해요.</p>
+            </div>
+            <div class="guide-card guide-card--gray">
+              <strong class="guide-card__title">마스크팩</strong>
+              <p class="guide-card__desc">장시간 붙이고 있지 않도록 유의해야 해요.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. 경유 대기 중 회복 섹션 -->
+        <section class="guide-section">
+          <h2 class="text-heading-1">경유 대기 중 회복</h2>
+          <p class="guide-section__desc">경유 시간을 활용하면 효율적으로 컨디션을 관리할 수 있어요.</p>
+          <!-- 2x2 그리드 형태로 변경 -->
+          <div class="guide-grid">
+            <div class="guide-card guide-card--violet">
+              <strong class="guide-card__title">터미널 산책</strong>
+              <p class="guide-card__desc">순환을 돕고, 장시간 착석으로 굳은 다리를 풀어요.</p>
+            </div>
+            <div class="guide-card guide-card--violet">
+              <strong class="guide-card__title">물 섭취</strong>
+              <p class="guide-card__desc">기내 건조한 환경으로 손실된 수분을 보충해요.</p>
+            </div>
+            <div class="guide-card guide-card--violet">
+              <strong class="guide-card__title">세면대 보습</strong>
+              <p class="guide-card__desc">얼굴과 손에 수분을 공급해 피부 장벽을 지켜요.</p>
+            </div>
+            <div class="guide-card guide-card--violet">
+              <strong class="guide-card__title">10분 이상 서 있기</strong>
+              <p class="guide-card__desc">서 있는 것만으로도 혈액 순환에 도움이 돼요.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 하단 안내 문구 -->
+        <p class="disclaimer">
+          <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="currentColor"/></svg>
+          <span>이 가이드는 의학적 진단이 아닌 참고 지표입니다.</span>
+        </p>
+      </main>
+    </div>
+    
+    <!-- 컴포넌트 & 스크립트 (디자인 시안에 맞춰 헤더 텍스트 변경) -->
+    <script src="../../components/header.js"></script>
+    <script>
+      document.getElementById("header-mount").append(
+        THRIVE.createHeader({
+          title: "회복 가이드 확인", /* 헤더 타이틀 수정 */
+          onBack: function () { history.back(); }, /* 좌측 뒤로가기 액션 유지 */
+        })
+      );
+    </script>
+  </body>
+</html>

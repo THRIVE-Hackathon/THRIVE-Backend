@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 예상 회복 여정</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/home.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+
+    <!-- 디자인 시안(main-before-start (1)_2.png) 반영을 위한 추가 스타일 -->
+    <style>
+    </style>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <!-- ============ 여정 단계 탭 (비행 전 활성) — main-done.html 과 동일 패턴 ============ -->
+      <nav class="stage-tab" aria-label="여정 단계">
+        <span class="stage-tab__item is-active" aria-current="step" aria-label="비행 전">
+          <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
+          <span>비행 전</span>
+        </span>
+        <span class="stage-tab__item" aria-label="비행 중">
+          <span class="svg-icon svg-icon--plane" aria-hidden="true"></span>
+        </span>
+        <span class="stage-tab__item" aria-label="비행 후">
+          <span class="svg-icon svg-icon--land" aria-hidden="true"></span>
+        </span>
+      </nav>
+
+      <main class="app__body">
+        <h1 class="text-title-1">유저님, 예상 회복 여정을<br />확인해 보세요.</h1>
+
+        <section>
+          <h2 class="home-section__title text-heading-1">예상 컨디션 점수</h2>
+          <!-- 기존 태그 구조를 변경하여 점수 표시 크기 확대 -->
+          <div class="score-summary__value">
+            <span class="score-number" data-expected-score>68점</span>
+            <span class="score-total">/ 100점</span>
+          </div>
+          <p class="routine-caption">비행 중 관리를 통해 100점을 달성할 수 있어요.</p>
+        </section>
+
+        <!-- 배경색 및 패딩이 적용된 요인 박스 -->
+        <div class="factor-box">
+          <div class="factor-row">
+            <div class="factor-row__head"><span>수면·리듬</span><span>- 21점</span></div>
+            <div class="factor-row__bar"><span class="factor-row__bar-fill" style="width: 84%"></span></div>
+          </div>
+          <div class="factor-row">
+            <div class="factor-row__head"><span>순환</span><span>- 10점</span></div>
+            <div class="factor-row__bar"><span class="factor-row__bar-fill" style="width: 40%"></span></div>
+          </div>
+          <div class="factor-row">
+            <div class="factor-row__head"><span>수면·리듬</span><span>- 21점</span></div>
+            <div class="factor-row__bar"><span class="factor-row__bar-fill" style="width: 84%"></span></div>
+          </div>
+          <div class="factor-row">
+            <div class="factor-row__head"><span>피부</span><span>- 21점</span></div>
+            <div class="factor-row__bar"><span class="factor-row__bar-fill" style="width: 84%"></span></div>
+          </div>
+        </div>
+
+        <details class="calc-toggle">
+          <summary class="calc-toggle__summary">
+            <span>이 점수는 어떻게 계산되었나요?</span>
+            <span class="calc-toggle__chevron svg-icon svg-icon--more" aria-hidden="true"></span>
+          </summary>
+          <div class="calc-toggle__body">
+            총 비행시간은 수면·리듬과 순환에 영향을 끼치며, 시차는 수면·리듬 점수에 영향을 끼칩니다. 비행 시간이 증가함에 따라 수분 및 피부 점수가 줄어들며, 경유 여부에 따라 각 수치가 조정될 수 있습니다.
+          </div>
+        </details>
+
+        <a class="btn btn--guide btn--block" href="./layover-guide.html">회복 가이드 확인</a>
+        <!--
+          [Django] .ics 내보내기용 데이터 속성.
+          data-ics-start = 도착 일시, data-ics-end = 도착 + 회복 기간(예: 3일) 로 서버에서 계산해 주입.
+          data-ics-description 은 회복 루틴 안내 문구(줄바꿈은 \n 그대로 사용 가능).
+        -->
+        <a
+          class="link--export btn--link js-ics-export"
+          href="#"
+          data-ics-title="THRIVE 회복 가이드"
+          data-ics-start="2026-10-12T06:30:00+09:00"
+          data-ics-end="2026-10-15T06:30:00+09:00"
+          data-ics-description="비행 중 관리를 통해 100점을 달성할 수 있어요.\n피부 보습하기·수분 섭취·스트레칭 등 회복 루틴을 확인하세요."
+          data-ics-location="MXP 말펜사공항"
+        >회복 가이드 캘린더로 내보내기</a>
+
+        <section>
+          <h2 class="text-heading-1">비행 일정</h2>
+          <!-- 민트색 배경과 함께 스타일 조정 -->
+          <article class="flight-card flight-card--soft">
+            <div class="flight-card__route">
+              <div class="flight-card__point">
+                <div class="flight-card__code">ICN</div>
+                <div class="flight-card__airport">인천국제공항</div>
+              </div>
+              <span class="flight-card__plane" aria-hidden="true">
+                <!-- 아이콘 크기 및 색상은 CSS에서 제어 -->
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.5 19h19v2h-19v-2zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10 8 3.57 6.09 4.08l4.15 7.19-4.98 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.49c.81-.23 1.28-1.05 1.07-1.85z"/></svg>
+              </span>
+              <div class="flight-card__point">
+                <div class="flight-card__code">MXP</div>
+                <div class="flight-card__airport">말펜사공항</div>
+              </div>
+            </div>
+          </article>
+
+          <!-- 점선 타임라인과 강조 텍스트 적용 -->
+          <div class="itinerary-list itinerary-list--connected">
+            <div class="itinerary-row">
+              <span class="itinerary-dot"></span>
+              <div class="itinerary-row__body">
+                <p><strong>출발</strong> 10월 11일(일) 15:30</p>
+              </div>
+              <div class="itinerary-row__main">
+                <p class="itinerary-row__meta">경유 1회(8시간 50분 대기)</p>
+                <p class="itinerary-row__highlight">총 22시간 00분 비행</p>
+              </div>
+            </div>
+            <div class="itinerary-row">
+              <span class="itinerary-dot"></span>
+              <div class="itinerary-row__body">
+                <p><strong>도착</strong> 10월 12일(월) 06:30</p>
+              </div>
+            </div>
+          </div>
+          <a class="link--export" href="./trip-register.html">비행 일정 수정하기</a>
+        </section>
+
+        <p class="disclaimer">
+          <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="currentColor"/></svg>
+          <span>이 점수는 여정 정보 기반 참고 지표입니다. 의학적 진단이 아니며 개인 건강 상태에 따라 실제 회복 정도는 다를 수 있습니다.</span>
+        </p>
+      </main>
+
+      <div id="tabbar-mount"></div>
+    </div>
+
+    <script src="../../components/tab-bar.js"></script>
+    <script src="../../scripts/calendar-export.js"></script>
+    <script>
+      document.getElementById("tabbar-mount").append(THRIVE.createTabBar({ active: "home" }));
+    </script>
+    <script>window.THRIVE_ROOT = "../../../index.html";</script>
+    <script src="../../components/state-switcher.js"></script>
+  </body>
+</html>

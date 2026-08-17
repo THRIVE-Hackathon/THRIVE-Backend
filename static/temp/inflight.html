@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 비행 중</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/home.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+
+    <!--
+      inflight 화면 전용 추가 스타일.
+      · 기존 공통 CSS(common/home)는 그대로 재사용하고,
+        기존과 "다른" 규칙만 여기서 새 클래스로 정의한다. (공유 CSS 미수정 원칙)
+    -->
+    <style>
+      .inflight-caption {
+        margin-top: -16px;
+      }
+      /* [비행 일정] 착륙까지 남은 시간 강조 텍스트 : 18px / 700 / violet-700 */
+      .inflight-remain {
+        font-size: 18px;
+        line-height: 1.4;
+        font-weight: 700;
+        color: var(--color-violet-700);
+      }
+      /* [비행 일정] 총 비행시간·경유 안내 텍스트 : 18px / 400 / gray-900 */
+      .inflight-flightinfo {
+        font-size: 18px;
+        line-height: 1.4;
+        font-weight: 400;
+        color: var(--color-gray-900);
+        margin-top: var(--space-1, 4px);
+        margin-bottom: var(--space-4, 16px);
+      }
+      /* [비행 일정] 타임라인 날짜 부분(공항명 뒤)만 muted 처리 */
+      .itinerary-row__body strong {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--color-gray-900);
+      }
+      .itinerary-row__date {
+        margin-left: 8px;
+        color: var(--color-text-muted);
+      }
+      /* [비행 일정] '비행 일정 수정하기' : 가운데 정렬 muted 링크 */
+      .inflight-edit-link {
+        display: block;
+        text-align: center;
+        color: var(--color-text);
+        text-decoration: none;
+        font-size: var(--fs-body-3);
+      }
+      .expected-score-number {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--color-violet-700);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <!-- 여정 단계 탭 (비행 중 활성) -->
+      <nav class="stage-tab" aria-label="여정 단계">
+        <span class="stage-tab__item" aria-label="비행 전">
+          <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
+        </span>
+        <span class="stage-tab__item is-active" aria-current="step" aria-label="비행 중">
+          <span class="svg-icon svg-icon--plane" aria-hidden="true"></span>
+          <span>비행 중</span>
+        </span>
+        <span class="stage-tab__item" aria-label="비행 후">
+          <span class="svg-icon svg-icon--land" aria-hidden="true"></span>
+        </span>
+      </nav>
+
+      <main class="app__body">
+        <h1 class="home-greeting text-title-1">
+          <span data-user>유저</span>님, 비행 중<br />
+          컨디션 관리 함께해요.
+        </h1>
+
+        <!-- ============ 비행 중 할 일 ============ -->
+        <!--
+          체크리스트/카운터 마크업은 main-done.html 의 회복 루틴 구조를 참고해 교체.
+          (routine wrapper · routine-check__box · counter svg 버튼)
+          [Django] <ul ... > {% for item in items %} ... {% endfor %}
+        -->
+        <section class="home-section">
+          <h2 class="home-section__title text-heading-1">비행 중 할 일</h2>
+          <p class="inflight-caption text-muted">
+            현재 기록은 비행 후 컨디션 점수 계산에 반영돼요.<br>
+            착륙 후 화면에서 자세히 확인할 수 있어요.
+          </p>
+
+          <div class="routine">
+            <ul class="routine-list" id="inflight-list" data-trip-id="1">
+              <li class="routine-item" data-item-id="201" data-mode="toggle">
+                <label class="routine-check">
+                  <input class="routine-check__input" type="checkbox" value="1" checked />
+                  <span class="routine-item__label">피부 보습하기</span>
+                  <span class="routine-check__box" aria-hidden="true"></span>
+                </label>
+              </li>
+              <li class="routine-item" data-item-id="202" data-mode="toggle">
+                <label class="routine-check">
+                  <input class="routine-check__input" type="checkbox" value="1" />
+                  <span class="routine-item__label">6시간 취침하기</span>
+                  <span class="routine-check__box" aria-hidden="true"></span>
+                </label>
+              </li>
+              <li class="routine-item routine-item--counter" data-item-id="203" data-mode="counter">
+                <span class="routine-item__label">물 100ml 마시기</span>
+                <div class="counter">
+                  <button type="button" class="counter__btn inflight-btn" data-step="-1" data-action="decrement" aria-label="물 100ml 마시기 줄이기">
+                    <span class="svg-icon svg-icon--minus" aria-hidden="true"></span>
+                  </button>
+                  <span class="counter__value"><strong class="counter__num inflight-count">4</strong><span class="counter__unit">회</span></span>
+                  <button type="button" class="counter__btn inflight-btn" data-step="1" data-action="increment" aria-label="물 100ml 마시기 늘리기">
+                    <span class="svg-icon svg-icon--plus" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </li>
+              <li class="routine-item routine-item--counter" data-item-id="204" data-mode="counter">
+                <span class="routine-item__label">팔·다리 스트레칭하기</span>
+                <div class="counter">
+                  <button type="button" class="counter__btn inflight-btn" data-step="-1" data-action="decrement" aria-label="팔·다리 스트레칭하기 줄이기">
+                    <span class="svg-icon svg-icon--minus" aria-hidden="true"></span>
+                  </button>
+                  <span class="counter__value"><strong class="counter__num inflight-count">2</strong><span class="counter__unit">회</span></span>
+                  <button type="button" class="counter__btn inflight-btn" data-step="1" data-action="increment" aria-label="팔·다리 스트레칭하기 늘리기">
+                    <span class="svg-icon svg-icon--plus" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ============ 비행 일정 ============ -->
+        <section class="home-section">
+          <h2 class="home-section__title text-heading-1">비행 일정</h2>
+
+          <!-- [Django] 00시간 00분 → {{ remaining_time }} -->
+          <p class="inflight-remain">착륙까지 00시간 00분 남았어요.</p>
+          <p class="inflight-flightinfo">총 비행시간 22시간 00분, 경유 1회 예정이에요.</p>
+
+          <!-- 일정 표시: expected-score 의 타임라인(점선 + 보라 dot) 디자인 참고 -->
+          <div class="itinerary-list">
+            <div class="itinerary-row">
+              <span class="itinerary-dot"></span>
+              <div class="itinerary-row__body">
+                <p><strong>ICN 출발</strong> <span class="itinerary-row__date">10월 11일(일) 15:30</span></p>
+              </div>
+            </div>
+            <div class="itinerary-row">
+              <span class="itinerary-dot"></span>
+              <div class="itinerary-row__body">
+                <p><strong>MXP 도착</strong> <span class="itinerary-row__date">10월 12일(월) 06:30</span></p>
+              </div>
+            </div>
+          </div>
+
+          <a class="inflight-edit-link" href="../record/trip-register.html">비행 일정 수정하기</a>
+        </section>
+
+        <!-- ============ 예상 컨디션 점수 ============ -->
+        <!--
+          main-done.html 의 컨디션 점수 디자인(factor-card · calc-toggle)을 활용.
+          단, 시안(비행 중 화면)처럼 요소별 그래프(bar)는 제거하고 라벨+점수만 표시.
+        -->
+        <section class="home-section">
+          <h2 class="home-section__title text-heading-1">예상 컨디션 점수</h2>
+
+          <!-- [Django] 68 → {{ expected_score }} -->
+          <div class="score-summary__value">
+            <span class="expected-score-number" data-expected-score>68점</span>
+            <span class="score-total">/ 100점</span>
+          </div>
+
+          <div class="factor-card">
+            <div class="factor">
+              <div class="factor__head"><span class="factor__label">수면·리듬</span><span class="factor__delta">− 21점</span></div>
+            </div>
+            <div class="factor">
+              <div class="factor__head"><span class="factor__label">순환</span><span class="factor__delta">− 10점</span></div>
+            </div>
+            <div class="factor">
+              <div class="factor__head"><span class="factor__label">수면·리듬</span><span class="factor__delta">− 21점</span></div>
+            </div>
+            <div class="factor">
+              <div class="factor__head"><span class="factor__label">피부</span><span class="factor__delta">− 21점</span></div>
+            </div>
+          </div>
+
+          <details class="calc-toggle">
+            <summary class="calc-toggle__summary">
+              <span>이 점수는 어떻게 계산되었나요?</span>
+              <span class="calc-toggle__chevron svg-icon svg-icon--more" aria-hidden="true"></span>
+            </summary>
+            <div class="calc-toggle__body">
+              총 비행시간은 수면·리듬과 순환에 영향을 끼치며, 시차는 수면·리듬 점수에 영향을 끼칩니다. 비행 시간이 증가함에 따라 수분 및 피부 점수가 줄어들며, 경유 여부에 따라 각 수치가 조정될 수 있습니다.
+            </div>
+          </details>
+        </section>
+
+        <p class="disclaimer">
+          <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="currentColor"/></svg>
+          <span>이 점수는 여정 정보 기반 참고 지표입니다. 의학적 진단이 아니며 개인 건강 상태에 따라 실제 회복 정도는 다를 수 있습니다.</span>
+        </p>
+      </main>
+
+      <div id="tabbar-mount"></div>
+    </div>
+    <script src="../../components/tab-bar.js"></script>
+    <script src="../../scripts/inflight.js"></script>
+    <script>
+      document.getElementById("tabbar-mount").append(THRIVE.createTabBar({ active: "home" }));
+    </script>
+  </body>
+</html>
