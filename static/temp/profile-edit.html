@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 프로필 수정</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/mypage.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <div id="header-mount"></div>
+      <main class="app__body">
+
+        <div class="field">
+          <label class="field__label">닉네임</label>
+          <input class="field__input" type="text" value="유저" />
+        </div>
+
+        <div class="profile-row">
+          <div class="field">
+            <label class="field__label">성별</label>
+            <button type="button" class="field__select field__select--btn profile-row__control" id="gender-trigger" style="text-align:left;">
+              <span id="gender-value">여성</span>
+            </button>
+          </div>
+          <div class="field">
+            <label class="field__label">나이</label>
+            <input class="field__input profile-row__control" type="text" inputmode="numeric" pattern="[0-9]*" id="age-input" value="28세" />
+          </div>
+        </div>
+
+        <button type="button" class="btn btn--primary btn--block" id="profile-save">저장</button>
+      </main>
+
+      <!-- 성별 선택 바텀시트 -->
+      <div id="gender-sheet" class="sheet-overlay" hidden>
+        <div class="sheet">
+          <div class="sheet__handle"></div>
+          <h2 class="text-heading-3">성별</h2>
+          <div class="sheet__options">
+            <button type="button" class="sheet__option is-selected" data-gender="여성">여성</button>
+            <button type="button" class="sheet__option" data-gender="남성">남성</button>
+          </div>
+          <button type="button" class="btn btn--primary btn--block" id="gender-confirm">확인</button>
+        </div>
+      </div>
+
+      <!-- 저장 완료 토스트 -->
+      <div id="save-toast" class="toast" hidden>내용이 저장되었어요.</div>
+    </div>
+    <script src="../../components/header.js"></script>
+    <script src="../../scripts/profile-edit.js"></script>
+  </body>
+</html>

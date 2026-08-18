@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THRIVE · 비행 여정 등록</title>
+  <link rel="stylesheet" href="../../styles/reset.css" />
+  <link rel="stylesheet" href="../../styles/variables.css" />
+  <link rel="stylesheet" href="../../styles/common.css" />
+  <link rel="stylesheet" href="../../styles/record.css" />
+  <link rel="stylesheet" href="../../styles/mypage.css" />
+  <link rel="stylesheet" href="../../styles/home.css" />
+  <link rel="stylesheet" href="../../styles/icons.css" />
+</head>
+
+<body>
+  <div class="app" id="app">
+    <div id="header-mount"></div>
+    <main class="app__body app__body--push">
+
+      <!-- ===== STEP 1: 출발 ===== -->
+      <section class="trip-step" data-step="1">
+        <div class="step-dots"><span class="is-active"></span><span></span><span></span></div>
+
+        <div class="field-box">
+          <div class="field">
+            <label class="field__label">출발</label>
+            <button type="button" class="field__select field__select--btn" id="departure-trigger"
+              style="text-align:left;">
+              <span id="departure-value" style="color: var(--color-text-subtle);">Select...</span>
+            </button>
+          </div>
+
+          <button type="button" class="info-row" id="depart-date-trigger">
+            <span class="info-row__label">출발일</span>
+            <span class="info-row__value" id="depart-date-value">Select...</span>
+            <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </button>
+
+      <button type="button" class="info-row" id="depart-time-trigger">
+  <span class="info-row__label">출발 시각</span>
+  <span class="info-row__value" id="depart-time-value">15:30</span>
+  <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+    <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+      stroke-linejoin="round" />
+  </svg>
+</button>
+        </div>
+
+        <div class="field-box">
+          <div class="field">
+            <label class="field__label">경유 여부</label>
+            <div class="survey__grid" role="radiogroup" aria-label="경유 여부">
+              <label class="survey-option">
+                <input class="survey-option__input" type="radio" name="via" value="no" />
+                <span class="survey-option__box">없음</span>
+              </label>
+              <label class="survey-option">
+                <input class="survey-option__input" type="radio" name="via" value="yes" checked />
+                <span class="survey-option__box">있음</span>
+              </label>
+            </div>
+          </div>
+
+          <button type="button" class="info-row" id="wait-time-field" style="display: flex;">
+            <span class="info-row__label">대기 시간</span>
+            <span class="info-row__value" id="wait-time-value">8시간 50분</span>
+            <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+
+        <button type="button" class="btn btn--primary btn--block step-action--bottom" data-next="2" id="step1-next"
+          disabled>다음</button>
+      </section>
+
+      <!-- ===== STEP 2: 도착 ===== -->
+      <section class="trip-step" data-step="2" hidden>
+        <div class="step-dots"><span></span><span class="is-active"></span><span></span></div>
+
+        <div class="field">
+          <label class="field__label">도착지</label>
+          <button type="button" class="field__select field__select--btn" id="arrival-trigger" style="text-align:left;">
+            <span id="arrival-value" style="color: var(--color-text-subtle);">Select...</span>
+          </button>
+          <p class="field-error" id="arrival-error">*필수 선택란입니다.</p>
+        </div>
+
+        <button type="button" class="info-row" id="arrive-date-trigger">
+          <span class="info-row__label">도착일</span>
+          <span class="info-row__value" id="arrive-date-value">Select...</span>
+          <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <button type="button" class="info-row" id="arrive-time-trigger">
+          <span class="info-row__label">도착 시각</span>
+          <span class="info-row__value" id="arrive-time-value">Select...</span>
+          <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <section>
+          <h2 class="text-heading-1">여행 일정</h2>
+          <button type="button" class="info-row" id="trip-length-trigger">
+            <span class="info-row__label">예정된 여행 기간</span>
+            <span class="info-row__value" id="trip-length-value">Select...</span>
+            <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </button>
+        </section>
+
+        <div class="step-nav-row step-action--bottom">
+          <button type="button" class="btn step-nav-back" data-prev="1">뒤로</button>
+          <button type="button" class="btn btn--primary step-nav-forward" data-next="3">다음</button>
+        </div>
+      </section>
+
+      <!-- ===== STEP 3: 장거리 비행 여부 ===== -->
+      <section class="trip-step" data-step="3" hidden>
+        <div class="step-dots"><span></span><span></span><span class="is-active"></span></div>
+        <label class="field__label">장거리 비행 여부</label>
+        <p class="guide-section__desc">최근 1년 사이, 6시간 이상의 비행 경험이 있으신가요?</p>
+
+        <div class="field">
+          <div class="survey__grid" role="radiogroup" aria-label="장거리 비행 여부">
+            <label class="survey-option">
+              <input class="survey-option__input" type="radio" name="longhaul" value="no" />
+              <span class="survey-option__box">없음</span>
+            </label>
+            <label class="survey-option">
+              <input class="survey-option__input" type="radio" name="longhaul" value="yes" checked />
+              <span class="survey-option__box">있음</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="button" class="info-row" id="last-flight-trigger">
+          <span class="info-row__label">마지막 비행 일자</span>
+          <span class="info-row__value" id="last-flight-value">Select...</span>
+          <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <button type="button" class="info-row" id="total-flight-time-trigger">
+          <span class="info-row__label">총 비행 시간</span>
+          <span class="info-row__value" id="total-flight-time-value">Select...</span>
+          <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <section>
+          <div class="label-box">
+            <h2 class="text-heading-1">평소 컨디션</h2>
+            <p class="guide-section__desc">평소 이동 거리 및 시간이 어느 정도 영향을 미치나요?</p>
+          </div>
+          <div class="survey__grid" role="radiogroup" aria-label="평소 컨디션">
+            <label class="survey-option">
+              <input class="survey-option__input" type="radio" name="condition" value="none" />
+              <span class="survey-option__box">아무런 영향 없음</span>
+            </label>
+            <label class="survey-option">
+              <input class="survey-option__input" type="radio" name="condition" value="recover" />
+              <span class="survey-option__box">도착 직후 회복함</span>
+            </label>
+            <label class="survey-option">
+              <input class="survey-option__input" type="radio" name="condition" value="tired" />
+              <span class="survey-option__box">살짝 피로함</span>
+            </label>
+            <label class="survey-option">
+              <input class="survey-option__input" type="radio" name="condition" value="impact" checked />
+              <span class="survey-option__box">일정에 영향 줌</span>
+            </label>
+          </div>
+        </section>
+
+        <div class="step-nav-row step-action--bottom">
+          <button type="button" class="btn step-nav-back" data-prev="2">뒤로</button>
+          <button type="button" class="btn btn--primary step-nav-forward" id="trip-confirm">확인</button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 출발 공항 선택 바텀시트 -->
+    <div id="airport-sheet" class="sheet-overlay" hidden>
+      <div class="sheet">
+        <div class="sheet__handle"></div>
+        <h2 class="text-heading-3">공항</h2>
+        <select class="field__select" id="airport-filter">
+          <option value="">출발지</option>
+        </select>
+        <div class="airport-list" id="airport-list">
+          <button type="button" class="airport-list__item" data-airport="ICN 인천국제공항">ICN 인천국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="MXP 말펜사공항">MXP 말펜사공항</button>
+          <button type="button" class="airport-list__item" data-airport="BKK 수완나품국제공항">BKK 수완나품국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="LAX 로스앤젤레스국제공항">LAX 로스앤젤레스국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="DAD 다낭국제공항">DAD 다낭국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="SIN 창이국제공항">SIN 창이국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="DPS 응우라이국제공항">DPS 응우라이국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="TPE 타이완타오위안국제공항">TPE 타이완타오위안국제공항</button>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="airport-confirm">입력</button>
+      </div>
+    </div>
+
+    <!-- 출발일 선택 바텀시트 -->
+    <div id="date-sheet" class="sheet-overlay" hidden>
+      <div class="sheet">
+        <div class="sheet__handle"></div>
+        <h2 class="text-heading-3">출발일</h2>
+        <div class="date-input-row">
+          <input class="field__input date-input" type="text" inputmode="numeric" maxlength="4" placeholder="2000"
+            id="date-year" />
+          <span class="date-input-unit">년</span>
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="date-month" />
+          <span class="date-input-unit">월</span>
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="date-day" />
+          <span class="date-input-unit">일</span>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="date-confirm">입력</button>
+      </div>
+    </div>
+
+    <!-- 도착지 선택 바텀시트 -->
+    <div id="arrival-sheet" class="sheet-overlay" hidden>
+      <div class="sheet">
+        <div class="sheet__handle"></div>
+        <h2 class="text-heading-3">공항</h2>
+        <select class="field__select" id="arrival-filter">
+          <option value="">도착지</option>
+        </select>
+        <div class="airport-list" id="arrival-list">
+          <button type="button" class="airport-list__item" data-airport="ICN 인천국제공항">ICN 인천국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="MXP 말펜사공항">MXP 말펜사공항</button>
+          <button type="button" class="airport-list__item" data-airport="BKK 수완나품국제공항">BKK 수완나품국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="LAX 로스앤젤레스국제공항">LAX 로스앤젤레스국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="DAD 다낭국제공항">DAD 다낭국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="SIN 창이국제공항">SIN 창이국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="DPS 응우라이국제공항">DPS 응우라이국제공항</button>
+          <button type="button" class="airport-list__item" data-airport="TPE 타이완타오위안국제공항">TPE 타이완타오위안국제공항</button>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="arrival-confirm">입력</button>
+      </div>
+    </div>
+
+    <!-- 도착일 선택 바텀시트 -->
+    <div id="arrive-date-sheet" class="sheet-overlay" hidden>
+      <div class="sheet">
+        <div class="sheet__handle"></div>
+        <h2 class="text-heading-3">도착일</h2>
+        <div class="date-input-row">
+          <input class="field__input date-input" type="text" inputmode="numeric" maxlength="4" placeholder="2000"
+            id="arrive-date-year" />
+          <span class="date-input-unit">년</span>
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="arrive-date-month" />
+          <span class="date-input-unit">월</span>
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="arrive-date-day" />
+          <span class="date-input-unit">일</span>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="arrive-date-confirm">입력</button>
+      </div>
+    </div>
+
+    <!-- 도착 시각 선택 바텀시트 -->
+    <div id="arrive-time-sheet" class="sheet-overlay" hidden>
+      <div class="sheet">
+        <div class="sheet__handle"></div>
+        <h2 class="text-heading-3">도착 시각</h2>
+        <div class="date-input-row">
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="arrive-time-hour" />
+          <span class="date-input-unit">시</span>
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="arrive-time-minute" />
+          <span class="date-input-unit">분</span>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="arrive-time-confirm">입력</button>
+      </div>
+    </div>
+
+    <!-- 여행 기간 선택 바텀시트 -->
+    <div id="trip-length-sheet" class="sheet-overlay" hidden>
+      <div class="sheet">
+        <div class="sheet__handle"></div>
+        <h2 class="text-heading-3">예정된 여행 기간</h2>
+        <div class="date-input-row">
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="3"
+            placeholder="00" id="trip-length-days" />
+          <span class="date-input-unit">일</span>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="trip-length-confirm">입력</button>
+      </div>
+    </div>
+
+    <!-- 마지막 비행 일자 선택 바텀시트 -->
+    <div id="last-flight-sheet" class="sheet-overlay" hidden>
+      <div class="sheet">
+        <div class="sheet__handle"></div>
+        <h2 class="text-heading-3">마지막 비행 일자</h2>
+        <div class="date-input-row">
+          <input class="field__input date-input" type="text" inputmode="numeric" maxlength="4" placeholder="2000"
+            id="last-flight-year" />
+          <span class="date-input-unit">년</span>
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="last-flight-month" />
+          <span class="date-input-unit">월</span>
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="last-flight-day" />
+          <span class="date-input-unit">일</span>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="last-flight-confirm">입력</button>
+      </div>
+    </div>
+
+    <!-- 총 비행 시간 선택 바텀시트 -->
+    <div id="total-flight-time-sheet" class="sheet-overlay" hidden>
+      <div class="sheet">
+        <div class="sheet__handle"></div>
+        <h2 class="text-heading-3">총 비행 시간</h2>
+        <div class="date-input-row">
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="total-flight-hour" />
+          <span class="date-input-unit">시간</span>
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="total-flight-minute" />
+          <span class="date-input-unit">분</span>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="total-flight-time-confirm">입력</button>
+      </div>
+    </div>
+
+    <!-- 출발 시각 선택 바텀시트 -->
+    <div id="depart-time-sheet" class="sheet-overlay" hidden>
+      <div class="sheet">
+        <div class="sheet__handle"></div>
+        <h2 class="text-heading-3">출발 시각</h2>
+        <div class="date-input-row">
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="depart-time-hour" />
+          <span class="date-input-unit">시</span>
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="depart-time-minute" />
+          <span class="date-input-unit">분</span>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="depart-time-confirm">입력</button>
+      </div>
+    </div>
+
+    <!-- 대기 시간 선택 바텀시트 -->
+    <div id="wait-time-sheet" class="sheet-overlay" hidden>
+      <div class="sheet">
+        <div class="sheet__handle"></div>
+        <h2 class="text-heading-3">대기 시간</h2>
+        <div class="date-input-row">
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="wait-time-hour" />
+          <span class="date-input-unit">시간</span>
+          <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
+            placeholder="00" id="wait-time-minute" />
+          <span class="date-input-unit">분</span>
+        </div>
+        <button type="button" class="btn btn--primary btn--block" id="wait-time-confirm">입력</button>
+      </div>
+    </div>
+
+    <!-- 닫기 확인 모달 -->
+    <div id="close-confirm-modal" class="modal" hidden>
+      <div class="modal__box">
+        <h2>정말로 닫으실 건가요?</h2>
+        <p class="modal-text">지금 창을 닫으면 지금까지 입력한 내용이<br>저장되지 않고 모두 초기화돼요.</p>
+        <div class="modal__actions">
+          <button type="button" class="btn--cancel" id="close-cancel">취소</button>
+          <button type="button" class="btn--confirm" id="close-confirm">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../components/header.js"></script>
+  <script src="../../scripts/trip-register.js"></script>
+</body>
+
+</html>

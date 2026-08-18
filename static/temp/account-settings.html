@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 계정 설정</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/mypage.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <div id="header-mount"></div>
+      <main class="app__body">
+        <h1 class="text-title-1">계정 설정</h1>
+
+        <section>
+          <h2 class="text-heading-1">서비스 정보</h2>
+          <div class="settings-list">
+            <a href="./privacy-policy.html">개인정보처리방침</a>
+            <a href="./service-intro.html">서비스 소개</a>
+            <a href="#">참고 자료</a>
+          </div>
+        </section>
+
+        <div class="settings-link-row">
+          <a href="#" id="logout-link">로그아웃</a>
+          <a href="#" id="withdraw-link">회원탈퇴</a>
+        </div>
+      </main>
+
+      <div id="withdraw-modal" class="modal" hidden>
+        <div class="modal__box">
+          <h2>계정 삭제</h2>
+          <p class="text-caption text-muted">이 작업은 되돌릴 수 없습니다</p>
+          <ul>
+            <li>여정 이력 삭제</li>
+            <li>기록 및 통계 삭제</li>
+            <li>회복 가이드 진행도 삭제</li>
+            <li>참여기록 및 데이터 삭제</li>
+          </ul>
+          <div class="modal__actions">
+            <button type="button" class="btn--cancel" id="withdraw-cancel">취소</button>
+            <button type="button" class="btn--confirm" id="withdraw-confirm">탈퇴</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="../../components/header.js"></script>
+    <script src="../../scripts/account-settings.js"></script>
+  </body>
+</html>

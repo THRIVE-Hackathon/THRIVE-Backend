@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 내 정보</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/mypage.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+  </head>
+  <body>
+    <div class="app" id="app" data-home="../../../index.html">
+      <main class="app__body">
+        <h1 class="text-title-1">내 정보</h1>
+
+        <section class="profile-hero">
+          <p class="profile-hero__name">유저님</p>
+          <p class="profile-hero__meta">여성 · 28세</p>
+          <a class="btn btn--tonal btn--block btn--sm2" href="./profile-edit.html">프로필 수정</a>
+        </section>
+
+        <div class="stat-list">
+          <div class="stat-row"><span>누적 여정</span><span class="stat-row__value">4회</span></div>
+          <div class="stat-row"><span>느린 회복 요소</span><span class="stat-row__value">수면·리듬 파트</span></div>
+        </div>
+
+        <section>
+          <h2 class="text-heading-1">계정 설정</h2>
+          <div class="settings-list">
+            <a href="./privacy-policy.html">개인정보처리방침</a>
+            <a href="./service-intro.html">서비스처리방침</a>
+            <a href="#">알림 설정</a>
+            <a href="./account-settings.html">계정 설정</a>
+          </div>
+        </section>
+
+        <a href="#" id="logout-link" class="logout-link">로그아웃</a>
+      </main>
+    </div>
+    <script src="../../components/tab-bar.js"></script>
+    <script>
+      (function () {
+        var app = document.getElementById("app");
+        var tabbar = THRIVE.createTabBar({ active: "mypage" });
+        var homeTab = tabbar.querySelector('a[data-key="home"]');
+        if (homeTab && app.dataset.home) homeTab.setAttribute("href", app.dataset.home);
+        app.append(tabbar);
+      })();
+    </script>
+  </body>
+</html>
