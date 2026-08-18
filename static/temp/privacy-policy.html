@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE · 개인정보처리방침</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/record.css" />
+    <link rel="stylesheet" href="../../styles/mypage.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <div id="header-mount"></div>
+      <main class="app__body">
+        <h1 class="text-title-1">개인정보처리방침</h1>
+
+        <section>
+          <h2 class="text-heading-1">수집 항목</h2>
+          <div class="policy-box">
+            <ul>
+              <li><span>이메일</span><span>필수</span></li>
+              <li><span>비밀번호</span><span>필수</span></li>
+              <li><span>닉네임</span><span>필수</span></li>
+              <li><span>성별</span><span>선택</span></li>
+              <li><span>연령대</span><span>선택</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="text-heading-1">이용 목적</h2>
+          <div class="policy-list">
+            <p>계정 식별 및 로그인 인증</p>
+            <p>여정 이력 및 회복 기록 관리</p>
+            <p>같은 연령대 상대 값과의 비교 통계 제공</p>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="text-heading-1">보유 기간</h2>
+          <div class="policy-list">
+            <p>계정 탈퇴 시 즉시 삭제</p>
+            <p>탈퇴 후 통계 재가공되어도 이전 기록은 복원되지 않음</p>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="text-heading-1">수집하지 않는 정보</h2>
+          <div class="policy-list">
+            <p>실명 및 연락처</p>
+            <p>건강 진단정보 (질환명, 병력 등)</p>
+            <p>위치 정보 및 기기 식별자</p>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="text-heading-1">문의</h2>
+          <p class="text-caption text-muted">개인정보 관련 문의는 앱 내 계정 설정 화면에서 접수할 수 있습니다.</p>
+        </section>
+
+        <p class="disclaimer">
+          <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="currentColor"/></svg>
+          <span>회복 점수는 의학적 진단이 아닌 참고 지표입니다</span>
+        </p>
+        <a class="btn--link" href="./profile.html">내 정보로 돌아가기</a>
+      </main>
+    </div>
+    <script src="../../components/header.js"></script>
+    <script>
+      document.getElementById("header-mount").append(
+        THRIVE.createHeader({
+          title: "개인정보처리방침",
+          onClose: function () { history.back(); },
+        })
+      );
+    </script>
+  </body>
+</html>

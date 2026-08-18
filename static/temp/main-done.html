@@ -118,10 +118,22 @@
             </ul>
           </div>
 
-          <!-- CTA: 오늘 컨디션 기록 + 캘린더(서버 링크) -->
+          <!-- CTA: 오늘 컨디션 기록 + 캘린더(.ics 내보내기) -->
+          <!--
+            [Django] .ics 내보내기용 데이터 속성.
+            data-ics-start = 현재 시각, data-ics-end = 현재 시각 + remaining_hours 로 서버에서 계산해 주입.
+            data-ics-description 은 남은 회복 루틴 항목을 요약해 서버에서 채워도 됨.
+          -->
           <div class="routine-cta">
             <a class="btn btn--primary btn--block btn--home" href="./condition-record.html">오늘 컨디션 기록</a>
-            <a class="home-export btn--link" href="#">회복 가이드 캘린더로 내보내기</a>
+            <a
+              class="home-export btn--link js-ics-export"
+              href="#"
+              data-ics-title="THRIVE 회복 루틴"
+              data-ics-start="2026-10-12T06:30:00+09:00"
+              data-ics-end="2026-10-15T02:30:00+09:00"
+              data-ics-description="피부 보습하기·6시간 취침·산책·햇빛 쬐기·수분 섭취·스트레칭 루틴을 확인하세요."
+            >회복 가이드 캘린더로 내보내기</a>
           </div>
         </section>
 
@@ -165,7 +177,7 @@
           <details class="calc-toggle">
             <summary class="calc-toggle__summary">
               <span>이 점수는 어떻게 계산되었나요?</span>
-              <span class="calc-toggle__chevron svg-icon svg-icon--down" aria-hidden="true"></span>
+              <span class="calc-toggle__chevron svg-icon svg-icon--more" aria-hidden="true"></span>
             </summary>
             <div class="calc-toggle__body">
               수면·리듬, 순환, 피부 등 요소별 지표를 여정 정보와 함께 종합해 계산한 참고 점수입니다.
@@ -186,6 +198,7 @@
     <!-- 컴포넌트 & 스크립트 -->
     <script src="../../components/tab-bar.js"></script>
     <script src="../../scripts/home.js"></script>
+    <script src="../../scripts/calendar-export.js"></script>
     <script>
       document
         .getElementById("tabbar-mount")

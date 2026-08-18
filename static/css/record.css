@@ -535,6 +535,7 @@ a.trip-card:active {
  * ============================================================ */
 .trip-step {
   flex-direction: column;
+  margin-top: 0;
   gap: var(--space-5);
 }
 
@@ -599,7 +600,7 @@ a.trip-card:active {
 .airport-list {
   display: flex;
   flex-direction: column;
-  max-height: 320px;
+  max-height: 812px;
   overflow-y: auto;
   border-top: 1px solid var(--color-border);
 }
@@ -625,8 +626,10 @@ a.trip-card:active {
 
 .date-input-row {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: var(--space-2);
+  margin-bottom: 120px;
 }
 
 .date-input {
