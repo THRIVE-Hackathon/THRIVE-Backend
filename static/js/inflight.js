@@ -6,7 +6,7 @@
  * 대상: inflight.html 의 #inflight-list
  *   · 카운터 항목 → .inflight-btn / .inflight-count
  *   · 토글 항목   → .routine-check__input (home.js와 동일 디자인 재사용)
- * 저장: 변경분을 localStorage 에 큐로 쌓았다가 /inflight/{tripId}/items/sync/ 로 배치 전송
+ * 저장: 변경분을 localStorage 에 큐로 쌓았다가 /recovery/{tripId}/checks/sync/ 로 배치 전송
  *       (오프라인이면 큐에 보관 → 온라인 복귀/주기 타이머에 자동 재전송)
  *
  * ※ #inflight-list 가 없는 페이지에선 즉시 return(무해).
@@ -30,29 +30,25 @@
     localStorage.setItem(storageKey, JSON.stringify(p));
   }
 
-  // 서버 응답을 화면에 반영 (카운트/토글 상태/예상 점수)
+  // 서버 응답을 화면에 반영 (카운트/토글 상태)
   function applyResponse(data) {
-    Object.entries(data.items || {}).forEach(([itemId, info]) => {
-      const item = container.querySelector(`[data-item-id="${itemId}"]`);
+    Object.entries(data.counts || {}).forEach(([checkType, count]) => {
+      const item = container.querySelector(`[data-item-id="${checkType}"]`);
       if (!item) return;
       if (item.dataset.mode === "counter") {
         const c = item.querySelector(".inflight-count");
-        if (c) c.textContent = info.count;
+        if (c) c.textContent = count;
       } else {
         const cb = item.querySelector(".routine-check__input");
-        if (cb) cb.checked = info.status === "completed";
+        if (cb) cb.checked = count > 0;
       }
     });
-    if (typeof data.expected_score !== "undefined" && data.expected_score !== null) {
-      const el = document.querySelector("[data-expected-score]");
-      if (el) el.textContent = `${data.expected_score}점`;
-    }
   }
 
   function flushPending() {
     const pending = loadPending();
     if (!Object.values(pending).some((v) => v !== 0)) return;
-    fetch(`/inflight/${tripId}/items/sync/`, {
+    fetch(`/recovery/${tripId}/checks/sync/`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken() },
       body: JSON.stringify({ deltas: pending }),

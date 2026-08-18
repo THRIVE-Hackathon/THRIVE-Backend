@@ -19,6 +19,22 @@ from datetime import timezone as dt_timezone
 
 KST = ZoneInfo("Asia/Seoul")
 
+SCORE_COMPONENT_LABELS = {
+    "sleep": "수면·리듬",
+    "circulation": "순환",
+    "hydration": "수분",
+    "skin": "피부",
+}
+
+INFLIGHT_CHECK_LABELS = {
+    "moisturize": "피부 보습하기",
+    "sleep": "6시간 취침하기",
+    "water": "물 100ml 마시기",
+    "stretch": "팔·다리 스트레칭하기",
+}
+
+INFLIGHT_CHECK_ORDER = ["moisturize", "sleep", "water", "stretch"]
+
 @login_required
 def trip_list_view(request):
     active_trip = (
@@ -350,9 +366,9 @@ def trip_home_view(request):
             )
             active_trip.summary_text = get_score_diff_explanation(active_trip)
             active_trip.save()
-            return render(request, "recovery/ing_score.html", {"trip": active_trip})
+            return render(request, "recovery/ing_score.html", _build_landing_context(active_trip))
 
-        return render(request, "recovery/ing_score.html", {"trip": active_trip})
+        return render(request, "recovery/ing_score.html", _build_landing_context(active_trip))
 
     items = get_or_create_recovery_items(active_trip)
     for item in items:
@@ -384,25 +400,97 @@ def _build_inflight_context(trip):
         )
         checks_map[check_type] = obj
 
+    inflight_items = [
+        {
+            "check_type": check_type,
+            "label": INFLIGHT_CHECK_LABELS.get(check_type, checks_map[check_type].get_check_type_display()),
+            "check": checks_map[check_type],
+            "mode": CHECK_TYPE_INPUT_MODE.get(check_type, "counter"),
+        }
+        for check_type in INFLIGHT_CHECK_ORDER
+        if check_type in checks_map
+    ]
+
     return {
         "trip": trip,
         "checks": checks_map,
+        "inflight_items": inflight_items,
         "input_modes": CHECK_TYPE_INPUT_MODE,
         "remaining_hours": int(remaining_seconds // 3600),
         "remaining_minutes": int((remaining_seconds % 3600) // 60),
         "flight_hours": round(trip.total_flight_minutes / 60),
+        "flight_duration_label": _format_duration(trip.total_flight_minutes),
+        "layover_summary": _layover_summary(trip),
         "departure_local": to_timezone(trip.departure_at, trip.origin_airport.timezone),
         "arrival_local": to_timezone(trip.arrival_at, trip.destination_airport.timezone),
+        "score_breakdown_items": _score_breakdown_items(trip),
     }
 
 def _build_before_context(trip):
+    departure_local = to_timezone(trip.departure_at, trip.origin_airport.timezone)
+    arrival_local = to_timezone(trip.arrival_at, trip.destination_airport.timezone)
+    recovery_minutes = min(trip.next_schedule_after_minutes, 3 * 24 * 60)
     return {
         "trip": trip,
         "flight_hours": round(trip.total_flight_minutes / 60),
+        "flight_duration_label": _format_duration(trip.total_flight_minutes),
+        "layover_summary": _layover_summary(trip),
         "timezone_diff_hours": round(abs(trip.timezone_diff_minutes or 0) / 60),
-        "departure_local": to_timezone(trip.departure_at, trip.origin_airport.timezone),
-        "arrival_local": to_timezone(trip.arrival_at, trip.destination_airport.timezone),
+        "departure_local": departure_local,
+        "arrival_local": arrival_local,
+        "recovery_end_local": arrival_local + timedelta(minutes=recovery_minutes),
+        "score_breakdown_items": _score_breakdown_items(trip),
     }
+
+def _build_landing_context(trip):
+    expected_score = trip.expected_score or 0
+    current_score = trip.current_score if trip.current_score is not None else expected_score
+    score_diff = current_score - expected_score
+    recovery_window_minutes = min(trip.next_schedule_after_minutes, 3 * 24 * 60)
+    recovery_window_hours = max(0, recovery_window_minutes // 60)
+
+    return {
+        "trip": trip,
+        "score_diff": score_diff,
+        "score_diff_abs": abs(score_diff),
+        "score_breakdown_items": _score_breakdown_items(trip),
+        "trip_duration_days": max(1, round(trip.next_schedule_after_minutes / (60 * 24))),
+        "recovery_window_hours": recovery_window_hours,
+        "recovery_window_days": max(1, round(recovery_window_hours / 24)),
+    }
+
+def _format_duration(total_minutes):
+    hours = total_minutes // 60
+    minutes = total_minutes % 60
+    return f"{hours}시간 {minutes:02d}분"
+
+def _layover_summary(trip):
+    if trip.layover_count == Trip.LayoverCount.NONE:
+        return "경유 없음"
+
+    summary = f"경유 {trip.get_layover_count_display()}"
+    if trip.max_layover_minutes:
+        summary += f"({_format_duration(trip.max_layover_minutes)} 대기)"
+    return summary
+
+def _score_breakdown_items(trip):
+    breakdown = trip.score_breakdown or {}
+    items = []
+    for key, label in SCORE_COMPONENT_LABELS.items():
+        try:
+            value = round(float(breakdown.get(key, 0)))
+        except (TypeError, ValueError):
+            value = 0
+        items.append(
+            {
+                "key": key,
+                "label": label,
+                "value": value,
+                "display": f"{value:+d}점" if value > 0 else f"{value}점",
+                "width": min(100, max(8, abs(value) * 4)),
+            }
+        )
+    return items
 
 @login_required
 def trip_edit_start_view(request, trip_id):

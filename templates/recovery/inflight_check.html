@@ -1,18 +1,59 @@
 {% extends "base.html" %}
-{% load dict_extras %}
+{% load static %}
 
-{% block title %}기내 컨디션 관리 - THRIVE{% endblock %}
+{% block title %}비행 중 - THRIVE{% endblock %}
 
-{% block app_header %}
-<header class="app-header app-header--bordered">
-  <span></span>
-  <h1 class="app-header__title">메인</h1>
-  <span></span>
-</header>
+{% block extra_css %}
+<style>
+  .inflight-caption {
+    margin-top: -16px;
+  }
+
+  .inflight-remain {
+    font-size: 18px;
+    line-height: 1.4;
+    font-weight: 700;
+    color: var(--color-violet-700);
+  }
+
+  .inflight-flightinfo {
+    font-size: 18px;
+    line-height: 1.4;
+    font-weight: 400;
+    color: var(--color-gray-900);
+    margin-top: var(--space-1, 4px);
+    margin-bottom: var(--space-4, 16px);
+  }
+
+  .itinerary-row__body strong {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-gray-900);
+  }
+
+  .itinerary-row__date {
+    margin-left: 8px;
+    color: var(--color-text-muted);
+  }
+
+  .inflight-edit-link {
+    display: block;
+    text-align: center;
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: var(--fs-body-3);
+  }
+
+  .expected-score-number {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--color-violet-700);
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="stage-tab" aria-label="여정 단계">
+<nav class="stage-tab" aria-label="여정 단계">
   <span class="stage-tab__item" aria-label="비행 전">
     <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
   </span>
@@ -23,157 +64,122 @@
   <span class="stage-tab__item" aria-label="비행 후">
     <span class="svg-icon svg-icon--land" aria-hidden="true"></span>
   </span>
-</div>
+</nav>
+
+<h1 class="home-greeting text-title-1">
+  <span>{{ request.user.profile.nickname|default:"유저" }}</span>님, 비행 중<br>
+  컨디션 관리 함께해요.
+</h1>
 
 <section class="home-section">
-  <h1 class="text-heading-1">착륙까지 {{ remaining_hours|default:0 }}시간 {{ remaining_minutes|default:0 }}분 남았어요</h1>
-  <p class="routine-caption">남은 시간 동안 할 수 있는 행동들을 기록하세요.</p>
+  <h2 class="home-section__title text-heading-1">비행 중 할 일</h2>
+  <p class="inflight-caption text-muted">
+    현재 기록은 비행 후 컨디션 점수 계산에 반영돼요.<br>
+    착륙 후 화면에서 자세히 확인할 수 있어요.
+  </p>
+
+  <div class="routine">
+    <ul class="routine-list" id="inflight-list" data-trip-id="{{ trip.id }}">
+      {% for item in inflight_items %}
+        <li class="routine-item{% if item.mode == 'counter' %} routine-item--counter{% endif %}" data-item-id="{{ item.check_type }}" data-mode="{{ item.mode }}">
+          {% if item.mode == "toggle" %}
+            <label class="routine-check">
+              <input class="routine-check__input" type="checkbox" value="1" {% if item.check.count > 0 %}checked{% endif %}>
+              <span class="routine-item__label">{{ item.label }}</span>
+              <span class="routine-check__box" aria-hidden="true"></span>
+            </label>
+          {% else %}
+            <span class="routine-item__label">{{ item.label }}</span>
+            <div class="counter">
+              <button type="button" class="counter__btn inflight-btn" data-step="-1" data-action="decrement" aria-label="{{ item.label }} 줄이기">
+                <span class="svg-icon svg-icon--minus" aria-hidden="true"></span>
+              </button>
+              <span class="counter__value"><strong class="counter__num inflight-count">{{ item.check.count }}</strong><span class="counter__unit">회</span></span>
+              <button type="button" class="counter__btn inflight-btn" data-step="1" data-action="increment" aria-label="{{ item.label }} 늘리기">
+                <span class="svg-icon svg-icon--plus" aria-hidden="true"></span>
+              </button>
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 </section>
 
 <section class="home-section">
-  <h2 class="home-section__title text-heading-2">기내 관리</h2>
-  <div class="routine-list" id="checklist" data-trip-id="{{ trip.id }}">
-    {% for check_type, check in checks.items %}
-      <article class="routine-item check-item" data-check-type="{{ check_type }}" data-input-mode="{{ input_modes|dict_get:check_type }}">
-        <span class="routine-item__label">
-          {% if check_type == "water" %}물 100ml 마시기
-          {% elif check_type == "stretch" %}팔·다리 스트레칭하기
-          {% elif check_type == "moisturize" %}피부 보습하기
-          {% elif check_type == "sleep" %}6시간 취침하기
-          {% else %}{{ check.get_check_type_display }}{% endif %}
-        </span>
+  <h2 class="home-section__title text-heading-1">비행 일정</h2>
 
-        {% if input_modes|dict_get:check_type == "toggle" %}
-          <button type="button" class="counter__btn check-toggle-btn {% if check.count > 0 %}is-checked{% endif %}" data-step="1" aria-label="완료 토글">
-            {% if check.count > 0 %}✓{% else %}+{% endif %}
-          </button>
-        {% else %}
-          <div class="counter">
-            <button type="button" class="counter__btn check-btn" data-step="-1" data-action="decrement" aria-label="감소">-</button>
-            <span class="counter__value"><strong class="counter__num check-count">{{ check.count }}</strong><span class="counter__unit">회</span></span>
-            <button type="button" class="counter__btn check-btn" data-step="1" data-action="increment" aria-label="증가">+</button>
-          </div>
-        {% endif %}
-      </article>
+  <p class="inflight-remain">착륙까지 {{ remaining_hours|default:0 }}시간 {{ remaining_minutes|default:0 }}분 남았어요.</p>
+  <p class="inflight-flightinfo">총 비행시간 {{ flight_duration_label }}, {{ layover_summary }}이에요.</p>
+
+  <div class="itinerary-list">
+    <div class="itinerary-row">
+      <span class="itinerary-dot"></span>
+      <div class="itinerary-row__body">
+        <p>
+          <strong>{{ trip.origin_airport.iata_code }} 출발</strong>
+          <span class="itinerary-row__date">{{ departure_local|date:"n월 j일(D) H:i" }}</span>
+        </p>
+      </div>
+    </div>
+    <div class="itinerary-row">
+      <span class="itinerary-dot"></span>
+      <div class="itinerary-row__body">
+        <p>
+          <strong>{{ trip.destination_airport.iata_code }} 도착</strong>
+          <span class="itinerary-row__date">{{ arrival_local|date:"n월 j일(D) H:i" }}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <a class="inflight-edit-link" href="{% url 'trips:edit_start' trip.id %}">비행 일정 수정하기</a>
+</section>
+
+<section class="home-section">
+  <h2 class="home-section__title text-heading-1">예상 컨디션 점수</h2>
+
+  <div class="score-summary__value">
+    <span class="expected-score-number" data-expected-score>{{ trip.expected_score }}점</span>
+    <span class="score-total">/ 100점</span>
+  </div>
+
+  <div class="factor-card">
+    {% for item in score_breakdown_items %}
+      <div class="factor">
+        <div class="factor__head">
+          <span class="factor__label">{{ item.label }}</span>
+          <span class="factor__delta">{{ item.display }}</span>
+        </div>
+      </div>
     {% endfor %}
   </div>
-</section>
 
-<section class="home-section">
-  <h2 class="home-section__title text-heading-2">비행 일정</h2>
-  <article class="flight-card">
-    <div class="flight-card__route">
-      <div class="flight-card__point">
-        <div class="flight-card__code">{{ trip.origin_airport.iata_code }}</div>
-        <div class="flight-card__airport">{{ trip.origin_airport.city_name }}</div>
-      </div>
-      <span class="flight-card__plane" aria-hidden="true">
-        <span class="svg-icon svg-icon--flight"></span>
-      </span>
-      <div class="flight-card__point">
-        <div class="flight-card__code">{{ trip.destination_airport.iata_code }}</div>
-        <div class="flight-card__airport">{{ trip.destination_airport.city_name }}</div>
-      </div>
+  <details class="calc-toggle">
+    <summary class="calc-toggle__summary">
+      <span>이 점수는 어떻게 계산되었나요?</span>
+      <span class="calc-toggle__chevron svg-icon svg-icon--more" aria-hidden="true"></span>
+    </summary>
+    <div class="calc-toggle__body">
+      {% if trip.summary_text %}
+        {{ trip.summary_text }}
+      {% else %}
+        총 비행시간은 수면·리듬과 순환에 영향을 끼치며, 시차는 수면·리듬 점수에 영향을 끼칩니다. 비행 시간이 증가함에 따라 수분 및 피부 점수가 줄어들며, 경유 여부에 따라 각 수치가 조정될 수 있습니다.
+      {% endif %}
     </div>
-    <div class="flight-card__meta">
-      <span>총 {{ trip.total_flight_minutes|div_minutes_to_hours }}시간</span>
-      <span class="flight-card__sep">·</span>
-      <span>경유 {{ trip.get_layover_count_display }}</span>
-    </div>
-  </article>
-</section>
-
-<section class="home-section">
-  <h2 class="home-section__title text-heading-2">예상 컨디션 점수</h2>
-  <div class="routine-score">
-    <strong class="routine-score__value">{{ trip.expected_score }}</strong>
-    <span class="routine-score__target">/ 100점</span>
-  </div>
+  </details>
 </section>
 
 <p class="disclaimer">
-  <span class="disclaimer__icon" aria-hidden="true">!</span>
-  네트워크가 없어도 입력값은 임시 저장 후 자동 동기화됩니다.
+  <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+    <path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="8" r="1" fill="currentColor"/>
+  </svg>
+  <span>이 점수는 여정 정보 기반 참고 지표입니다. 의학적 진단이 아니며 개인 건강 상태에 따라 실제 회복 정도는 다를 수 있습니다.</span>
 </p>
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function () {
-  const container = document.getElementById("checklist");
-  if (!container) return;
-  const tripId = container.dataset.tripId;
-  const storageKey = `thrive_pending_checks_${tripId}`;
-
-  function getCsrfToken() {
-    const match = document.cookie.match(/csrftoken=([^;]+)/);
-    return match ? match[1] : "";
-  }
-  function loadPending() {
-    try { return JSON.parse(localStorage.getItem(storageKey)) || {}; }
-    catch (e) { return {}; }
-  }
-  function savePending(pending) {
-    localStorage.setItem(storageKey, JSON.stringify(pending));
-  }
-  function flushPending() {
-    const pending = loadPending();
-    if (!Object.values(pending).some((v) => v !== 0)) return;
-    fetch(`/recovery/${tripId}/checks/sync/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken() },
-      body: JSON.stringify({ deltas: pending, client_event_id: `${tripId}-${Date.now()}` }),
-    })
-      .then((res) => { if (!res.ok) throw new Error("sync failed"); return res.json(); })
-      .then((data) => {
-        savePending({});
-        Object.entries(data.counts).forEach(([checkType, count]) => {
-          const item = container.querySelector(`[data-check-type="${checkType}"]`);
-          if (!item) return;
-          if (item.dataset.inputMode === "toggle") {
-            const btn = item.querySelector(".check-toggle-btn");
-            btn.classList.toggle("is-checked", count > 0);
-            btn.textContent = count > 0 ? "✓" : "+";
-          } else {
-            item.querySelector(".check-count").textContent = count;
-          }
-        });
-      })
-      .catch(() => {});
-  }
-
-  container.querySelectorAll(".check-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const item = btn.closest(".check-item");
-      const checkType = item.dataset.checkType;
-      const delta = btn.dataset.action === "increment" ? 1 : -1;
-      const countEl = item.querySelector(".check-count");
-      countEl.textContent = Math.max(0, parseInt(countEl.textContent, 10) + delta);
-      const pending = loadPending();
-      pending[checkType] = (pending[checkType] || 0) + delta;
-      savePending(pending);
-      if (navigator.onLine) flushPending();
-    });
-  });
-
-  container.querySelectorAll(".check-toggle-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const item = btn.closest(".check-item");
-      const checkType = item.dataset.checkType;
-      const isChecked = btn.classList.contains("is-checked");
-      const delta = isChecked ? -1 : 1;
-      btn.classList.toggle("is-checked");
-      btn.textContent = isChecked ? "+" : "✓";
-      const pending = loadPending();
-      pending[checkType] = (pending[checkType] || 0) + delta;
-      savePending(pending);
-      if (navigator.onLine) flushPending();
-    });
-  });
-
-  window.addEventListener("online", flushPending);
-  setInterval(flushPending, 15000);
-  flushPending();
-})();
-</script>
+<script src="{% static 'js/inflight.js' %}" defer></script>
 {% endblock %}

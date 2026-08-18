@@ -1,20 +1,10 @@
 {% extends "base.html" %}
-{% load dict_extras %}
+{% load static %}
 
-{% block title %}메인 - THRIVE{% endblock %}
-
-{% block app_header %}
-<header class="app-header app-header--bordered">
-  <span></span>
-  <h1 class="app-header__title">메인</h1>
-  <a class="app-header__btn app-header__btn--close" href="{% url 'trips:edit_start' trip.id %}" aria-label="여정 수정">
-    <span class="svg-icon svg-icon--more"></span>
-  </a>
-</header>
-{% endblock %}
+{% block title %}예상 회복 여정 - THRIVE{% endblock %}
 
 {% block content %}
-<div class="stage-tab" aria-label="여정 단계">
+<nav class="stage-tab" aria-label="여정 단계">
   <span class="stage-tab__item is-active" aria-current="step" aria-label="비행 전">
     <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
     <span>비행 전</span>
@@ -25,69 +15,112 @@
   <span class="stage-tab__item" aria-label="비행 후">
     <span class="svg-icon svg-icon--land" aria-hidden="true"></span>
   </span>
-</div>
+</nav>
 
-<section class="home-section">
-  <p class="disclaimer">의학적 진단이 아닌 참고 지표입니다</p>
-  <h1 class="text-heading-1">착륙 시점 예상 점수</h1>
-  <div class="routine-score">
-    <strong class="routine-score__value">{{ trip.expected_score }}</strong>
-    <span class="routine-score__target">/ 100점</span>
+<h1 class="text-title-1">
+  <span>{{ request.user.profile.nickname|default:"유저" }}</span>님, 예상 회복 여정을<br>
+  확인해 보세요.
+</h1>
+
+<section>
+  <h2 class="home-section__title text-heading-1">예상 컨디션 점수</h2>
+  <div class="score-summary__value">
+    <span class="score-number" data-expected-score>{{ trip.expected_score }}점</span>
+    <span class="score-total">/ 100점</span>
   </div>
-  <p class="routine-caption">기내 관리에 따라 실측 점수는 달라질 수 있어요.</p>
-  {% if trip.summary_text %}<p class="report-note">{{ trip.summary_text }}</p>{% endif %}
+  <p class="routine-caption">비행 중 관리를 통해 회복 점수를 높일 수 있어요.</p>
 </section>
 
-<section class="home-section">
-  <h2 class="home-section__title text-heading-2">비행 일정</h2>
-  <article class="flight-card">
+<div class="factor-box">
+  {% for item in score_breakdown_items %}
+    <div class="factor-row">
+      <div class="factor-row__head">
+        <span>{{ item.label }}</span>
+        <span>{{ item.display }}</span>
+      </div>
+      <div class="factor-row__bar">
+        <span class="factor-row__bar-fill" style="width: {{ item.width }}%"></span>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<details class="calc-toggle">
+  <summary class="calc-toggle__summary">
+    <span>이 점수는 어떻게 계산되었나요?</span>
+    <span class="calc-toggle__chevron svg-icon svg-icon--more" aria-hidden="true"></span>
+  </summary>
+  <div class="calc-toggle__body">
+    {% if trip.summary_text %}
+      {{ trip.summary_text }}
+    {% else %}
+      총 비행시간은 수면·리듬과 순환에 영향을 끼치며, 시차는 수면·리듬 점수에 영향을 끼칩니다. 비행 시간이 증가함에 따라 수분 및 피부 점수가 줄어들며, 경유 여부에 따라 각 수치가 조정될 수 있습니다.
+    {% endif %}
+  </div>
+</details>
+
+<a class="btn btn--guide btn--block" href="{% url 'recovery:before_guide' trip.id %}">회복 가이드 확인</a>
+<a
+  class="link--export btn--link js-ics-export"
+  href="#"
+  data-ics-title="THRIVE 회복 가이드"
+  data-ics-start="{{ arrival_local|date:'c' }}"
+  data-ics-end="{{ recovery_end_local|date:'c' }}"
+  data-ics-description="비행 중 관리와 착륙 후 회복 루틴을 확인하세요."
+  data-ics-location="{{ trip.destination_airport.iata_code }} {{ trip.destination_airport.name_ko }}"
+>회복 가이드 캘린더로 내보내기</a>
+
+<section>
+  <h2 class="text-heading-1">비행 일정</h2>
+  <article class="flight-card flight-card--soft">
     <div class="flight-card__route">
       <div class="flight-card__point">
         <div class="flight-card__code">{{ trip.origin_airport.iata_code }}</div>
-        <div class="flight-card__airport">{{ trip.origin_airport.city_name }}</div>
+        <div class="flight-card__airport">{{ trip.origin_airport.name_ko }}</div>
       </div>
       <span class="flight-card__plane" aria-hidden="true">
-        <span class="svg-icon svg-icon--flight"></span>
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2.5 19h19v2h-19v-2zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10 8 3.57 6.09 4.08l4.15 7.19-4.98 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.49c.81-.23 1.28-1.05 1.07-1.85z"/>
+        </svg>
       </span>
       <div class="flight-card__point">
         <div class="flight-card__code">{{ trip.destination_airport.iata_code }}</div>
-        <div class="flight-card__airport">{{ trip.destination_airport.city_name }}</div>
+        <div class="flight-card__airport">{{ trip.destination_airport.name_ko }}</div>
       </div>
     </div>
-    <div class="flight-card__meta">
-      <span>출발 {{ departure_local|date:"m.d H:i" }}</span>
-      <span class="flight-card__sep">·</span>
-      <span>총 {{ flight_hours }}시간</span>
-      <span class="flight-card__sep">·</span>
-      <span>경유 {{ trip.get_layover_count_display }}</span>
-    </div>
   </article>
-</section>
 
-<section class="home-section">
-  <h2 class="home-section__title text-heading-2">요소별 예상 감점</h2>
-  <div class="factor-card">
-    <div class="factor">
-      <div class="factor__head"><span class="factor__label">수면·리듬</span><span class="factor__delta">{{ trip.score_breakdown.sleep }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: 44%;"></span></div>
+  <div class="itinerary-list itinerary-list--connected">
+    <div class="itinerary-row">
+      <span class="itinerary-dot"></span>
+      <div class="itinerary-row__body">
+        <p><strong>출발</strong> {{ departure_local|date:"n월 j일(D) H:i" }}</p>
+      </div>
+      <div class="itinerary-row__main">
+        <p class="itinerary-row__meta">{{ layover_summary }}</p>
+        <p class="itinerary-row__highlight">총 {{ flight_duration_label }} 비행</p>
+      </div>
     </div>
-    <div class="factor">
-      <div class="factor__head"><span class="factor__label">순환</span><span class="factor__delta">{{ trip.score_breakdown.circulation }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: 36%;"></span></div>
-    </div>
-    <div class="factor">
-      <div class="factor__head"><span class="factor__label">수분</span><span class="factor__delta">{{ trip.score_breakdown.hydration }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: 34%;"></span></div>
-    </div>
-    <div class="factor">
-      <div class="factor__head"><span class="factor__label">피부</span><span class="factor__delta">{{ trip.score_breakdown.skin }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: 30%;"></span></div>
+    <div class="itinerary-row">
+      <span class="itinerary-dot"></span>
+      <div class="itinerary-row__body">
+        <p><strong>도착</strong> {{ arrival_local|date:"n월 j일(D) H:i" }}</p>
+      </div>
     </div>
   </div>
+  <a class="link--export" href="{% url 'trips:edit_start' trip.id %}">비행 일정 수정하기</a>
 </section>
 
-<section class="routine-cta">
-  <a class="btn btn--primary btn--block btn--home" href="{% url 'recovery:before_guide' trip.id %}">회복 가이드 확인</a>
-  <a class="home-export" href="{% url 'trips:calendar' trip.id %}">캘린더로 내보내기</a>
-</section>
+<p class="disclaimer">
+  <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+    <path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="8" r="1" fill="currentColor"/>
+  </svg>
+  <span>이 점수는 여정 정보 기반 참고 지표입니다. 의학적 진단이 아니며 개인 건강 상태에 따라 실제 회복 정도는 다를 수 있습니다.</span>
+</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/calendar-export.js' %}" defer></script>
 {% endblock %}

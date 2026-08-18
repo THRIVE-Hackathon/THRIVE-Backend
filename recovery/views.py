@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from trips.models import Trip
@@ -14,6 +16,22 @@ from common.services.score import clamp_score
 from common.services.timezone import to_timezone
 from trips.services import refresh_trip_status
 
+SCORE_COMPONENT_LABELS = {
+    "sleep": "수면·리듬",
+    "circulation": "순환",
+    "hydration": "수분",
+    "skin": "피부",
+}
+
+INFLIGHT_CHECK_LABELS = {
+    "moisturize": "피부 보습하기",
+    "sleep": "6시간 취침하기",
+    "water": "물 100ml 마시기",
+    "stretch": "팔·다리 스트레칭하기",
+}
+
+INFLIGHT_CHECK_ORDER = ["moisturize", "sleep", "water", "stretch"]
+
 @login_required
 def inflight_check_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
@@ -25,7 +43,32 @@ def inflight_check_view(request, trip_id):
         )
         checks[check_type] = obj
 
-    context = {"trip": trip, "checks": checks, "input_modes": CHECK_TYPE_INPUT_MODE}
+    remaining = trip.arrival_at - timezone.now() if trip.arrival_at else timedelta(0)
+    remaining_seconds = max(0, remaining.total_seconds())
+    inflight_items = [
+        {
+            "check_type": check_type,
+            "label": INFLIGHT_CHECK_LABELS.get(check_type, checks[check_type].get_check_type_display()),
+            "check": checks[check_type],
+            "mode": CHECK_TYPE_INPUT_MODE.get(check_type, "counter"),
+        }
+        for check_type in INFLIGHT_CHECK_ORDER
+        if check_type in checks
+    ]
+
+    context = {
+        "trip": trip,
+        "checks": checks,
+        "inflight_items": inflight_items,
+        "input_modes": CHECK_TYPE_INPUT_MODE,
+        "remaining_hours": int(remaining_seconds // 3600),
+        "remaining_minutes": int((remaining_seconds % 3600) // 60),
+        "flight_duration_label": _format_duration(trip.total_flight_minutes),
+        "layover_summary": _layover_summary(trip),
+        "departure_local": to_timezone(trip.departure_at, trip.origin_airport.timezone),
+        "arrival_local": to_timezone(trip.arrival_at, trip.destination_airport.timezone),
+        "score_breakdown_items": _score_breakdown_items(trip),
+    }
     return render(request, "recovery/inflight_check.html", context)
 
 
@@ -129,6 +172,39 @@ def before_guide_view(request, trip_id):
         "layover_tips": get_layover_tips(),
     }
     return render(request, "recovery/before_guide.html", context)
+
+def _format_duration(total_minutes):
+    hours = total_minutes // 60
+    minutes = total_minutes % 60
+    return f"{hours}시간 {minutes:02d}분"
+
+def _layover_summary(trip):
+    if trip.layover_count == Trip.LayoverCount.NONE:
+        return "경유 없음"
+
+    summary = f"경유 {trip.get_layover_count_display()}"
+    if trip.max_layover_minutes:
+        summary += f"({_format_duration(trip.max_layover_minutes)} 대기)"
+    return summary
+
+def _score_breakdown_items(trip):
+    breakdown = trip.score_breakdown or {}
+    items = []
+    for key, label in SCORE_COMPONENT_LABELS.items():
+        try:
+            value = round(float(breakdown.get(key, 0)))
+        except (TypeError, ValueError):
+            value = 0
+        items.append(
+            {
+                "key": key,
+                "label": label,
+                "value": value,
+                "display": f"{value:+d}점" if value > 0 else f"{value}점",
+                "width": min(100, max(8, abs(value) * 4)),
+            }
+        )
+    return items
 
 @login_required
 def recovery_item_adjust(request, trip_id, item_id, action):

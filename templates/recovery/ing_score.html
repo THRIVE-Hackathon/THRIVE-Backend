@@ -2,61 +2,149 @@
 
 {% block title %}착륙 점수 확인 - THRIVE{% endblock %}
 {% block body_class %}app__body--push{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .landing-emphasis {
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+
+  .check-title-box {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .score-compare__arrow {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .landing-breakdown {
+    margin-top: var(--space-5, 24px);
+  }
+
+  .landing-breakdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2, 8px);
+    padding: var(--space-4, 16px) 0;
+    font-size: var(--fs-body-1, 18px);
+    color: var(--color-text);
+  }
+
+  .landing-breakdown-row__value {
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  .check-caption {
+    font-size: var(--fs-body-3);
+    margin-top: var(--space-4);
+  }
+
+  .app-header__form--close {
+    grid-column: 3;
+    justify-self: end;
+    margin: 0;
+  }
+
+  .app-header__form--close .app-header__btn {
+    border: 0;
+    background: transparent;
+    padding: 0;
+  }
+</style>
+{% endblock %}
 
 {% block app_header %}
 <header class="app-header app-header--bordered">
   <span></span>
   <h1 class="app-header__title">착륙 점수 확인</h1>
-  <span></span>
+  <form method="post" action="{% url 'trips:start_recovery' trip.id %}" class="app-header__form--close">
+    {% csrf_token %}
+    <button type="submit" class="app-header__btn" aria-label="닫기">
+      <span class="svg-icon svg-icon--close" aria-hidden="true"></span>
+    </button>
+  </form>
 </header>
 {% endblock %}
 
 {% block content %}
-<div class="stage-tab" aria-label="여정 단계">
-  <span class="stage-tab__item" aria-label="비행 전">
-    <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
-  </span>
-  <span class="stage-tab__item" aria-label="비행 중">
-    <span class="svg-icon svg-icon--plane" aria-hidden="true"></span>
-  </span>
-  <span class="stage-tab__item is-active" aria-current="step" aria-label="비행 후">
-    <span class="svg-icon svg-icon--land" aria-hidden="true"></span>
-    <span>비행 후</span>
-  </span>
-</div>
+<div class="check-title-box">
+  <h1 class="text-title-1">컨디션 확인</h1>
+  <p class="text-body-1">
+    {% if score_diff > 0 %}
+      기내에서 컨디션 관리를 실천한 덕분에
+      <span class="landing-emphasis">예상 점수보다 {{ score_diff_abs }}점 높은 상태에요.</span>
+    {% elif score_diff < 0 %}
+      장시간 비행의 영향으로
+      <span class="landing-emphasis">예상 점수보다 {{ score_diff_abs }}점 낮은 상태에요.</span>
+    {% else %}
+      현재 컨디션은
+      <span class="landing-emphasis">예상 점수와 같은 상태에요.</span>
+    {% endif %}
+  </p>
 
-<section class="home-section">
-  <h1 class="text-heading-1">컨디션 확인</h1>
-  {% if trip.summary_text %}<p class="report-note">{{ trip.summary_text }}</p>{% endif %}
-</section>
-
-<section class="home-section">
   <div class="score-compare">
     <div class="score-compare__col">
-      <strong class="score-compare__num">{{ trip.expected_score }}</strong>
-      <p class="score-compare__cap">예상</p>
+      <div class="score-compare__num" data-expected-score>{{ trip.expected_score }}</div>
+      <div class="score-compare__cap">예상</div>
     </div>
-    <span class="score-compare__plane" aria-hidden="true">
-      <span class="svg-icon svg-icon--flight"></span>
-    </span>
+    <div class="score-compare__plane" aria-hidden="true">
+      <span class="score-compare__arrow">▶</span>
+    </div>
     <div class="score-compare__col">
-      <strong class="score-compare__num score-compare__num--current">{{ trip.current_score }}</strong>
-      <p class="score-compare__cap score-compare__cap--current">현재</p>
+      <div class="score-compare__num score-compare__num--current" data-current-score>{{ trip.current_score }}</div>
+      <div class="score-compare__cap score-compare__cap--current">현재</div>
+    </div>
+  </div>
+</div>
+
+{% if score_breakdown_items %}
+  <div class="factor-card">
+    {% for item in score_breakdown_items %}
+      <div class="factor">
+        <div class="factor__head">
+          <span class="factor__label">{{ item.label }}</span>
+          <span class="factor__delta">{{ item.display }}</span>
+        </div>
+        <div class="bar"><span class="bar__fill" style="width: {{ item.width }}%"></span></div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<section class="home-section">
+  <h2 class="home-section__title text-heading-1">목표 점수</h2>
+
+  <p class="score-summary__value"><span class="score-number" data-target-score>{{ trip.target_score }}점</span></p>
+  <p class="check-caption text-muted">앞으로 {{ recovery_window_days }}일 간 함께 회복 점수를 올려봐요.</p>
+
+  <div class="landing-breakdown">
+    <div class="landing-breakdown-row">
+      <span>예정된 여행 기간</span><span class="landing-breakdown-row__value">{{ trip_duration_days }}일</span>
+    </div>
+    <div class="landing-breakdown-row">
+      <span>남은 회복 시간</span><span class="landing-breakdown-row__value">{{ recovery_window_hours }}시간</span>
     </div>
   </div>
 </section>
 
-<section class="home-section">
-  <h2 class="home-section__title text-heading-2">목표 점수</h2>
-  <div class="routine-score">
-    <strong class="routine-score__value">{{ trip.target_score }}</strong>
-    <span class="routine-score__target">/ 현재 {{ trip.current_score }}점</span>
-  </div>
-  <p class="routine-caption">앞으로 함께 회복 점수를 올려봐요.</p>
-</section>
+<p class="disclaimer">
+  <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+    <path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="8" r="1" fill="currentColor"/>
+  </svg>
+  <span>이 점수는 여정 정보 기반 참고 지표입니다. 의학적 진단이 아니며 개인 건강 상태에 따라 실제 회복 정도는 다를 수 있습니다.</span>
+</p>
 
 <form method="post" action="{% url 'trips:start_recovery' trip.id %}" class="push-bottom">
   {% csrf_token %}
-  <button type="submit" class="btn btn--primary btn--block btn--home">회복 루틴 실행</button>
+  <button type="submit" class="btn btn--primary btn--block" id="routine-start">회복 루틴 실행</button>
 </form>
 {% endblock %}
