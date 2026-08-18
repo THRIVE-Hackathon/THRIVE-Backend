@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THRIVE</title>
+    <link rel="stylesheet" href="../../styles/reset.css" />
+    <link rel="stylesheet" href="../../styles/variables.css" />
+    <link rel="stylesheet" href="../../styles/common.css" />
+    <link rel="stylesheet" href="../../styles/home.css" />
+    <link rel="stylesheet" href="../../styles/icons.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <main class="app__body app__body--center">
+        <section class="home-empty">
+          <div class="home-empty__title-box">
+              <span class="home-empty__title-icon" aria-hidden="true">
+              <span class="svg-icon svg-icon--flight"></span>
+              </span>
+            <h1 class="home-empty__title text-title-1">
+              <!-- [Django] 유저 → {{ request.user.profile.nickname }} -->
+              <span data-user>유저</span>님, 여정을 등록해 주세요.
+            </h1>
+          </div>
+
+          <ul class="home-empty__points">
+            <li>
+              <span>1. 예상 컨디션 회복도를 점수로 확인할 수 있어요.</span>
+            </li>
+            <li>
+              <span>2. 어떤 관리가 필요할지 예측할 수 있어요.</span>
+            </li>
+            <li>
+              <span>3. 랜딩의 도움을 받아 장거리 비행 중 컨디션을 최상으로 끌어올릴 수 있어요!</span>
+            </li>
+          </ul>
+
+          <!-- [Django] href="{% url 'trips:create_step1' %}" -->
+          <a class="btn btn--primary btn--block" href="../record/trip-register.html">비행 여정 등록</a>
+        </section>
+      </main>
+
+      <!-- 하단 탭바 (여기서는 상태 고정: 여정이 없으므로 실질적으로 항상 이 페이지가 '메인') -->
+      <nav class="app-tabbar" aria-label="메인 내비게이션">
+        <a class="app-tabbar__item" href="./src/pages/record/record.html" data-key="record">
+          <span class="app-tabbar__icon svg-icon svg-icon--record" aria-hidden="true"></span>
+          <span class="app-tabbar__label">기록</span>
+        </a>
+        <a class="app-tabbar__item is-active" href="./index.html" data-key="home" aria-current="page">
+          <span class="app-tabbar__icon svg-icon svg-icon--home" aria-hidden="true"></span>
+          <span class="app-tabbar__label">메인</span>
+        </a>
+        <a class="app-tabbar__item" href="./src/pages/mypage/profile.html" data-key="mypage">
+          <span class="app-tabbar__icon svg-icon svg-icon--account" aria-hidden="true"></span>
+          <span class="app-tabbar__label">설정</span>
+        </a>
+      </nav>
+    </div>
+  </body>
+</html>
