@@ -898,3 +898,46 @@
   color: var(--color-primary, #6441FF) !important;
   margin-top: var(--space-1, 4px) !important;
 }
+
+/* ============================================================
+ * 11) 홈 · 여정 없음 (등록 유도) — home_none.html 전용
+ *     아이콘(.home-empty__title-icon .svg-icon)은 icons.css가 담당
+ * ============================================================ */
+.home-empty {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 48px;
+  min-height: calc(100vh - var(--tabbar-height));
+}
+
+.home-empty__title-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.home-empty__title {
+  font-size: 26px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.home-empty__points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.home-empty__points li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--fs-body-1);
+  line-height: 1.5;
+  color: var(--color-text);
+}
