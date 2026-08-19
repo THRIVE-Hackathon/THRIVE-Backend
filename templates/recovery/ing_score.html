@@ -78,13 +78,13 @@
   <h1 class="text-title-1">컨디션 확인</h1>
   <p class="text-body-1">
     {% if score_diff > 0 %}
-      기내에서 컨디션 관리를 실천한 덕분에
+      기내에서 컨디션 관리를 실천한 덕분에<br>
       <span class="landing-emphasis">예상 점수보다 {{ score_diff_abs }}점 높은 상태에요.</span>
     {% elif score_diff < 0 %}
-      장시간 비행의 영향으로
+      장시간 비행의 영향으로<br>
       <span class="landing-emphasis">예상 점수보다 {{ score_diff_abs }}점 낮은 상태에요.</span>
     {% else %}
-      현재 컨디션은
+      현재 컨디션은<br>
       <span class="landing-emphasis">예상 점수와 같은 상태에요.</span>
     {% endif %}
   </p>
@@ -95,7 +95,7 @@
       <div class="score-compare__cap">예상</div>
     </div>
     <div class="score-compare__plane" aria-hidden="true">
-      <span class="score-compare__arrow">▶</span>
+      <span class="trip-card__arrow svg-icon svg-icon--next" aria-hidden="true"></span>
     </div>
     <div class="score-compare__col">
       <div class="score-compare__num score-compare__num--current" data-current-score>{{ trip.current_score }}</div>
