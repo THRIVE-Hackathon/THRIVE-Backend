@@ -37,45 +37,12 @@
       </div>
       <div class="flight-card__meta">
         <span>{{ active_trip.departure_at|date:"m.d H:i"|default:"일정 입력됨" }}</span>
-        <span class="flight-card__sep">·</span>
+        <span class="flight-card__sep">|</span>
         <span>총 {{ active_trip.total_flight_minutes|div_minutes_to_hours }}시간</span>
-        <span class="flight-card__sep">·</span>
+        <span class="flight-card__sep">|</span>
         <span>경유 {{ active_trip.get_layover_count_display }}</span>
       </div>
     </article>
-
-    <a class="trip-card" href="{% url 'trips:home' %}">
-      <div class="trip-card__main">
-        <div class="trip-card__route">
-          <span class="trip-card__point">
-            <strong class="trip-card__code">{{ active_trip.origin_airport.iata_code }}</strong>
-            <span class="trip-card__city">{{ active_trip.origin_airport.city_name }}</span>
-          </span>
-          <span class="trip-card__arrow svg-icon svg-icon--next" aria-hidden="true"></span>
-          <span class="trip-card__point">
-            <strong class="trip-card__code">{{ active_trip.destination_airport.iata_code }}</strong>
-            <span class="trip-card__city">{{ active_trip.destination_airport.city_name }}</span>
-          </span>
-        </div>
-        <p class="trip-card__meta">
-          {{ active_trip.route_name }}
-          <span class="trip-card__meta-sep">·</span>
-          {{ active_trip.get_status_display }}
-          <span class="trip-card__meta-sep">·</span>
-          회복 {{ active_trip.completed_recovery_count }}/{{ active_trip.recovery_count }}
-          <span class="trip-card__meta-sep">·</span>
-          예상 {% if active_trip.expected_score is not None %}{{ active_trip.expected_score }}{% else %}-{% endif %}
-          <span class="trip-card__meta-sep">·</span>
-          목표 {% if active_trip.target_score is not None %}{{ active_trip.target_score }}{% else %}-{% endif %}
-        </p>
-      </div>
-      <div class="trip-card__score">
-        <span class="trip-card__score-label">점수</span>
-        <strong class="trip-card__score-value">
-          {% if active_trip.current_score is not None %}{{ active_trip.current_score }}{% elif active_trip.expected_score is not None %}{{ active_trip.expected_score }}{% else %}-{% endif %}
-        </strong>
-      </div>
-    </a>
   </section>
 {% else %}
   <section class="home-section">
@@ -105,11 +72,11 @@
             </div>
             <p class="trip-card__meta">
               {{ trip.route_name }}
-              <span class="trip-card__meta-sep">·</span>
+              <span class="trip-card__meta-sep">|</span>
               {{ trip.created_at|date:"m.d" }}
-              <span class="trip-card__meta-sep">·</span>
+              <span class="trip-card__meta-sep">|</span>
               총 {{ trip.total_flight_minutes|div_minutes_to_hours }}시간
-              <span class="trip-card__meta-sep">·</span>
+              <span class="trip-card__meta-sep">|</span>
               {% if trip.result %}{{ trip.result.selected_answer }}{% elif trip.is_report_required %}리포트 작성 필요{% else %}{{ trip.get_status_display }}{% endif %}
             </p>
           </div>
