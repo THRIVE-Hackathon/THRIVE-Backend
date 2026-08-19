@@ -1,16 +1,27 @@
 /*
  * trip-register.js  (백엔드 static/js/ 에 배치)
- * create_step1.html / create_step2.html 공용.
+ * create_step1.html(출발 정보) / create_step2.html(도착 정보) 공용.
  *
- * 역할: THRIVE 디자인의 바텀시트/라디오 UI에서 고른 값을
- *       숨겨진 실제 Django 폼 컨트롤(name 기준)에 주입한다.
- *       한 파일이 두 페이지를 모두 담당하므로 요소 존재 여부를 항상 확인한다.
+ * 방식 B 필드 배치:
+ *   step1 = origin_airport + departure_at + layover_count + max_layover_minutes
+ *   step2 = destination_airport + arrival_at + trip_duration_days
+ *
+ * 역할: THRIVE 디자인 시트/라디오 UI에서 고른 값을 숨겨진 실제 Django
+ *       폼 컨트롤(name 기준)에 주입한다. 한 파일이 두 페이지를 모두
+ *       담당하므로 요소 존재 여부를 항상 확인한다.
  */
 (function () {
   "use strict";
 
   var pad = function (v) { return String(v).padStart(2, "0"); };
   var byName = function (name) { return document.querySelector('[name="' + name + '"]'); };
+  var WEEKDAY_KO = ["일", "월", "화", "수", "목", "금", "토"];
+
+  /* 날짜 라벨: "10월 11일(일)" 형식 */
+  function formatDateLabel(y, m, d) {
+    var wd = WEEKDAY_KO[new Date(Number(y), Number(m) - 1, Number(d)).getDay()];
+    return Number(m) + "월 " + Number(d) + "일(" + wd + ")";
+  }
 
   /* ── 공통: 시트 열기/닫기 ─────────────────────────────── */
   document.querySelectorAll("[data-sheet]").forEach(function (trigger) {
@@ -29,7 +40,7 @@
     if (overlay) overlay.hidden = true;
   };
 
-  /* ── 공통: 리스트형 시트(공항/여행기간) 항목 선택 ──────── */
+  /* ── 공통: 리스트형 시트(공항) 항목 선택 ──────────────── */
   document.querySelectorAll(".airport-list").forEach(function (list) {
     list.querySelectorAll(".airport-list__item").forEach(function (item) {
       item.addEventListener("click", function () {
@@ -46,7 +57,7 @@
     var el = document.getElementById(id);
     if (!el) return;
     el.textContent = text;
-    el.style.color = "var(--color-text)";
+    el.style.color = "var(--color-violet-700)";
     el.style.fontWeight = "600";
   }
 
@@ -63,7 +74,9 @@
     refreshGates();
   }
 
-  /* ── 날짜/시각 조합 상태 (step2) ───────────────────────── */
+  /* ── 날짜/시각 조합 상태 ───────────────────────────────
+     depart는 step1(departure_at), arrive는 step2(arrival_at).
+     각 페이지엔 둘 중 하나만 존재하므로 존재하는 쪽만 동작한다. */
   var dt = {
     depart: { date: null, time: null },
     arrive: { date: null, time: null }
@@ -85,9 +98,8 @@
     btn.addEventListener("click", function () {
       var kind = btn.getAttribute("data-confirm");
 
-      if (kind === "origin")        return confirmListSheet("origin_airport", "origin-value");
-      if (kind === "destination")   return confirmListSheet("destination_airport", "destination-value");
-      if (kind === "trip-length")   return confirmListSheet("trip_duration_days", "trip-length-value");
+      if (kind === "origin")      return confirmListSheet("origin_airport", "origin-value");
+      if (kind === "destination") return confirmListSheet("destination_airport", "destination-value");
 
       if (kind === "wait") {
         var wh = parseInt(document.getElementById("wait-hour").value, 10) || 0;
@@ -95,6 +107,42 @@
         var hidden = byName("max_layover_minutes");
         if (hidden) hidden.value = wh * 60 + wm;
         setTriggerLabel("wait-time-value", wh + "시간 " + pad(wm) + "분");
+        return closeSheet(btn);
+      }
+
+      if (kind === "trip-length") {
+        var raw = parseInt(document.getElementById("trip-length-days").value, 10);
+        if (isNaN(raw)) return closeSheet(btn);
+        var days = Math.min(14, Math.max(1, raw));  // 폼 choice 범위(1~14)로 클램프
+        var sel = byName("trip_duration_days");
+        if (sel) sel.value = String(days);
+        setTriggerLabel("trip-length-value", days + "일");
+        refreshGates();
+        return closeSheet(btn);
+      }
+
+      /* survey(step3): 마지막 비행 일자 (날짜만) */
+      if (kind === "last-flight-date") {
+        var ly = document.getElementById("lf-year").value;
+        var lm = document.getElementById("lf-month").value;
+        var ld = document.getElementById("lf-day").value;
+        if (ly && lm && ld) {
+          var dateInput = byName("last_flight_date");
+          if (dateInput) dateInput.value = ly + "-" + pad(lm) + "-" + pad(ld);  // YYYY-MM-DD
+          setTriggerLabel("last-flight-value", formatDateLabel(ly, lm, ld));
+        }
+        return closeSheet(btn);
+      }
+
+      /* survey(step3): 총 비행 시간 (시간 + 분) */
+      if (kind === "flight-time") {
+        var fh = parseInt(document.getElementById("ft-hour").value, 10) || 0;
+        var fm = parseInt(document.getElementById("ft-min").value, 10) || 0;
+        var hInput = byName("last_flight_hours");
+        var mInput = byName("last_flight_minutes");
+        if (hInput) hInput.value = fh;
+        if (mInput) mInput.value = fm;
+        setTriggerLabel("flight-time-value", fh + "시간 " + pad(fm) + "분");
         return closeSheet(btn);
       }
 
@@ -106,7 +154,7 @@
         var d = document.getElementById(pre + "-day").value;
         if (y && m && d) {
           dt[p].date = { y: y, m: m, d: d };
-          setTriggerLabel(p + "-date-value", y + "년 " + m + "월 " + d + "일");
+          setTriggerLabel(p + "-date-value", formatDateLabel(y, m, d));
           recomposeDateTime(p);
         }
         return closeSheet(btn);
@@ -144,34 +192,66 @@
     r.addEventListener("change", syncWaitVisibility);
   });
 
+  /* ── survey(step3): 장거리 비행 '없음' 선택 시 경험 필드 숨김 ── */
+  var experienceFields = document.getElementById("experience-fields");
+  function syncExperienceVisibility() {
+    if (!experienceFields) return;
+    var checked = document.querySelector('input[name="has_recent_flight_experience"]:checked');
+    var show = checked && checked.value === "true";
+    experienceFields.hidden = !show;
+    if (!show) {
+      // 숨길 때 하위 값 초기화 (없음으로 제출되도록)
+      ["last_flight_date", "last_flight_hours", "last_flight_minutes"].forEach(function (n) {
+        var el = byName(n);
+        if (el) el.value = "";
+      });
+      var impact = document.querySelector('input[name="typical_impact"]:checked');
+      if (impact) impact.checked = false;
+      setTriggerLabel("last-flight-value", "Select...");
+      setTriggerLabel("flight-time-value", "Select...");
+    }
+  }
+  document.querySelectorAll('input[name="has_recent_flight_experience"]').forEach(function (r) {
+    r.addEventListener("change", syncExperienceVisibility);
+  });
+
   /* ── 닫기 확인 모달 ────────────────────────────────────── */
   var closeTrigger = document.getElementById("close-trigger");
   var closeModal = document.getElementById("close-confirm-modal");
   var closeCancel = document.getElementById("close-cancel");
+  var closeConfirm = document.getElementById("close-confirm");
   if (closeTrigger && closeModal) {
     closeTrigger.addEventListener("click", function () { closeModal.hidden = false; });
   }
   if (closeCancel && closeModal) {
     closeCancel.addEventListener("click", function () { closeModal.hidden = true; });
   }
+  if (closeConfirm) {
+    closeConfirm.addEventListener("click", function () {
+      // 폼의 data-cancel-url(= trips:registration_cancel)로 이동하며 draft 초기화
+      var form = document.querySelector(".trip-step");
+      var url = form && form.getAttribute("data-cancel-url");
+      window.location.href = url || "/";
+    });
+  }
 
-  /* ── 다음/확인 버튼 활성화 게이트 ──────────────────────── */
+  /* ── 다음 버튼 활성화 게이트 (방식 B 배치 기준) ────────── */
   function refreshGates() {
     var step1Next = document.getElementById("step1-next");
     if (step1Next) {
-      var o = byName("origin_airport"), d = byName("destination_airport");
-      step1Next.disabled = !(o && o.value && d && d.value);
+      var o = byName("origin_airport"), dep = byName("departure_at");
+      step1Next.disabled = !(o && o.value && dep && dep.value);
     }
     var step2Next = document.getElementById("step2-next");
     if (step2Next) {
-      var dep = byName("departure_at"), arr = byName("arrival_at"), dur = byName("trip_duration_days");
-      step2Next.disabled = !(dep && dep.value && arr && arr.value && dur && dur.value);
+      var d = byName("destination_airport"), arr = byName("arrival_at"), dur = byName("trip_duration_days");
+      step2Next.disabled = !(d && d.value && arr && arr.value && dur && dur.value);
     }
   }
 
   /* ── 새로고침/검증 오류 후 재진입: 숨은 값 → 라벨 복원 ── */
   function hydrate() {
-    // 공항
+    // 공항 (step1: origin, step2: destination)
     [["origin_airport", "origin-value"], ["destination_airport", "destination-value"]].forEach(function (pair) {
       var sel = byName(pair[0]);
       if (sel && sel.value) {
@@ -179,13 +259,13 @@
         if (opt) setTriggerLabel(pair[1], opt.text.trim());
       }
     });
-    // 여행 기간
+    // 여행 기간 (step2)
     var dur = byName("trip_duration_days");
     if (dur && dur.value) {
       var o = dur.options[dur.selectedIndex];
       if (o) setTriggerLabel("trip-length-value", o.text.trim());
     }
-    // 대기 시간
+    // 대기 시간 (step1)
     var wait = byName("max_layover_minutes");
     if (wait && wait.value) {
       var total = parseInt(wait.value, 10) || 0;
@@ -199,12 +279,13 @@
         if (mt) {
           dt[pair[0]].date = { y: mt[1], m: mt[2], d: mt[3] };
           dt[pair[0]].time = { h: mt[4], min: mt[5] };
-          setTriggerLabel(pair[0] + "-date-value", mt[1] + "년 " + mt[2] + "월 " + mt[3] + "일");
+          setTriggerLabel(pair[0] + "-date-value", formatDateLabel(mt[1], mt[2], mt[3]));
           setTriggerLabel(pair[0] + "-time-value", mt[4] + ":" + mt[5]);
         }
       }
     });
     syncWaitVisibility();
+    syncExperienceVisibility();
     refreshGates();
   }
 

@@ -7,9 +7,6 @@
 
 {% block app_header %}
 <header class="app-header app-header--bordered">
-  <a class="app-header__btn app-header__btn--back" href="{% url 'trips:home' %}" aria-label="뒤로">
-    <span class="svg-icon svg-icon--left"></span>
-  </a>
   <h1 class="app-header__title">비행 여정 등록</h1>
   <button type="button" class="app-header__btn app-header__btn--close" id="close-trigger" aria-label="닫기">
     <span class="svg-icon svg-icon--close"></span>
@@ -22,12 +19,11 @@
       data-cancel-url="{% url 'trips:registration_cancel' %}">
   {% csrf_token %}
 
-  <div class="step-dots"><span class="is-active"></span><span></span></div>
+  <div class="step-dots"><span class="is-active"></span><span></span><span></span></div>
 
-  {# ── 실제 폼 컨트롤(숨김). 아래 바텀시트 UI가 JS로 값을 동기화한다 ── #}
   <div hidden>
     {{ form.origin_airport }}
-    {{ form.destination_airport }}
+    {{ form.departure_at }}
     {{ form.max_layover_minutes }}
   </div>
 
@@ -44,18 +40,28 @@
       {% endif %}
     </div>
 
-    <!-- 도착 공항 -->
-    <div class="field{% if form.destination_airport.errors %} has-error{% endif %}">
-      <label class="field__label">도착</label>
-      <button type="button" class="field__select field__select--btn" style="text-align:left;"
-              data-sheet="destination-sheet">
-        <span class="trigger-value" id="destination-value" style="color:var(--color-text-subtle);">Select...</span>
-      </button>
-      {% if form.destination_airport.errors %}
-        <p class="field-error">{{ form.destination_airport.errors|striptags }}</p>
-      {% endif %}
-    </div>
+    <!-- 출발일 -->
+    <button type="button" class="info-row" data-sheet="depart-date-sheet">
+      <span class="info-row__label">출발일</span>
+      <span class="info-row__value" id="depart-date-value">Select...</span>
+      <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <!-- 출발 시각 -->
+    <button type="button" class="info-row" data-sheet="depart-time-sheet">
+      <span class="info-row__label">출발 시각</span>
+      <span class="info-row__value" id="depart-time-value">Select...</span>
+      <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
   </div>
+
+  {% if form.departure_at.errors %}
+    <p class="field-error">{{ form.departure_at.errors|striptags }}</p>
+  {% endif %}
 
   <div class="field-box">
     <!-- 경유 여부 -->
@@ -80,8 +86,7 @@
       <span class="info-row__label">대기 시간</span>
       <span class="info-row__value" id="wait-time-value">Select...</span>
       <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" />
+        <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
   </div>
@@ -90,12 +95,7 @@
     <p class="auth-form__error">{{ form.non_field_errors|striptags }}</p>
   {% endif %}
 
-  <p class="disclaimer">
-    <span class="disclaimer__icon" aria-hidden="true">!</span>
-    총 비행시간이 6시간 미만인 여정은 등록할 수 없습니다.
-  </p>
-
-  <button type="submit" class="btn btn--primary btn--block step-action--bottom" id="step1-next">다음</button>
+  <button type="submit" class="btn btn--primary btn--block step-action--bottom" id="step1-next" disabled>다음</button>
 </form>
 
 {# ── 바텀시트: 출발 공항 ── #}
@@ -114,19 +114,35 @@
   </div>
 </div>
 
-{# ── 바텀시트: 도착 공항 ── #}
-<div id="destination-sheet" class="sheet-overlay" hidden>
+{# ── 바텀시트: 출발일 ── #}
+<div id="depart-date-sheet" class="sheet-overlay" hidden>
   <div class="sheet">
     <div class="sheet__handle"></div>
-    <h2 class="text-heading-3">공항</h2>
-    <div class="airport-list" data-target="destination_airport">
-      {% for value, label in form.destination_airport.field.choices %}
-        {% if value %}
-        <button type="button" class="airport-list__item" data-value="{{ value }}">{{ label }}</button>
-        {% endif %}
-      {% endfor %}
+    <h2 class="text-heading-3">출발일</h2>
+    <div class="date-input-row">
+      <input class="field__input date-input" type="text" inputmode="numeric" maxlength="4" placeholder="2000" id="dd-year"/>
+      <span class="date-input-unit">년</span>
+      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2" placeholder="00" id="dd-month"/>
+      <span class="date-input-unit">월</span>
+      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2" placeholder="00" id="dd-day"/>
+      <span class="date-input-unit">일</span>
     </div>
-    <button type="button" class="btn btn--primary btn--block" data-confirm="destination">입력</button>
+    <button type="button" class="btn btn--primary btn--block" data-confirm="depart-date">입력</button>
+  </div>
+</div>
+
+{# ── 바텀시트: 출발 시각 ── #}
+<div id="depart-time-sheet" class="sheet-overlay" hidden>
+  <div class="sheet">
+    <div class="sheet__handle"></div>
+    <h2 class="text-heading-3">출발 시각</h2>
+    <div class="date-input-row">
+      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2" placeholder="00" id="dt-hour"/>
+      <span class="date-input-unit">시</span>
+      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2" placeholder="00" id="dt-min"/>
+      <span class="date-input-unit">분</span>
+    </div>
+    <button type="button" class="btn btn--primary btn--block" data-confirm="depart-time">입력</button>
   </div>
 </div>
 
@@ -136,11 +152,9 @@
     <div class="sheet__handle"></div>
     <h2 class="text-heading-3">대기 시간</h2>
     <div class="date-input-row">
-      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
-             placeholder="00" id="wait-hour" />
+      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2" placeholder="00" id="wait-hour"/>
       <span class="date-input-unit">시간</span>
-      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2"
-             placeholder="00" id="wait-minute" />
+      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2" placeholder="00" id="wait-minute"/>
       <span class="date-input-unit">분</span>
     </div>
     <button type="button" class="btn btn--primary btn--block" data-confirm="wait">입력</button>
@@ -154,7 +168,7 @@
     <p class="modal-text">지금 창을 닫으면 지금까지 입력한 내용이<br>저장되지 않고 모두 초기화돼요.</p>
     <div class="modal__actions">
       <button type="button" class="btn--cancel" id="close-cancel">취소</button>
-      <a class="btn--confirm" href="{% url 'trips:registration_cancel' %}">닫기</a>
+      <button type="button" class="btn--confirm" id="close-confirm">닫기</button>
     </div>
   </div>
 </div>
@@ -162,4 +176,13 @@
 
 {% block scripts %}
 <script src="{% static 'js/trip-register.js' %}" defer></script>
+<script src="../../components/header.js"></script>
+    <script>
+      document.getElementById("header-mount").append(
+        THRIVE.createHeader({
+          title: "회복 가이드 확인", /* 헤더 타이틀 수정 */
+          onClose: function () { history.back(); }, /* 좌측 뒤로가기 액션 유지 */
+        })
+      );
+    </script>
 {% endblock %}

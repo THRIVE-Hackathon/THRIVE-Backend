@@ -22,11 +22,6 @@
 
     <main class="app__body {% block body_class %}{% endblock %}">
       {% if messages %}
-        <div class="message-stack" role="status" aria-live="polite">
-          {% for message in messages %}
-            <p class="card text-caption message message--{{ message.tags }}">{{ message }}</p>
-          {% endfor %}
-        </div>
       {% endif %}
       {% block content %}{% endblock %}
     </main>
