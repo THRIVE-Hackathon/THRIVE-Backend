@@ -3,7 +3,75 @@
 
 {% block title %}회복 계획 - THRIVE{% endblock %}
 
-{% block content %}
+{% block extra_css %}
+<style>
+  /* ============================================================
+   * [비행 후 전용 복구 CSS]
+   * base.html 은 record.css / mypage.css 를 전역 로드하는데,
+   * 이들이 home.css 의 공용 클래스(stage-tab / score-compare /
+   * calc-toggle / disclaimer)를 뒤에서 재정의(덮어씀)한다.
+   * 정적 프론트(main-done.html)는 record/mypage.css 를 로드하지
+   * 않아 정상이지만, base 를 상속하면 깨지므로 이 페이지에서만
+   * home.css 의도대로 되돌린다. (공유 CSS 미수정 원칙 유지)
+   * extra_css 는 base 에서 가장 마지막에 로드되어 우선순위가 가장 높다.
+   * ============================================================ */
+
+  /* [상단 헤더] 여정 단계 탭 — record.css 가 22px·회색으로 축소시킨 것을 복구 */
+  .stage-tab { margin: 8px auto; gap: 2px; padding: 4px; }
+  .stage-tab__item {
+    height: 40px; padding: 6px 8px;
+    color: var(--color-cyan-200);
+    font-size: var(--fs-caption-1); font-weight: 400;
+  }
+  .stage-tab__item:not(.is-active) {
+    width: auto; height: 40px; padding: 6px 8px;
+    color: var(--color-cyan-200);
+  }
+  .stage-tab__item.is-active {
+    padding: 0 16px;
+    background: var(--color-cyan-100);
+    color: var(--color-cyan-600);
+    font-size: var(--fs-caption-1);
+  }
+
+  /* [컨디션 점수 카드] record.css .score-compare / __col 이 '내부 박스 2개'로
+     바꿔버린 것을 home.css 의 단일 카드(현재→목표) 디자인으로 복구 */
+  .score-compare {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-2);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .score-compare__col {
+    flex: initial;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    text-align: center;
+  }
+
+  /* [하단 토글] record.css 가 summary::after 로 '▾' 를 추가로 주입해 화살표가
+     2개로 겹치던 것을 제거하고, home.css 의 __chevron(svg 아이콘)만 남긴다 */
+  .calc-toggle summary::after { content: none; }
+  .calc-toggle .calc-toggle__summary { color: var(--color-text-muted); padding: 0; }
+
+  /* [하단 문구 아이콘] disclaimer 아이콘 크기 복구(14px) */
+  .disclaimer { align-items: flex-start; }
+  .disclaimer__icon { width: 14px; height: 14px; }
+</style>
+{% endblock %}
+
+{% comment %}
+  [상단 헤더] 여정 단계 탭을 app_header 블록에 배치.
+  → base 구조상 .app 의 직속 자식(스크롤 본문 .app__body 바깥)이 되어
+    정적 시안처럼 상단에 고정된 밴드로 렌더된다.
+{% endcomment %}
+{% block app_header %}
 <nav class="stage-tab" aria-label="여정 단계">
   <span class="stage-tab__item" aria-label="비행 전">
     <span class="svg-icon svg-icon--flight" aria-hidden="true"></span>
@@ -16,7 +84,9 @@
     <span>비행 후</span>
   </span>
 </nav>
+{% endblock %}
 
+{% block content %}
 <h1 class="home-greeting text-title-1">
   <span>{{ request.user.profile.nickname|default:"유저" }}</span>님, 회복 루틴 종료까지<br>
   <span class="home-greeting__accent"><span data-remaining-hours>{{ remaining_hours }}</span>시간</span>
@@ -87,19 +157,19 @@
   <div class="factor-card">
     <div class="factor">
       <div class="factor__head"><span class="factor__label">수면·리듬</span><span class="factor__delta">{{ trip.score_breakdown.sleep }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: 62%"></span></div>
+      <div class="bar"><span class="bar__fill" style="width: {{ trip.score_breakdown.sleep_pct|default:62 }}%"></span></div>
     </div>
     <div class="factor">
       <div class="factor__head"><span class="factor__label">순환</span><span class="factor__delta">{{ trip.score_breakdown.circulation }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: 90%"></span></div>
+      <div class="bar"><span class="bar__fill" style="width: {{ trip.score_breakdown.circulation_pct|default:90 }}%"></span></div>
     </div>
     <div class="factor">
       <div class="factor__head"><span class="factor__label">수분</span><span class="factor__delta">{{ trip.score_breakdown.hydration }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: 78%"></span></div>
+      <div class="bar"><span class="bar__fill" style="width: {{ trip.score_breakdown.hydration_pct|default:78 }}%"></span></div>
     </div>
     <div class="factor">
       <div class="factor__head"><span class="factor__label">피부</span><span class="factor__delta">{{ trip.score_breakdown.skin }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: 84%"></span></div>
+      <div class="bar"><span class="bar__fill" style="width: {{ trip.score_breakdown.skin_pct|default:84 }}%"></span></div>
     </div>
   </div>
 
@@ -115,7 +185,11 @@
 </section>
 
 <p class="disclaimer">
-  <span class="disclaimer__icon svg-icon svg-icon--guide" aria-hidden="true"></span>
+  <svg class="disclaimer__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+    <path d="M12 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="8" r="1" fill="currentColor"/>
+  </svg>
   <span>이 점수는 여정 정보 기반 참고 지표입니다. 의학적 진단이 아니며 개인 건강 상태에 따라 실제 회복 정도는 다를 수 있습니다.</span>
 </p>
 {% endblock %}
