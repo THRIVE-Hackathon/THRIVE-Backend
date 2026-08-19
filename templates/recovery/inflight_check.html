@@ -12,8 +12,6 @@
    * 뒤에서 덮어쓰기 때문에, 이 페이지에서만 home.css 의도대로 복구한다.
    * (공유 CSS 미수정 원칙 · extra_css 가 가장 마지막에 로드되어 우선순위 최상)
    * ============================================================ */
-
-  /* [상단 헤더] 여정 단계 탭 복구 */
   .stage-tab { margin: 8px auto; gap: 2px; padding: 4px; }
   .stage-tab__item {
     height: 40px; padding: 6px 8px;
@@ -30,18 +28,10 @@
     color: var(--color-cyan-600);
     font-size: var(--fs-caption-1);
   }
-
-  /* [하단 토글] record.css 가 summary::after 로 '▾' 를 추가 주입 →
-     화살표 중복 제거. home.css 의 __chevron(svg 아이콘)만 남긴다 */
   .calc-toggle summary::after { content: none; }
   .calc-toggle .calc-toggle__summary { color: var(--color-text-muted); padding: 0; }
-
-  /* [하단 문구 아이콘] disclaimer 아이콘 크기 복구(14px) */
   .disclaimer { align-items: flex-start; }
   .disclaimer__icon { width: 14px; height: 14px; }
-
-  /* [비행 일정 타임라인] record.css 가 점선 연결선/보라 dot(절대배치)을
-     평범한 flex 목록으로 바꾼 것을 home.css 의 타임라인 디자인으로 복구 */
   .itinerary-list {
     position: relative; display: block;
     padding: 8px 20px; margin-bottom: var(--space-4); gap: 0;
@@ -64,8 +54,6 @@
     font-size: var(--fs-body-3); color: var(--color-text);
     margin-bottom: var(--space-1);
   }
-
-  /* --- 비행 중 화면 고유 텍스트 스타일 (기존 유지) --- */
   .inflight-caption { margin-top: -16px; }
   .inflight-remain {
     font-size: 18px; line-height: 1.4; font-weight: 700;
@@ -91,7 +79,6 @@
 </style>
 {% endblock %}
 
-{% comment %} [상단 헤더] 여정 단계 탭을 app_header 블록에 배치(스크롤 본문 바깥 상단 밴드) {% endcomment %}
 {% block app_header %}
 <nav class="stage-tab" aria-label="여정 단계">
   <span class="stage-tab__item" aria-label="비행 전">
