@@ -322,7 +322,10 @@ def trip_survey_view(request, trip_id):
         if trip.has_recent_flight_experience:
             trip.last_flight_date = request.POST.get("last_flight_date") or None
             last_flight_hours = request.POST.get("last_flight_hours")
-            trip.last_flight_minutes = int(last_flight_hours) * 60 if last_flight_hours else None
+            last_flight_minutes = request.POST.get("last_flight_minutes")
+            total_minutes = (int(last_flight_hours) if last_flight_hours else 0) * 60 \
+                + (int(last_flight_minutes) if last_flight_minutes else 0)
+            trip.last_flight_minutes = total_minutes or None
             trip.typical_impact = request.POST.get("typical_impact", "")
         else:
             trip.last_flight_date = None

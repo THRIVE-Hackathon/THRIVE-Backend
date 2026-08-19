@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}장거리 비행 여부 - THRIVE{% endblock %}
 {% block body_class %}app__body--push{% endblock %}
@@ -6,9 +7,6 @@
 
 {% block app_header %}
 <header class="app-header app-header--bordered">
-  <a class="app-header__btn app-header__btn--back" href="{% url 'trips:create_step2' %}" aria-label="뒤로">
-    <span class="svg-icon svg-icon--left"></span>
-  </a>
   <h1 class="app-header__title">장거리 비행 여부</h1>
   <a class="app-header__btn app-header__btn--close" href="{% url 'trips:survey_skip' trip.id %}" aria-label="건너뛰기">
     <span class="svg-icon svg-icon--close"></span>
@@ -17,67 +15,114 @@
 {% endblock %}
 
 {% block content %}
-<section class="home-section">
-  <h1 class="text-heading-1">최근 1년 사이 6시간 이상의 비행 경험이 있으신가요?</h1>
-  <p class="text-muted">이전 비행 경험은 예상 컨디션 점수를 보정하는 데 사용됩니다.</p>
-</section>
-
-<form method="post" id="survey-form" class="auth-form auth-form--profile auth-form--tall">
+<form method="post" class="trip-step" id="survey-form"
+      data-cancel-url="{% url 'trips:survey_skip' trip.id %}">
   {% csrf_token %}
 
-  <div class="survey__grid">
-    <label class="survey-option">
-      <input class="survey-option__input" type="radio" name="has_recent_flight_experience" value="false">
-      <span class="survey-option__box">없음</span>
-    </label>
-    <label class="survey-option">
-      <input class="survey-option__input" type="radio" name="has_recent_flight_experience" value="true" checked>
-      <span class="survey-option__box">있음</span>
-    </label>
+  <div class="step-dots"><span></span><span></span><span class="is-active"></span></div>
+
+  {# ── 실제 제출 컨트롤(숨김). 시트 UI가 JS로 값을 주입한다 ── #}
+  <div hidden>
+    <input type="hidden" name="last_flight_date" id="last-flight-date-input">
+    <input type="hidden" name="last_flight_hours" id="last-flight-hours-input">
+    <input type="hidden" name="last_flight_minutes" id="last-flight-minutes-input">
   </div>
 
-  <div id="experience-fields" class="auth-form">
-    <div class="field">
-      <label class="field__label" for="last_flight_date">마지막 비행 일자</label>
-      <input class="field__input" id="last_flight_date" type="date" name="last_flight_date">
-      <p class="field__msg"></p>
-    </div>
+  <div class="field-box">
+    <section class="last-flight-head">
+      <label class="field__label">장거리 비행 여부</label>
+      <p class="guide-section__desc">최근 1년 사이, 6시간 이상의 비행 경험이 있으신가요?</p>
+    </section>
 
     <div class="field">
-      <label class="field__label" for="last_flight_hours">총 비행 시간</label>
-      <input class="field__input" id="last_flight_hours" type="number" name="last_flight_hours" min="0" inputmode="numeric" placeholder="시간 단위">
-      <p class="field__msg"></p>
-    </div>
-
-    <div class="field">
-      <span class="field__label">평소 컨디션 영향</span>
-      <p class="text-muted text-caption">평소 이동 거리와 시간이 어느 정도 영향을 주나요?</p>
-      <div class="condition-options">
-        {% for value, label in impact_choices %}
-          <label class="condition-option">
-            <input class="condition-option__input" type="radio" name="typical_impact" value="{{ value }}">
-            <span class="condition-option__box">{{ label }}</span>
-          </label>
-        {% endfor %}
+      <div class="survey__grid" role="radiogroup" aria-label="장거리 비행 여부">
+        <label class="survey-option">
+          <input class="survey-option__input" type="radio" name="has_recent_flight_experience" value="false">
+          <span class="survey-option__box">없음</span>
+        </label>
+        <label class="survey-option">
+          <input class="survey-option__input" type="radio" name="has_recent_flight_experience" value="true" checked>
+          <span class="survey-option__box">있음</span>
+        </label>
       </div>
     </div>
+
+    <div id="experience-fields">
+      <!-- 마지막 비행 일자 -->
+      <button type="button" class="info-row" data-sheet="last-flight-date-sheet">
+        <span class="info-row__label">마지막 비행 일자</span>
+        <span class="info-row__value" id="last-flight-value">Select...</span>
+        <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <!-- 총 비행 시간 -->
+      <button type="button" class="info-row" data-sheet="flight-time-sheet">
+        <span class="info-row__label">총 비행 시간</span>
+        <span class="info-row__value" id="flight-time-value">Select...</span>
+        <svg class="info-row__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M7.5 15l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
   </div>
 
-  <div class="push-bottom">
-    <button type="submit" class="btn btn--primary btn--block">확인</button>
+    <!-- 평소 컨디션 -->
+    <section>
+      <div class="label-box">
+        <h2 class="text-heading-1">평소 컨디션</h2>
+        <p class="guide-section__desc">평소 이동 거리 및 시간이 어느 정도의 영향력을 끼치나요?</p>
+      </div>
+      <div class="survey__grid" role="radiogroup" aria-label="평소 컨디션">
+        {% for value, label in impact_choices %}
+        <label class="survey-option">
+          <input class="survey-option__input" type="radio" name="typical_impact" value="{{ value }}">
+          <span class="survey-option__box">{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <div class="step-nav-row step-action--bottom">
+    <a class="btn step-nav-back" href="{% url 'trips:create_step2' %}">뒤로</a>
+    <button type="submit" class="btn btn--primary step-nav-forward">확인</button>
   </div>
 </form>
+
+{# ── 바텀시트: 마지막 비행 일자 ── #}
+<div id="last-flight-date-sheet" class="sheet-overlay" hidden>
+  <div class="sheet">
+    <div class="sheet__handle"></div>
+    <h2 class="text-heading-3">마지막 비행 일자</h2>
+    <div class="date-input-row">
+      <input class="field__input date-input" type="text" inputmode="numeric" maxlength="4" placeholder="2000" id="lf-year"/>
+      <span class="date-input-unit">년</span>
+      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2" placeholder="00" id="lf-month"/>
+      <span class="date-input-unit">월</span>
+      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2" placeholder="00" id="lf-day"/>
+      <span class="date-input-unit">일</span>
+    </div>
+    <button type="button" class="btn btn--primary btn--block" data-confirm="last-flight-date">입력</button>
+  </div>
+</div>
+
+{# ── 바텀시트: 총 비행 시간 ── #}
+<div id="flight-time-sheet" class="sheet-overlay" hidden>
+  <div class="sheet">
+    <div class="sheet__handle"></div>
+    <h2 class="text-heading-3">총 비행 시간</h2>
+    <div class="date-input-row">
+      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2" placeholder="00" id="ft-hour"/>
+      <span class="date-input-unit">시간</span>
+      <input class="field__input date-input date-input--sm" type="text" inputmode="numeric" maxlength="2" placeholder="00" id="ft-min"/>
+      <span class="date-input-unit">분</span>
+    </div>
+    <button type="button" class="btn btn--primary btn--block" data-confirm="flight-time">입력</button>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-<script>
-  const radios = document.querySelectorAll('input[name="has_recent_flight_experience"]');
-  const fields = document.getElementById('experience-fields');
-  function toggleFields() {
-    const selected = document.querySelector('input[name="has_recent_flight_experience"]:checked');
-    fields.style.display = selected && selected.value === 'true' ? 'flex' : 'none';
-  }
-  radios.forEach(r => r.addEventListener('change', toggleFields));
-  toggleFields();
-</script>
+<script src="{% static 'js/trip-register.js' %}" defer></script>
 {% endblock %}
