@@ -20,8 +20,6 @@
   <span class="auth-steps__dot is-active"></span>
 </div>
 
-<p class="auth-caption">비교 리포트와 회복 통계에 사용할 기본 정보를 입력해주세요.</p>
-
 <form method="post" class="auth-form auth-form--profile auth-form--tall" data-auth="profile" novalidate>
   {% csrf_token %}
   <div class="field" data-field="nickname"{% if form.nickname.errors %} data-server-error="{{ form.nickname.errors|striptags }}"{% endif %}>
