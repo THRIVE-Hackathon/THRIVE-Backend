@@ -1,274 +1,212 @@
-// 헤더: X 버튼 클릭 시 커스텀 확인 모달 열기
-    document.getElementById("header-mount").append(
-      THRIVE.createHeader({
-        title: "비행 여정 등록",
-        onClose: function () {
-          document.getElementById("close-confirm-modal").hidden = false;
-        },
-      })
-    );
-    document.getElementById("close-cancel").addEventListener("click", function () {
-      document.getElementById("close-confirm-modal").hidden = true;
-    });
-    document.getElementById("close-confirm").addEventListener("click", function () {
-      window.location.href = "./record.html";
-    });
+/*
+ * trip-register.js  (백엔드 static/js/ 에 배치)
+ * create_step1.html / create_step2.html 공용.
+ *
+ * 역할: THRIVE 디자인의 바텀시트/라디오 UI에서 고른 값을
+ *       숨겨진 실제 Django 폼 컨트롤(name 기준)에 주입한다.
+ *       한 파일이 두 페이지를 모두 담당하므로 요소 존재 여부를 항상 확인한다.
+ */
+(function () {
+  "use strict";
 
-    // STEP 이동
-    document.querySelectorAll("[data-next]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var next = btn.dataset.next;
-        document.querySelectorAll(".trip-step").forEach(function (s) { s.hidden = true; });
-        document.querySelector('.trip-step[data-step="' + next + '"]').hidden = false;
-      });
-    });
-    document.querySelectorAll("[data-prev]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var prev = btn.dataset.prev;
-        document.querySelectorAll(".trip-step").forEach(function (s) { s.hidden = true; });
-        document.querySelector('.trip-step[data-step="' + prev + '"]').hidden = false;
-      });
-    });
+  var pad = function (v) { return String(v).padStart(2, "0"); };
+  var byName = function (name) { return document.querySelector('[name="' + name + '"]'); };
 
-    // 경유 여부: '있음' 선택 시에만 대기 시간 노출
-    // (선택 스타일은 .survey-option :checked CSS 가 담당 → JS 로 스타일 조작 안 함)
-    document.querySelectorAll('input[name="via"]').forEach(function (input) {
-      input.addEventListener('change', function () {
-        document.getElementById('wait-time-field').style.display =
-          input.value === 'yes' ? 'flex' : 'none';
-      });
+  /* ── 공통: 시트 열기/닫기 ─────────────────────────────── */
+  document.querySelectorAll("[data-sheet]").forEach(function (trigger) {
+    trigger.addEventListener("click", function () {
+      var sheet = document.getElementById(trigger.getAttribute("data-sheet"));
+      if (sheet) sheet.hidden = false;
     });
-    // 장거리 비행 여부 / 평소 컨디션은 라디오 :checked CSS 로만 처리(별도 JS 불필요)
-
-    // 확인 버튼 → 다음 화면 이동
-    document.getElementById("trip-confirm").addEventListener("click", function () {
-      window.location.href = "./expected-score.html";
+  });
+  document.querySelectorAll(".sheet-overlay").forEach(function (overlay) {
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) overlay.hidden = true;
     });
+  });
+  var closeSheet = function (el) {
+    var overlay = el.closest(".sheet-overlay");
+    if (overlay) overlay.hidden = true;
+  };
 
-    // 출발 공항 선택 바텀시트
-    var airportSheet = document.getElementById("airport-sheet");
-    var departureValue = document.getElementById("departure-value");
-    var selectedAirport = "";
-
-    document.getElementById("departure-trigger").addEventListener("click", function () {
-      airportSheet.hidden = false;
-    });
-    document.querySelectorAll("#airport-list .airport-list__item").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        document.querySelectorAll("#airport-list .airport-list__item").forEach(function (b) {
+  /* ── 공통: 리스트형 시트(공항/여행기간) 항목 선택 ──────── */
+  document.querySelectorAll(".airport-list").forEach(function (list) {
+    list.querySelectorAll(".airport-list__item").forEach(function (item) {
+      item.addEventListener("click", function () {
+        list.querySelectorAll(".airport-list__item").forEach(function (b) {
           b.classList.remove("is-selected");
         });
-        btn.classList.add("is-selected");
-        selectedAirport = btn.dataset.airport;
+        item.classList.add("is-selected");
       });
     });
-    document.getElementById("airport-confirm").addEventListener("click", function () {
-      if (selectedAirport) {
-        departureValue.textContent = selectedAirport;
-        departureValue.style.color = "var(--color-text)";
-        departureValue.style.fontWeight = "600";
-      }
-      airportSheet.hidden = true;
-      checkStep1();
-    });
-    airportSheet.addEventListener("click", function (e) {
-      if (e.target === airportSheet) airportSheet.hidden = true;
-    });
+  });
 
-    // 출발일 선택 바텀시트
-    var dateSheet = document.getElementById("date-sheet");
-    var dateValueEl = document.getElementById("depart-date-value");
+  /* 트리거 라벨을 '선택됨' 스타일로 갱신 */
+  function setTriggerLabel(id, text) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    el.style.color = "var(--color-text)";
+    el.style.fontWeight = "600";
+  }
 
-    document.getElementById("depart-date-trigger").addEventListener("click", function () {
-      dateSheet.hidden = false;
-    });
-    document.getElementById("date-confirm").addEventListener("click", function () {
-      var y = document.getElementById("date-year").value;
-      var m = document.getElementById("date-month").value;
-      var d = document.getElementById("date-day").value;
-      if (y && m && d) {
-        dateValueEl.textContent = y + "년 " + m + "월 " + d + "일";
-      }
-      dateSheet.hidden = true;
-    });
-    dateSheet.addEventListener("click", function (e) {
-      if (e.target === dateSheet) dateSheet.hidden = true;
-    });
+  /* 리스트형 확정: 숨은 <select>(name)에 값 주입 + 라벨 갱신 */
+  function confirmListSheet(targetName, labelId) {
+    var list = document.querySelector('.airport-list[data-target="' + targetName + '"]');
+    if (!list) return;
+    var chosen = list.querySelector(".airport-list__item.is-selected");
+    if (!chosen) { closeSheet(list); return; }
+    var select = byName(targetName);
+    if (select) select.value = chosen.getAttribute("data-value");
+    setTriggerLabel(labelId, chosen.textContent.trim());
+    closeSheet(list);
+    refreshGates();
+  }
 
-    // STEP 1 유효성 검사: 공항 선택돼야 다음 버튼 활성화
-    var step1NextBtn = document.getElementById('step1-next');
-    function checkStep1() {
-      step1NextBtn.disabled = !selectedAirport;
+  /* ── 날짜/시각 조합 상태 (step2) ───────────────────────── */
+  var dt = {
+    depart: { date: null, time: null },
+    arrive: { date: null, time: null }
+  };
+  var FIELD_OF = { depart: "departure_at", arrive: "arrival_at" };
+
+  function recomposeDateTime(prefix) {
+    var s = dt[prefix];
+    var hidden = byName(FIELD_OF[prefix]);
+    if (hidden && s.date && s.time) {
+      hidden.value = s.date.y + "-" + pad(s.date.m) + "-" + pad(s.date.d)
+                   + "T" + pad(s.time.h) + ":" + pad(s.time.min);
     }
-    checkStep1();
+    refreshGates();
+  }
 
-    // 도착지 선택 바텀시트
-    var arrivalSheet = document.getElementById("arrival-sheet");
-    var arrivalValue = document.getElementById("arrival-value");
-    var arrivalError = document.getElementById("arrival-error");
-    var selectedArrival = "";
+  /* ── 확정(입력) 버튼 라우팅 ────────────────────────────── */
+  document.querySelectorAll("[data-confirm]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var kind = btn.getAttribute("data-confirm");
 
-    document.getElementById("arrival-trigger").addEventListener("click", function () {
-      arrivalSheet.hidden = false;
-    });
-    document.querySelectorAll("#arrival-list .airport-list__item").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        document.querySelectorAll("#arrival-list .airport-list__item").forEach(function (b) {
-          b.classList.remove("is-selected");
-        });
-        btn.classList.add("is-selected");
-        selectedArrival = btn.dataset.airport;
-      });
-    });
-    document.getElementById("arrival-confirm").addEventListener("click", function () {
-      if (selectedArrival) {
-        arrivalValue.textContent = selectedArrival;
-        arrivalValue.style.color = "var(--color-text)";
-        arrivalValue.style.fontWeight = "600";
-        arrivalError.style.display = "none";
+      if (kind === "origin")        return confirmListSheet("origin_airport", "origin-value");
+      if (kind === "destination")   return confirmListSheet("destination_airport", "destination-value");
+      if (kind === "trip-length")   return confirmListSheet("trip_duration_days", "trip-length-value");
+
+      if (kind === "wait") {
+        var wh = parseInt(document.getElementById("wait-hour").value, 10) || 0;
+        var wm = parseInt(document.getElementById("wait-minute").value, 10) || 0;
+        var hidden = byName("max_layover_minutes");
+        if (hidden) hidden.value = wh * 60 + wm;
+        setTriggerLabel("wait-time-value", wh + "시간 " + pad(wm) + "분");
+        return closeSheet(btn);
       }
-      arrivalSheet.hidden = true;
-    });
-    arrivalSheet.addEventListener("click", function (e) {
-      if (e.target === arrivalSheet) arrivalSheet.hidden = true;
-    });
 
-    // 도착일 선택 바텀시트
-    var arriveDateSheet = document.getElementById("arrive-date-sheet");
-    var arriveDateValueEl = document.getElementById("arrive-date-value");
-
-    document.getElementById("arrive-date-trigger").addEventListener("click", function () {
-      arriveDateSheet.hidden = false;
-    });
-    document.getElementById("arrive-date-confirm").addEventListener("click", function () {
-      var y2 = document.getElementById("arrive-date-year").value;
-      var m2 = document.getElementById("arrive-date-month").value;
-      var d2 = document.getElementById("arrive-date-day").value;
-      if (y2 && m2 && d2) {
-        arriveDateValueEl.textContent = y2 + "년 " + m2 + "월 " + d2 + "일";
-      }
-      arriveDateSheet.hidden = true;
-    });
-    arriveDateSheet.addEventListener("click", function (e) {
-      if (e.target === arriveDateSheet) arriveDateSheet.hidden = true;
-    });
-
-    // 도착 시각 선택 바텀시트
-    var arriveTimeSheet = document.getElementById("arrive-time-sheet");
-    var arriveTimeValueEl = document.getElementById("arrive-time-value");
-
-    document.getElementById("arrive-time-trigger").addEventListener("click", function () {
-      arriveTimeSheet.hidden = false;
-    });
-    document.getElementById("arrive-time-confirm").addEventListener("click", function () {
-      var h = document.getElementById("arrive-time-hour").value;
-      var min = document.getElementById("arrive-time-minute").value;
-      if (h && min) {
-        arriveTimeValueEl.textContent = h.padStart(2, "0") + ":" + min.padStart(2, "0");
-      }
-      arriveTimeSheet.hidden = true;
-    });
-    arriveTimeSheet.addEventListener("click", function (e) {
-      if (e.target === arriveTimeSheet) arriveTimeSheet.hidden = true;
-    });
-
-    // 여행 기간 선택 바텀시트
-    var tripLengthSheet = document.getElementById("trip-length-sheet");
-    var tripLengthValueEl = document.getElementById("trip-length-value");
-
-    document.getElementById("trip-length-trigger").addEventListener("click", function () {
-      tripLengthSheet.hidden = false;
-    });
-    document.getElementById("trip-length-confirm").addEventListener("click", function () {
-      var days = document.getElementById("trip-length-days").value;
-      if (days) {
-        tripLengthValueEl.textContent = days + "일";
-      }
-      tripLengthSheet.hidden = true;
-    });
-    tripLengthSheet.addEventListener("click", function (e) {
-      if (e.target === tripLengthSheet) tripLengthSheet.hidden = true;
-    });
-
-    // 마지막 비행 일자 선택 바텀시트
-    var lastFlightSheet = document.getElementById("last-flight-sheet");
-    var lastFlightValueEl = document.getElementById("last-flight-value");
-
-    document.getElementById("last-flight-trigger").addEventListener("click", function () {
-      lastFlightSheet.hidden = false;
-    });
-    document.getElementById("last-flight-confirm").addEventListener("click", function () {
-      var y3 = document.getElementById("last-flight-year").value;
-      var m3 = document.getElementById("last-flight-month").value;
-      var d3 = document.getElementById("last-flight-day").value;
-      if (y3 && m3 && d3) {
-        lastFlightValueEl.textContent = y3 + "년 " + m3 + "월 " + d3 + "일";
-      }
-      lastFlightSheet.hidden = true;
-    });
-    lastFlightSheet.addEventListener("click", function (e) {
-      if (e.target === lastFlightSheet) lastFlightSheet.hidden = true;
-    });
-
-    // 총 비행 시간 선택 바텀시트
-    var totalFlightTimeSheet = document.getElementById("total-flight-time-sheet");
-    var totalFlightTimeValueEl = document.getElementById("total-flight-time-value");
-
-    document.getElementById("total-flight-time-trigger").addEventListener("click", function () {
-      totalFlightTimeSheet.hidden = false;
-    });
-    document.getElementById("total-flight-time-confirm").addEventListener("click", function () {
-      var th = document.getElementById("total-flight-hour").value;
-      var tm = document.getElementById("total-flight-minute").value;
-      if (th && tm) {
-        totalFlightTimeValueEl.textContent = th + "시간 " + tm + "분";
-      }
-      totalFlightTimeSheet.hidden = true;
-    });
-    totalFlightTimeSheet.addEventListener("click", function (e) {
-      if (e.target === totalFlightTimeSheet) totalFlightTimeSheet.hidden = true;
-    });
-    // 출발 시각 / 대기 시간 바텀시트
-    (function () {
-      var departTimeSheet = document.getElementById("depart-time-sheet");
-      var departTimeValueEl = document.getElementById("depart-time-value");
-      var departTimeTrigger = document.getElementById("depart-time-trigger");
-
-      if (departTimeTrigger) {
-        departTimeTrigger.addEventListener("click", function () {
-          departTimeSheet.hidden = false;
-        });
-      }
-      document.getElementById("depart-time-confirm").addEventListener("click", function () {
-        var dh = document.getElementById("depart-time-hour").value;
-        var dm = document.getElementById("depart-time-minute").value;
-        if (dh && dm) {
-          departTimeValueEl.textContent = dh.padStart(2, "0") + ":" + dm.padStart(2, "0");
+      if (kind === "depart-date" || kind === "arrive-date") {
+        var p = kind === "depart-date" ? "depart" : "arrive";
+        var pre = p === "depart" ? "dd" : "ad";
+        var y = document.getElementById(pre + "-year").value;
+        var m = document.getElementById(pre + "-month").value;
+        var d = document.getElementById(pre + "-day").value;
+        if (y && m && d) {
+          dt[p].date = { y: y, m: m, d: d };
+          setTriggerLabel(p + "-date-value", y + "년 " + m + "월 " + d + "일");
+          recomposeDateTime(p);
         }
-        departTimeSheet.hidden = true;
-      });
-      departTimeSheet.addEventListener("click", function (e) {
-        if (e.target === departTimeSheet) departTimeSheet.hidden = true;
-      });
-
-      var waitTimeSheet = document.getElementById("wait-time-sheet");
-      var waitTimeValueEl = document.getElementById("wait-time-value");
-      var waitTimeField = document.getElementById("wait-time-field");
-
-      if (waitTimeField) {
-        waitTimeField.addEventListener("click", function () {
-          waitTimeSheet.hidden = false;
-        });
+        return closeSheet(btn);
       }
-      document.getElementById("wait-time-confirm").addEventListener("click", function () {
-        var wh = document.getElementById("wait-time-hour").value;
-        var wm = document.getElementById("wait-time-minute").value;
-        if (wh && wm) {
-          waitTimeValueEl.textContent = wh + "시간 " + wm + "분";
+
+      if (kind === "depart-time" || kind === "arrive-time") {
+        var pp = kind === "depart-time" ? "depart" : "arrive";
+        var prefix2 = pp === "depart" ? "dt" : "at";
+        var h = document.getElementById(prefix2 + "-hour").value;
+        var min = document.getElementById(prefix2 + "-min").value;
+        if (h !== "" && min !== "") {
+          dt[pp].time = { h: h, min: min };
+          setTriggerLabel(pp + "-time-value", pad(h) + ":" + pad(min));
+          recomposeDateTime(pp);
         }
-        waitTimeSheet.hidden = true;
-      });
-      waitTimeSheet.addEventListener("click", function (e) {
-        if (e.target === waitTimeSheet) waitTimeSheet.hidden = true;
-      });
-    })();
+        return closeSheet(btn);
+      }
+    });
+  });
+
+  /* ── 경유 여부: 'none' 외 선택 시에만 대기 시간 노출 ──── */
+  var waitRow = document.getElementById("wait-time-trigger");
+  function syncWaitVisibility() {
+    var checked = document.querySelector('input[name="layover_count"]:checked');
+    if (!waitRow) return;
+    var show = checked && checked.value !== "none";
+    waitRow.hidden = !show;
+    if (!show) {
+      var hidden = byName("max_layover_minutes");
+      if (hidden) hidden.value = "";
+      setTriggerLabel("wait-time-value", "Select...");
+    }
+  }
+  document.querySelectorAll('input[name="layover_count"]').forEach(function (r) {
+    r.addEventListener("change", syncWaitVisibility);
+  });
+
+  /* ── 닫기 확인 모달 ────────────────────────────────────── */
+  var closeTrigger = document.getElementById("close-trigger");
+  var closeModal = document.getElementById("close-confirm-modal");
+  var closeCancel = document.getElementById("close-cancel");
+  if (closeTrigger && closeModal) {
+    closeTrigger.addEventListener("click", function () { closeModal.hidden = false; });
+  }
+  if (closeCancel && closeModal) {
+    closeCancel.addEventListener("click", function () { closeModal.hidden = true; });
+  }
+
+  /* ── 다음/확인 버튼 활성화 게이트 ──────────────────────── */
+  function refreshGates() {
+    var step1Next = document.getElementById("step1-next");
+    if (step1Next) {
+      var o = byName("origin_airport"), d = byName("destination_airport");
+      step1Next.disabled = !(o && o.value && d && d.value);
+    }
+    var step2Next = document.getElementById("step2-next");
+    if (step2Next) {
+      var dep = byName("departure_at"), arr = byName("arrival_at"), dur = byName("trip_duration_days");
+      step2Next.disabled = !(dep && dep.value && arr && arr.value && dur && dur.value);
+    }
+  }
+
+  /* ── 새로고침/검증 오류 후 재진입: 숨은 값 → 라벨 복원 ── */
+  function hydrate() {
+    // 공항
+    [["origin_airport", "origin-value"], ["destination_airport", "destination-value"]].forEach(function (pair) {
+      var sel = byName(pair[0]);
+      if (sel && sel.value) {
+        var opt = sel.options[sel.selectedIndex];
+        if (opt) setTriggerLabel(pair[1], opt.text.trim());
+      }
+    });
+    // 여행 기간
+    var dur = byName("trip_duration_days");
+    if (dur && dur.value) {
+      var o = dur.options[dur.selectedIndex];
+      if (o) setTriggerLabel("trip-length-value", o.text.trim());
+    }
+    // 대기 시간
+    var wait = byName("max_layover_minutes");
+    if (wait && wait.value) {
+      var total = parseInt(wait.value, 10) || 0;
+      setTriggerLabel("wait-time-value", Math.floor(total / 60) + "시간 " + pad(total % 60) + "분");
+    }
+    // 출발/도착 일시
+    [["depart", "departure_at"], ["arrive", "arrival_at"]].forEach(function (pair) {
+      var hidden = byName(pair[1]);
+      if (hidden && hidden.value) {
+        var mt = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(hidden.value);
+        if (mt) {
+          dt[pair[0]].date = { y: mt[1], m: mt[2], d: mt[3] };
+          dt[pair[0]].time = { h: mt[4], min: mt[5] };
+          setTriggerLabel(pair[0] + "-date-value", mt[1] + "년 " + mt[2] + "월 " + mt[3] + "일");
+          setTriggerLabel(pair[0] + "-time-value", mt[4] + ":" + mt[5]);
+        }
+      }
+    });
+    syncWaitVisibility();
+    refreshGates();
+  }
+
+  hydrate();
+})();
