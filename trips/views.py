@@ -1,21 +1,30 @@
-from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Q
-from django.shortcuts import get_object_or_404, render, redirect
-from common.services.calendar import build_trip_calendar, calendar_response
-from recovery.models import RecoveryItem,InflightCheck
-from .models import Trip, Airport
+from datetime import datetime, timedelta, timezone as dt_timezone
+from zoneinfo import ZoneInfo
+
 from django import forms
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from common.services.score import calculate_expected_score, calculate_actual_score, calculate_target_score
-from common.services.timezone import timezone_diff_minutes, travel_direction, to_timezone
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+
 from common.ai.summaries import get_expected_score_summary, get_score_diff_explanation
-from datetime import timedelta
+from common.services.calendar import build_trip_calendar, calendar_response
+from common.services.recovery import (
+    CHECK_TYPE_INPUT_MODE,
+    RECOVERY_ITEM_CATALOG,
+    get_or_create_recovery_items,
+)
+from common.services.score import (
+    calculate_actual_score,
+    calculate_expected_score,
+    calculate_target_score,
+)
+from common.services.timezone import timezone_diff_minutes, to_timezone, travel_direction
+from recovery.models import InflightCheck, RecoveryItem
 from trips.services import refresh_trip_status
-from common.services.recovery import CHECK_TYPE_INPUT_MODE, get_or_create_recovery_items, RECOVERY_ITEM_CATALOG
-from zoneinfo import ZoneInfo
-from datetime import timezone as dt_timezone
+from .models import Airport, Trip
 
 KST = ZoneInfo("Asia/Seoul")
 
@@ -34,6 +43,81 @@ INFLIGHT_CHECK_LABELS = {
 }
 
 INFLIGHT_CHECK_ORDER = ["moisturize", "sleep", "water", "stretch"]
+TRIP_DURATION_CHOICES = [(i, f"{i}일") for i in range(1, 15)]
+
+class TripStep1Form(forms.Form):
+    """Step 1: 출발 정보 (출발 공항 + 출발 시간 + 경유 정보)"""
+    origin_airport = forms.ModelChoiceField(
+        queryset=Airport.objects.filter(active=True),
+        label="출발 공항",
+        widget=forms.Select(attrs={"class": "field__select"}),
+    )
+    departure_at = forms.DateTimeField(
+        label="출발 시간",
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": "field__input"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M"],
+    )
+    layover_count = forms.ChoiceField(
+        choices=Trip.LayoverCount.choices,
+        widget=forms.RadioSelect(attrs={"class": "survey-option__input"}),
+        initial="none",
+        label="경유 여부",
+    )
+    max_layover_minutes = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label="대기 시간 입력",
+        widget=forms.NumberInput(
+            attrs={
+                "class": "field__input",
+                "placeholder": "대기 시간(분)",
+                "inputmode": "numeric",
+            }
+        ),
+    )
+
+    def _to_utc_from_kst(self, value):
+        if timezone.is_aware(value):
+            value = timezone.make_naive(value, dt_timezone.utc)
+        value = value.replace(tzinfo=KST)
+        return value.astimezone(dt_timezone.utc)
+
+    def clean_departure_at(self):
+        return self._to_utc_from_kst(self.cleaned_data["departure_at"])
+
+
+class TripStep2Form(forms.Form):
+    destination_airport = forms.ModelChoiceField(
+        queryset=Airport.objects.filter(active=True),
+        label="도착 공항",
+        widget=forms.Select(attrs={"class": "field__select"}),
+    )
+    arrival_at = forms.DateTimeField(
+        label="도착 시간",
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": "field__input"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+        input_formats=["%Y-%m-%dT%H:%M"],
+    )
+    trip_duration_days = forms.TypedChoiceField(
+        choices=TRIP_DURATION_CHOICES,
+        coerce=int,
+        label="여행 기간",
+        widget=forms.Select(attrs={"class": "field__select"}),
+    )
+
+    def _to_utc_from_kst(self, value):
+        if timezone.is_aware(value):
+            value = timezone.make_naive(value, dt_timezone.utc)
+        value = value.replace(tzinfo=KST)
+        return value.astimezone(dt_timezone.utc)
+
+    def clean_arrival_at(self):
+        return self._to_utc_from_kst(self.cleaned_data["arrival_at"])
 
 @login_required
 def trip_list_view(request):
@@ -86,74 +170,52 @@ def trip_calendar_view(request, trip_id):
     content = build_trip_calendar(trip, recovery_items)
     return calendar_response(f"thrive-trip-{trip.pk}.ics", content)
 
+
 @login_required
 def trip_create_step1_view(request):
-    draft = request.session.get("trip_draft")
+    draft = request.session.get("trip_draft", {})
 
     if request.method == "POST":
         form = TripStep1Form(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            if data["origin_airport"] == data["destination_airport"]:
-                form.add_error(None, "출발지와 도착지가 같습니다")
-            else:
-                new_draft = {
-                    "origin_airport_id": data["origin_airport"].id,
-                    "destination_airport_id": data["destination_airport"].id,
-                    "layover_count": data["layover_count"],
-                    "max_layover_minutes": data.get("max_layover_minutes"),
-                }
-                if draft and draft.get("editing_trip_id"):
-                    new_draft["editing_trip_id"] = draft["editing_trip_id"]
-                request.session["trip_draft"] = new_draft
-                return redirect("trips:create_step2")
+
+            new_draft = {
+                "origin_airport_id": data["origin_airport"].id,
+                "departure_at": data["departure_at"].isoformat(),
+                "layover_count": data["layover_count"],
+                "max_layover_minutes": data.get("max_layover_minutes"),
+            }
+
+            if draft and draft.get("editing_trip_id"):
+                new_draft["editing_trip_id"] = draft["editing_trip_id"]
+
+            request.session["trip_draft"] = new_draft
+            return redirect("trips:create_step2")
     else:
         initial = {}
         if draft:
             initial = {
                 "origin_airport": draft.get("origin_airport_id"),
-                "destination_airport": draft.get("destination_airport_id"),
                 "layover_count": draft.get("layover_count"),
                 "max_layover_minutes": draft.get("max_layover_minutes"),
             }
+
+            if draft.get("departure_at"):
+                dep_utc = datetime.fromisoformat(draft["departure_at"])
+                initial["departure_at"] = timezone.localtime(dep_utc, KST).strftime("%Y-%m-%dT%H:%M")
+
         form = TripStep1Form(initial=initial)
+
     return render(request, "trips/create_step1.html", {"form": form})
 
-class TripStep1Form(forms.Form):
-    origin_airport = forms.ModelChoiceField(
-        queryset=Airport.objects.filter(active=True),
-        label="출발 공항",
-        widget=forms.Select(attrs={"class": "field__select"}),
-    )
-    destination_airport = forms.ModelChoiceField(
-        queryset=Airport.objects.filter(active=True),
-        label="도착 공항",
-        widget=forms.Select(attrs={"class": "field__select"}),
-    )
-    layover_count = forms.ChoiceField(
-        choices=Trip.LayoverCount.choices,
-        widget=forms.RadioSelect(attrs={"class": "survey-option__input"}),
-        initial="none",
-        label="경유 여부",
-    )
-    max_layover_minutes = forms.IntegerField(
-        required=False,
-        min_value=0,
-        label="대기 시간 입력",
-        widget=forms.NumberInput(
-            attrs={
-                "class": "field__input",
-                "placeholder": "대기 시간(분)",
-                "inputmode": "numeric",
-            }
-        ),
-    )
 
 @login_required
 def trip_create_step2_view(request):
     draft = request.session.get("trip_draft")
-    if not draft:
-        messages.error(request, "여정 정보를 먼저 입력해주세요")
+
+    if not draft or "departure_at" not in draft or "origin_airport_id" not in draft:
+        messages.error(request, "출발 정보를 먼저 입력해주세요.")
         return redirect("trips:create_step1")
 
     editing_trip_id = draft.get("editing_trip_id")
@@ -162,122 +224,92 @@ def trip_create_step2_view(request):
         form = TripStep2Form(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            departure_at = data["departure_at"]
-            arrival_at = data["arrival_at"]
+
+            departure_at = datetime.fromisoformat(draft["departure_at"])
+            arrival_at = data["arrival_at"]  # cleaned_data에서 이미 UTC로 변환됨
+
+            if draft["origin_airport_id"] == data["destination_airport"].id:
+                form.add_error("destination_airport", "출발지와 도착지가 같습니다.")
+                return render(request, "trips/create_step2.html", {"form": form})
+
             total_minutes = int((arrival_at - departure_at).total_seconds() // 60)
-
             if total_minutes < 360:
-                form.add_error(None, "총 비행시간이 6시간 미만인 여정은 등록 불가")
+                form.add_error(None, "총 비행시간이 6시간 미만인 여정은 등록할 수 없습니다.")
+                return render(request, "trips/create_step2.html", {"form": form})
+
+            origin_airport = Airport.objects.get(pk=draft["origin_airport_id"])
+            destination_airport = data["destination_airport"]
+            diff = timezone_diff_minutes(origin_airport.timezone, destination_airport.timezone)
+            direction = travel_direction(origin_airport.timezone, destination_airport.timezone)
+
+            expected_score, breakdown = calculate_expected_score(
+                total_minutes, diff, draft["layover_count"]
+            )
+            trip_duration_minutes = int(data["trip_duration_days"] * 24 * 60)
+
+            if editing_trip_id:
+                trip = get_object_or_404(Trip, pk=editing_trip_id, user=request.user)
+                trip.origin_airport = origin_airport
+                trip.destination_airport = destination_airport
+                trip.layover_count = draft["layover_count"]
+                trip.max_layover_minutes = draft.get("max_layover_minutes")
+                trip.total_flight_minutes = total_minutes
+                trip.departure_at = departure_at
+                trip.arrival_at = arrival_at
+                trip.next_schedule_after_minutes = trip_duration_minutes
+                trip.timezone_diff_minutes = diff
+                trip.travel_direction = direction
+                trip.expected_score = expected_score
+                trip.score_breakdown = breakdown
+                trip.summary_text = get_expected_score_summary(trip)
+                trip.save()
             else:
-                origin_airport = Airport.objects.get(pk=draft["origin_airport_id"])
-                destination_airport = Airport.objects.get(pk=draft["destination_airport_id"])
-                diff = timezone_diff_minutes(origin_airport.timezone, destination_airport.timezone)
-                direction = travel_direction(origin_airport.timezone, destination_airport.timezone)
-                expected_score, breakdown = calculate_expected_score(
-                    total_minutes, diff, draft["layover_count"]
-                )
-                trip_duration_minutes = int(data["trip_duration_days"] * 24 * 60)
-
-                if editing_trip_id:
-                    # 수정 모드 — 기존 Trip 업데이트, 점수 재계산
-                    trip = get_object_or_404(Trip, pk=editing_trip_id, user=request.user)
-                    trip.origin_airport = origin_airport
-                    trip.destination_airport = destination_airport
-                    trip.layover_count = draft["layover_count"]
-                    trip.max_layover_minutes = draft.get("max_layover_minutes")
-                    trip.total_flight_minutes = total_minutes
-                    trip.departure_at = departure_at
-                    trip.arrival_at = arrival_at
-                    trip.next_schedule_after_minutes = trip_duration_minutes
-                    trip.timezone_diff_minutes = diff
-                    trip.travel_direction = direction
-                    trip.expected_score = expected_score
-                    trip.score_breakdown = breakdown
+                try:
+                    trip = Trip.objects.create(
+                        user=request.user,
+                        origin_airport=origin_airport,
+                        destination_airport=destination_airport,
+                        layover_count=draft["layover_count"],
+                        max_layover_minutes=draft.get("max_layover_minutes"),
+                        total_flight_minutes=total_minutes,
+                        departure_at=departure_at,
+                        arrival_at=arrival_at,
+                        next_schedule_after_minutes=trip_duration_minutes,
+                        timezone_diff_minutes=diff,
+                        travel_direction=direction,
+                        expected_score=expected_score,
+                        score_breakdown=breakdown,
+                    )
                     trip.summary_text = get_expected_score_summary(trip)
-                    trip.save()
-                else:
-                    try:
-                        trip = Trip.objects.create(
-                            user=request.user,
-                            origin_airport=origin_airport,
-                            destination_airport=destination_airport,
-                            layover_count=draft["layover_count"],
-                            max_layover_minutes=draft.get("max_layover_minutes"),
-                            total_flight_minutes=total_minutes,
-                            departure_at=departure_at,
-                            arrival_at=arrival_at,
-                            next_schedule_after_minutes=trip_duration_minutes,
-                            timezone_diff_minutes=diff,
-                            travel_direction=direction,
-                            expected_score=expected_score,
-                            score_breakdown=breakdown,
-                        )
-                        trip.summary_text = get_expected_score_summary(trip)
-                        trip.save(update_fields=["summary_text"])
-                    except IntegrityError:
-                        messages.error(request, "진행 중인 여정이 있습니다. 새로 등록하면 이전 여정이 종료됩니다")
-                        del request.session["trip_draft"]
-                        return redirect("trips:list")
+                    trip.save(update_fields=["summary_text"])
+                except IntegrityError:
+                    messages.error(request, "진행 중인 여정이 있습니다. 새로 등록하면 이전 여정이 종료됩니다.")
+                    del request.session["trip_draft"]
+                    return redirect("trips:list")
 
-                del request.session["trip_draft"]
-                if editing_trip_id:
-                    return redirect("trips:home")
-                return redirect("trips:survey", trip_id=trip.pk)
+            del request.session["trip_draft"]
+            if editing_trip_id:
+                return redirect("trips:home")
+            return redirect("trips:survey", trip_id=trip.pk)
     else:
         initial = {}
         if editing_trip_id:
             trip = get_object_or_404(Trip, pk=editing_trip_id, user=request.user)
             initial = {
-                "departure_at": timezone.localtime(trip.departure_at, KST).strftime("%Y-%m-%dT%H:%M"),
+                "destination_airport": trip.destination_airport_id,
                 "arrival_at": timezone.localtime(trip.arrival_at, KST).strftime("%Y-%m-%dT%H:%M"),
                 "trip_duration_days": trip.next_schedule_after_minutes // (24 * 60),
             }
         form = TripStep2Form(initial=initial)
+
     return render(request, "trips/create_step2.html", {"form": form})
 
-TRIP_DURATION_CHOICES = [(i, f"{i}일") for i in range(1, 15)]
-
-
-class TripStep2Form(forms.Form):
-    departure_at = forms.DateTimeField(
-        label="출발 시간",
-        widget=forms.DateTimeInput(
-            attrs={"type": "datetime-local", "class": "field__input"},
-            format="%Y-%m-%dT%H:%M",
-        ),
-        input_formats=["%Y-%m-%dT%H:%M"],
-    )
-    arrival_at = forms.DateTimeField(
-        label="도착 시간",
-        widget=forms.DateTimeInput(
-            attrs={"type": "datetime-local", "class": "field__input"},
-            format="%Y-%m-%dT%H:%M",
-        ),
-        input_formats=["%Y-%m-%dT%H:%M"],
-    )
-    trip_duration_days = forms.TypedChoiceField(
-        choices=TRIP_DURATION_CHOICES,
-        coerce=int,
-        label="여행 기간",
-        widget=forms.Select(attrs={"class": "field__select"}),
-    )
-
-    def _to_utc_from_kst(self, value):
-        if timezone.is_aware(value):
-            value = timezone.make_naive(value, timezone=dt_timezone.utc)
-        value = value.replace(tzinfo=KST)
-        return value.astimezone(dt_timezone.utc)
-
-    def clean_departure_at(self):
-        return self._to_utc_from_kst(self.cleaned_data["departure_at"])
-
-    def clean_arrival_at(self):
-        return self._to_utc_from_kst(self.cleaned_data["arrival_at"])
 
 @login_required
 def trip_registration_cancel_view(request):
     request.session.pop("trip_draft", None)
     return redirect("trips:home")
+
 
 @login_required
 def trip_survey_view(request, trip_id):
@@ -310,12 +342,14 @@ def trip_survey_view(request, trip_id):
     context = {"trip": trip, "impact_choices": Trip.TypicalImpact.choices}
     return render(request, "trips/survey.html", context)
 
+
 @login_required
 def trip_survey_skip_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
     trip.survey_skipped = True
     trip.save(update_fields=["survey_skipped"])
     return redirect("trips:home")
+
 
 @login_required
 def trip_home_view(request):
@@ -380,6 +414,7 @@ def trip_home_view(request):
     context = {"trip": active_trip, "items": items, "remaining_hours": remaining_hours}
     return render(request, "recovery/plan.html", context)
 
+
 @login_required
 def trip_start_recovery_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
@@ -387,6 +422,7 @@ def trip_start_recovery_view(request, trip_id):
         trip.status = Trip.Status.RECOVERING
         trip.save(update_fields=["status"])
     return redirect("trips:home")
+
 
 def _build_inflight_context(trip):
     now = timezone.now()
@@ -426,6 +462,7 @@ def _build_inflight_context(trip):
         "score_breakdown_items": _score_breakdown_items(trip),
     }
 
+
 def _build_before_context(trip):
     departure_local = to_timezone(trip.departure_at, trip.origin_airport.timezone)
     arrival_local = to_timezone(trip.arrival_at, trip.destination_airport.timezone)
@@ -441,6 +478,7 @@ def _build_before_context(trip):
         "recovery_end_local": arrival_local + timedelta(minutes=recovery_minutes),
         "score_breakdown_items": _score_breakdown_items(trip),
     }
+
 
 def _build_landing_context(trip):
     expected_score = trip.expected_score or 0
@@ -459,10 +497,12 @@ def _build_landing_context(trip):
         "recovery_window_days": max(1, round(recovery_window_hours / 24)),
     }
 
+
 def _format_duration(total_minutes):
     hours = total_minutes // 60
     minutes = total_minutes % 60
     return f"{hours}시간 {minutes:02d}분"
+
 
 def _layover_summary(trip):
     if trip.layover_count == Trip.LayoverCount.NONE:
@@ -472,6 +512,7 @@ def _layover_summary(trip):
     if trip.max_layover_minutes:
         summary += f"({_format_duration(trip.max_layover_minutes)} 대기)"
     return summary
+
 
 def _score_breakdown_items(trip):
     breakdown = trip.score_breakdown or {}
@@ -492,12 +533,13 @@ def _score_breakdown_items(trip):
         )
     return items
 
+
 @login_required
 def trip_edit_start_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id, user=request.user)
     request.session["trip_draft"] = {
         "origin_airport_id": trip.origin_airport_id,
-        "destination_airport_id": trip.destination_airport_id,
+        "departure_at": trip.departure_at.isoformat(),
         "layover_count": trip.layover_count,
         "max_layover_minutes": trip.max_layover_minutes,
         "editing_trip_id": trip.id,
