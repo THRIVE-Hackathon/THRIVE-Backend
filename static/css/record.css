@@ -401,9 +401,6 @@ a.trip-card:active {
 .score-compare__col {
   flex: 1;
   text-align: center;
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
   padding: var(--space-4);
 }
 
@@ -483,11 +480,10 @@ a.trip-card:active {
 }
 
 .itinerary-dot {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--color-primary);
-  margin-top: 6px;
   flex: 0 0 auto;
 }
 
@@ -870,7 +866,7 @@ a.trip-card:active {
 .itinerary-list--connected::before {
   content: "";
   position: absolute;
-  left: 7px;
+  left: 8px;
   top: 8px;
   bottom: 8px;
   border-left: 1px dashed var(--color-border-strong);
