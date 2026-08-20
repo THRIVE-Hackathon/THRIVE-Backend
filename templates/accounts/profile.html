@@ -1,41 +1,70 @@
 {% extends "base.html" %}
 
-{% block title %}프로필 - THRIVE{% endblock %}
-
-{% block app_header %}
-<header class="app-header app-header--bordered">
-  <a class="app-header__btn app-header__btn--back" href="{% url 'accounts:settings' %}" aria-label="뒤로">
-    <span class="svg-icon svg-icon--left"></span>
-  </a>
-  <h1 class="app-header__title">프로필</h1>
-  <a class="app-header__btn app-header__btn--close" href="{% url 'accounts:profile_edit' %}" aria-label="프로필 수정">
-    <span class="svg-icon svg-icon--more"></span>
-  </a>
-</header>
-{% endblock %}
+{% block title %}설정{% endblock %}
 
 {% block content %}
-<section class="home-section">
-  <h1 class="text-heading-1">{{ profile.nickname }}님</h1>
-  <p class="routine-caption">{{ profile.age }}세 · {{ profile.get_gender_display }}</p>
+<h1 class="text-title-1">설정</h1>
+
+<section class="profile-hero">
+  <p class="profile-hero__name">{{ profile.nickname|default:"유저" }}님</p>
+  <p class="profile-hero__meta">
+    {{ profile.get_gender_display }} · {{ profile.age }}세
+  </p>
+  <a class="btn btn--tonal btn--block btn--sm2" href="{% url 'accounts:profile_edit' %}">프로필 수정</a>
 </section>
 
-<section class="home-section">
-  <h2 class="home-section__title text-heading-2">회복 통계</h2>
-  {% if total_trips >= 2 %}
-    <div class="factor-card">
-      <div class="factor">
-        <div class="factor__head"><span class="factor__label">누적 여정</span><span class="factor__delta">{{ total_trips }}회</span></div>
-      </div>
-      <div class="factor">
-        <div class="factor__head"><span class="factor__label">평균 차질도</span><span class="factor__delta">{{ avg_disruption }}점</span></div>
-      </div>
-      <div class="factor">
-        <div class="factor__head"><span class="factor__label">가장 느린 회복</span><span class="factor__delta">{{ slowest_component|default:"집계 중" }}</span></div>
-      </div>
-    </div>
-  {% else %}
-    <p class="text-muted">첫 여정을 완료하면 회복 패턴을 보여드립니다.</p>
-  {% endif %}
+<div class="stat-list">
+  <div class="stat-row"><span>누적 여정</span><span class="stat-row__value">{{ total_trips|default_if_none:0 }}회</span></div>
+  <div class="stat-row"><span>느린 회복 요소</span><span class="stat-row__value">수면·리듬 파트</span></div>
+</div>
+
+<section>
+  <h2 class="text-heading-1">계정 설정</h2>
+  <div class="settings-list">
+    <a href="#">개인정보처리방침</a>
+    <a href="{% url 'accounts:settings' %}">서비스처리방침</a>
+    <a href="#">알림 설정</a>
+    <button type="button" id="account-open">계정 설정</button>
+  </div>
 </section>
+
+<a href="{% url 'accounts:logout' %}" id="logout-link" class="logout-link">로그아웃</a>
+
+<div id="account-modal" class="modal" hidden>
+  <div class="modal__box">
+    <h2>계정 삭제</h2>
+    <p class="modal-text text-caption text-muted">정말 탈퇴하시겠어요?</p>
+    <div class="modal__actions">
+      <button type="button" class="btn--cancel" id="account-cancel">취소</button>
+      <button type="submit" form="delete-form" class="btn--confirm">탈퇴</button>
+    </div>
+  </div>
+</div>
+
+<form id="delete-form" method="post" action="{% url 'accounts:delete' %}" hidden>
+  {% csrf_token %}
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var modal = document.getElementById("account-modal");
+    var openBtn = document.getElementById("account-open");
+    var cancelBtn = document.getElementById("account-cancel");
+
+    if (openBtn && modal) {
+      openBtn.addEventListener("click", function () { modal.hidden = false; });
+    }
+    if (cancelBtn && modal) {
+      cancelBtn.addEventListener("click", function () { modal.hidden = true; });
+    }
+    // 오버레이(배경) 클릭 시 모달 닫기
+    if (modal) {
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal) modal.hidden = true;
+      });
+    }
+  })();
+</script>
 {% endblock %}

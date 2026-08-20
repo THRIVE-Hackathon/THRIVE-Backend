@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}THRIVE{% endblock %}</title>
+  <title>{% block title %}LANDING{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/reset.css' %}">
   <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
   <link rel="stylesheet" href="{% static 'css/variables.css' %}">
@@ -22,6 +22,23 @@
 
     <main class="app__body {% block body_class %}{% endblock %}">
       {% if messages %}
+        <div class="toast-stack" aria-live="polite" style="position:fixed; left:50%; bottom:90px; transform:translateX(-50%); display:flex; flex-direction:column; gap:var(--space-2); z-index:200;">
+          {% for message in messages %}
+            <div class="toast" role="status" style="position:static; left:auto; bottom:auto; transform:none;">{{ message }}</div>
+          {% endfor %}
+        </div>
+        <script>
+          (function () {
+            var toasts = document.querySelectorAll(".toast-stack .toast");
+            Array.prototype.forEach.call(toasts, function (t, i) {
+              setTimeout(function () {
+                t.style.transition = "opacity .3s ease";
+                t.style.opacity = "0";
+                setTimeout(function () { t.remove(); }, 300);
+              }, 3000 + i * 500);
+            });
+          })();
+        </script>
       {% endif %}
       {% block content %}{% endblock %}
     </main>
@@ -38,7 +55,7 @@
               <span class="app-tabbar__icon svg-icon svg-icon--home" aria-hidden="true"></span>
               <span class="app-tabbar__label">메인</span>
             </a>
-            <a class="app-tabbar__item {% if app == 'accounts' %}is-active{% endif %}" href="{% url 'accounts:settings' %}" data-key="mypage" {% if app == 'accounts' %}aria-current="page"{% endif %}>
+            <a class="app-tabbar__item {% if app == 'accounts' %}is-active{% endif %}" href="{% url 'accounts:profile' %}" data-key="mypage" {% if app == 'accounts' %}aria-current="page"{% endif %}>
               <span class="app-tabbar__icon svg-icon svg-icon--account" aria-hidden="true"></span>
               <span class="app-tabbar__label">설정</span>
             </a>
