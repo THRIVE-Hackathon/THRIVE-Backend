@@ -10,8 +10,8 @@
    * base.html 이 record.css / mypage.css 를 전역 로드해 home.css 의
    * 공용 클래스(stage-tab / calc-toggle / disclaimer / itinerary)를
    * 뒤에서 덮어쓰기 때문에, 이 페이지에서만 home.css 의도대로 복구한다.
-   * (공유 CSS 미수정 원칙 · extra_css 가 가장 마지막에 로드되어 우선순위 최상)
    * ============================================================ */
+
   .stage-tab { margin: 8px auto; gap: 2px; padding: 4px; }
   .stage-tab__item {
     height: 40px; padding: 6px 8px;
@@ -187,14 +187,10 @@
   <details class="calc-toggle">
     <summary class="calc-toggle__summary">
       <span>이 점수는 어떻게 계산되었나요?</span>
-      <span class="calc-toggle__chevron svg-icon svg-icon--down" aria-hidden="true"></span>
+      <span class="calc-toggle__chevron svg-icon svg-icon--more" aria-hidden="true"></span>
     </summary>
     <div class="calc-toggle__body">
-      {% if trip.summary_text %}
-        {{ trip.summary_text }}
-      {% else %}
         총 비행시간은 수면·리듬과 순환에 영향을 끼치며, 시차는 수면·리듬 점수에 영향을 끼칩니다. 비행 시간이 증가함에 따라 수분 및 피부 점수가 줄어들며, 경유 여부에 따라 각 수치가 조정될 수 있습니다.
-      {% endif %}
     </div>
   </details>
 </section>

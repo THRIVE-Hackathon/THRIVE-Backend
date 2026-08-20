@@ -31,6 +31,65 @@
     color: var(--color-cyan-600);
     font-size: var(--fs-caption-1);
   }
+  .calc-toggle summary::after { content: none; }
+  .calc-toggle summary { padding: 0; color: var(--color-text-muted); }
+ 
+  .flight-card { border: 0; box-shadow: none; }
+  .flight-card--soft {
+    display: flex; justify-content: center; align-items: center;
+    height: 90px;
+    background-color: #D6F1F1;
+    border: none; border-radius: var(--radius-xl, 16px);
+    margin-top: var(--space-4); margin-bottom: var(--space-5);
+  }
+  .flight-card--soft .flight-card__route {
+    display: flex; justify-content: center; align-items: center;
+    gap: 40px; padding: 0;
+  }
+  .flight-card__code {
+    font-size: 22px; font-weight: 600;
+    margin-bottom: var(--space-1); color: var(--color-text);
+  }
+  .flight-card__airport { font-size: var(--fs-body-3); color: var(--color-text); margin-top: 0; }
+  .flight-card__plane { color: #008D8D; }
+  .flight-card__plane svg { width: 28px; height: 28px; }
+ 
+  .itinerary-list--connected {
+    position: relative;
+    padding: 8px 20px;
+    margin-top: var(--space-4); 
+    margin-bottom: var(--space-4);
+    gap: 0;
+  }
+  .itinerary-list--connected::before {
+    left: 23px; top: 12px; bottom: 32px;
+    border-left: 2px dotted #C4C8D4;
+  }
+  .itinerary-list--connected .itinerary-row {
+    position: relative; display: block;
+    padding-left: var(--space-5); margin-bottom: var(--space-5); gap: 0;
+  }
+  .itinerary-list--connected .itinerary-dot {
+    position: absolute; left: -1px; top: 4px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--color-primary); margin-top: 0;
+  }
+  .itinerary-row__body p {
+    font-size: var(--fs-body-3); color: var(--color-text);
+    margin-bottom: var(--space-1);
+  }
+  .itinerary-row__main { margin: var(--space-7) 0; }
+  .itinerary-list--connected .itinerary-row__meta {
+    color: var(--color-gray-500); font-size: var(--fs-body-3);
+    margin-top: var(--space-2);
+  }
+  .itinerary-row__highlight {
+    font-size: 22px; font-weight: 700;
+    color: var(--color-primary); margin-top: var(--space-1);
+  }
+ 
+  .disclaimer { align-items: flex-start; }
+  .disclaimer__icon { width: 14px; height: 14px; }
 </style>
 {% endblock %}
 
@@ -84,11 +143,7 @@
     <span class="calc-toggle__chevron svg-icon svg-icon--more" aria-hidden="true"></span>
   </summary>
   <div class="calc-toggle__body">
-    {% if trip.summary_text %}
-      {{ trip.summary_text }}
-    {% else %}
       총 비행시간은 수면·리듬과 순환에 영향을 끼치며, 시차는 수면·리듬 점수에 영향을 끼칩니다. 비행 시간이 증가함에 따라 수분 및 피부 점수가 줄어들며, 경유 여부에 따라 각 수치가 조정될 수 있습니다.
-    {% endif %}
   </div>
 </details>
 
@@ -112,9 +167,7 @@
         <div class="flight-card__airport">{{ trip.origin_airport.name_ko }}</div>
       </div>
       <span class="flight-card__plane" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M2.5 19h19v2h-19v-2zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10 8 3.57 6.09 4.08l4.15 7.19-4.98 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.49c.81-.23 1.28-1.05 1.07-1.85z"/>
-        </svg>
+        <svg class="svg-icon svg-icon--flight" fill="currentColor"></svg>
       </span>
       <div class="flight-card__point">
         <div class="flight-card__code">{{ trip.destination_airport.iata_code }}</div>
