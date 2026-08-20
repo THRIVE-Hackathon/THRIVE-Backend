@@ -7,13 +7,6 @@
 <style>
   /* ============================================================
    * [비행 후 전용 복구 CSS]
-   * base.html 은 record.css / mypage.css 를 전역 로드하는데,
-   * 이들이 home.css 의 공용 클래스(stage-tab / score-compare /
-   * calc-toggle / disclaimer)를 뒤에서 재정의(덮어씀)한다.
-   * 정적 프론트(main-done.html)는 record/mypage.css 를 로드하지
-   * 않아 정상이지만, base 를 상속하면 깨지므로 이 페이지에서만
-   * home.css 의도대로 되돌린다. (공유 CSS 미수정 원칙 유지)
-   * extra_css 는 base 에서 가장 마지막에 로드되어 우선순위가 가장 높다.
    * ============================================================ */
   .stage-tab { margin: 8px auto; gap: 2px; padding: 4px; }
   .stage-tab__item {
@@ -140,22 +133,15 @@
   </div>
 
   <div class="factor-card">
-    <div class="factor">
-      <div class="factor__head"><span class="factor__label">수면·리듬</span><span class="factor__delta">{{ trip.score_breakdown.sleep }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: {{ trip.score_breakdown.sleep_pct|default:62 }}%"></span></div>
-    </div>
-    <div class="factor">
-      <div class="factor__head"><span class="factor__label">순환</span><span class="factor__delta">{{ trip.score_breakdown.circulation }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: {{ trip.score_breakdown.circulation_pct|default:90 }}%"></span></div>
-    </div>
-    <div class="factor">
-      <div class="factor__head"><span class="factor__label">수분</span><span class="factor__delta">{{ trip.score_breakdown.hydration }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: {{ trip.score_breakdown.hydration_pct|default:78 }}%"></span></div>
-    </div>
-    <div class="factor">
-      <div class="factor__head"><span class="factor__label">피부</span><span class="factor__delta">{{ trip.score_breakdown.skin }}점</span></div>
-      <div class="bar"><span class="bar__fill" style="width: {{ trip.score_breakdown.skin_pct|default:84 }}%"></span></div>
-    </div>
+    {% for item in score_breakdown_items %}
+      <div class="factor">
+        <div class="factor__head">
+          <span class="factor__label">{{ item.label }}</span>
+          <span class="factor__delta">{{ item.display }}</span>
+        </div>
+        <div class="bar"><span class="bar__fill" style="width: {{ item.width }}%"></span></div>
+      </div>
+    {% endfor %}
   </div>
 
   <details class="calc-toggle">
