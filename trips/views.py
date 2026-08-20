@@ -414,7 +414,12 @@ def trip_home_view(request):
     remaining = active_trip.next_schedule_at - timezone.now() if active_trip.next_schedule_at else timedelta(0)
     remaining_hours = max(0, int(remaining.total_seconds() // 3600))
 
-    context = {"trip": active_trip, "items": items, "remaining_hours": remaining_hours}
+    context = {
+        "trip": active_trip,
+        "items": items,
+        "remaining_hours": remaining_hours,
+        "score_breakdown_items": _score_breakdown_items(active_trip),
+    }
     return render(request, "recovery/plan.html", context)
 
 
