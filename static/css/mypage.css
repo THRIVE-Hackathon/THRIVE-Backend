@@ -257,6 +257,7 @@
   color: var(--color-text-muted);
   font-size: var(--fs-body-3);
   margin-top: var(--space-7);
+  margin-bottom: var(--space-7);
 }
 
 .btn--sm2 {
@@ -338,12 +339,13 @@
   bottom: 90px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--color-gray-100);
+  background: var(--color-gray-50);
   color: var(--color-gray-900);
   font-size: var(--fs-body-3);
-  font-weight: 600;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
+  font-weight: 400;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-gray-100);
+  border-radius: 12px;
   white-space: nowrap;
   z-index: 200;
 }
